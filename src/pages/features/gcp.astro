@@ -1,0 +1,21 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import PageHero from '../../components/PageHero.astro';
+import StubBody from '../../components/StubBody.astro';
+---
+
+<BaseLayout
+  title="CHA &mdash; GCP probes"
+  description="10 GCP probes covering Cloud SQL, GKE, IAM, Load Balancers, GCS, KMS. Workload Identity auth via the cluster identity."
+>
+  <PageHero
+    eyebrow="Features &middot; GCP"
+    title="Ten GCP probes. Workload Identity native."
+    subtitle="Cloud SQL, GKE, IAM, Load Balancers, GCS, KMS — probed via the GKE Workload Identity binding."
+  />
+  <StubBody
+    claim="CHA on GKE uses Workload Identity — the cluster's GCP service-account binding — to probe Cloud SQL, GKE control-plane state, IAM, Load Balancers, GCS, KMS, and more. Zero long-lived credentials. Read-only by design in M2."
+    backHref="/features/"
+    backLabel="← All features"
+  />
+</BaseLayout>

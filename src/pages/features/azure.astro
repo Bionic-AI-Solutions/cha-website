@@ -1,0 +1,21 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import PageHero from '../../components/PageHero.astro';
+import StubBody from '../../components/StubBody.astro';
+---
+
+<BaseLayout
+  title="CHA &mdash; Azure probes"
+  description="10 Azure probes covering Azure SQL, AKS, Identity, App Gateway, Key Vault. AAD Workload Identity native."
+>
+  <PageHero
+    eyebrow="Features &middot; Azure"
+    title="Ten Azure probes. AAD Workload Identity."
+    subtitle="Azure SQL, AKS, Identity, App Gateway, Key Vault — probed via AAD Workload Identity."
+  />
+  <StubBody
+    claim="CHA on AKS uses AAD Workload Identity to probe Azure SQL, AKS control-plane state, AAD Identity, Application Gateway, Key Vault, and more. Zero long-lived credentials. Read-only by design in M2."
+    backHref="/features/"
+    backLabel="← All features"
+  />
+</BaseLayout>

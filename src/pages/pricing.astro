@@ -1,0 +1,154 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import PageHero from '../components/PageHero.astro';
+
+const tiers = [
+  {
+    name: 'OSS',
+    audience: 'SREs, platform engineers, hobbyists',
+    price: 'Free',
+    priceNote: 'Apache-2.0 license',
+    cta: { label: 'Helm install', href: 'https://github.com/Bionic-AI-Solutions/cluster-health-autopilot' },
+    highlight: false,
+    features: [
+      'All K8s probes (6 today, growing)',
+      'All 30+ cloud probes — AWS / GCP / Azure',
+      'All 5 whitelisted fixers',
+      'OpenProject ticketing',
+      'Slack / Alertmanager routing',
+      'Snapshot + offline mode',
+      'Air-gap deployment',
+      'Apache-2.0 — audit the safety envelope',
+    ],
+  },
+  {
+    name: 'CHA-com Team',
+    audience: 'Small teams adopting AI-augmented investigation',
+    price: '$X',
+    priceNote: 'per cluster / month',
+    cta: { label: 'Contact us', href: 'mailto:hello@bionicaisolutions.com' },
+    highlight: true,
+    features: [
+      'Everything in OSS',
+      'T0 enricher — LLM context on every DriftReport',
+      'T1 fix proposer — LLM-augmented fix suggestions',
+      'Signed-JWT approval-server (click-to-fix)',
+      'Hosted dashboard',
+      'Email support',
+    ],
+  },
+  {
+    name: 'CHA-com Enterprise',
+    audience: 'Enterprise SREs running fleets of clusters',
+    price: '$Y',
+    priceNote: 'per cluster / month',
+    cta: { label: 'Contact sales', href: 'mailto:sales@bionicaisolutions.com' },
+    highlight: false,
+    features: [
+      'Everything in Team',
+      'T2 multi-step planner',
+      'T3 Vault runbook proposer',
+      'Cloud-aware AI (cross-resource RCA)',
+      'Jira / ServiceNow ticketing',
+      'Multi-cluster federation',
+      'SLA support + named TAM',
+    ],
+  },
+  {
+    name: 'Federal / Sovereign',
+    audience: 'FedRAMP / EU sovereign / regulated buyers',
+    price: 'Contact',
+    priceNote: 'sales',
+    cta: { label: 'Contact sales', href: 'mailto:fed@bionicaisolutions.com' },
+    highlight: false,
+    features: [
+      'Everything in Enterprise',
+      'Air-gap installer',
+      'SBOM + signed-image attestation',
+      'Independent audit reports',
+      'Sovereign deployment patterns',
+      'Dedicated security engineering',
+    ],
+  },
+];
+---
+
+<BaseLayout
+  title="CHA &mdash; Pricing"
+  description="Flat per-cluster pricing. No per-investigation surprises. OSS includes all probes and fixers; paid tiers add LLM-augmented investigation, ticketing, and multi-cluster federation."
+>
+  <PageHero
+    eyebrow="Pricing"
+    title="Transparent, flat per-cluster pricing."
+    subtitle="No per-investigation pricing. No 'contact sales' wall for the OSS tier. Helm install, evaluate, pay only when you want AI-tier features."
+  />
+
+  <section class="mx-auto max-w-7xl px-6 py-20">
+    <div class="grid gap-6 md:grid-cols-2 xl:grid-cols-4">
+      {tiers.map((tier) => (
+        <div
+          class:list={[
+            'flex flex-col rounded-2xl border bg-white p-7 shadow-sm dark:bg-zinc-900/60',
+            tier.highlight
+              ? 'border-accent-600 ring-1 ring-accent-600/30 dark:border-accent-500'
+              : 'border-zinc-200/80 dark:border-zinc-800/80',
+          ]}
+        >
+          {tier.highlight && (
+            <div class="mb-4 inline-flex w-fit items-center rounded-full bg-accent-600 px-2.5 py-0.5 text-xs font-medium text-white">
+              Most popular
+            </div>
+          )}
+          <h3 class="text-lg font-semibold text-zinc-900 dark:text-zinc-50">{tier.name}</h3>
+          <p class="mt-1 text-sm text-zinc-500 dark:text-zinc-400">{tier.audience}</p>
+          <div class="mt-5 flex items-baseline gap-1">
+            <span class="text-3xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">
+              {tier.price}
+            </span>
+            <span class="text-sm text-zinc-500 dark:text-zinc-400">{tier.priceNote}</span>
+          </div>
+          <ul class="mt-6 flex-1 space-y-2.5 text-sm">
+            {tier.features.map((f) => (
+              <li class="flex items-start gap-2 text-zinc-700 dark:text-zinc-300">
+                <svg
+                  class="mt-0.5 h-4 w-4 flex-shrink-0 text-accent-600 dark:text-accent-400"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  stroke-width="2.5"
+                  aria-hidden="true"
+                >
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+                </svg>
+                <span>{f}</span>
+              </li>
+            ))}
+          </ul>
+          <a
+            href={tier.cta.href}
+            class:list={[
+              'mt-7 inline-flex items-center justify-center rounded-md px-4 py-2.5 text-sm font-medium shadow-sm transition',
+              tier.highlight
+                ? 'bg-accent-600 text-white hover:bg-accent-700'
+                : 'border border-zinc-300 bg-white text-zinc-900 hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100 dark:hover:bg-zinc-800',
+            ]}
+          >
+            {tier.cta.label}
+          </a>
+        </div>
+      ))}
+    </div>
+
+    <div class="mt-16 rounded-2xl border border-zinc-200/80 bg-zinc-50/70 p-8 text-center dark:border-zinc-800/80 dark:bg-zinc-950/40">
+      <h3 class="text-xl font-semibold text-zinc-900 dark:text-zinc-50">
+        Why we publish list prices.
+      </h3>
+      <p class="mx-auto mt-3 max-w-2xl text-sm leading-relaxed text-zinc-600 dark:text-zinc-400">
+        Every commercial competitor in this category hides pricing behind contact-sales,
+        or charges per investigation in a way that makes budgeting impossible. We don't.
+        OSS is free. Team and Enterprise are flat per-cluster. Only the Federal track is
+        contact-sales — because air-gap installers and SBOM work is genuinely bespoke.
+      </p>
+    </div>
+  </section>
+</BaseLayout>

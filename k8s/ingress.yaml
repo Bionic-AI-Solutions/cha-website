@@ -1,0 +1,34 @@
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: cha-website
+  namespace: cha-website
+  labels:
+    app.kubernetes.io/name: cha-website
+    app.kubernetes.io/instance: cha-website
+    app.kubernetes.io/component: web
+    app.kubernetes.io/part-of: cha
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+    konghq.com/preserve-host: "true"
+    konghq.com/protocols: https
+    konghq.com/strip-path: "false"
+    konghq.com/https-redirect-status-code: "308"
+spec:
+  ingressClassName: kong
+  rules:
+    - host: asre.baisoln.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: cha-website
+                port:
+                  number: 80
+  tls:
+    - hosts:
+        - asre.baisoln.com
+      secretName: asre-baisoln-com-tls

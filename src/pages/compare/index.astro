@@ -1,0 +1,68 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import PageHero from '../../components/PageHero.astro';
+
+const competitors = [
+  {
+    href: '/compare/neubird/',
+    name: 'NeuBird',
+    one_liner: 'Well-funded SaaS investigator with approval-gated remediation bolted on.',
+    lead:
+      'Their own security doc says "architecturally enforced read-only." Per-investigation pricing ($15–25/investigation, ~$75K/yr at 10k investigations) makes noisy clusters blow your budget.',
+  },
+  {
+    href: '/compare/resolve/',
+    name: 'Resolve AI',
+    one_liner: 'Raised $190M at $1.5B; calls closed-loop "the next funding milestone."',
+    lead:
+      'SaaS-only with no FedRAMP / sovereign story. We ship closed-loop today; they admit it in their own funding announcement that they don\'t.',
+  },
+  {
+    href: '/compare/ciroos/',
+    name: 'Ciroos',
+    one_liner: 'Strong multi-agent + KG architecture, but closed-source SaaS-only with no named customers at 12 months in.',
+    lead:
+      'Their "Autopilot" slider doesn\'t document a safety brake. Our safety envelope is in code you can read before you install.',
+  },
+  {
+    href: '/compare/opensre/',
+    name: 'OpenSRE (Tracer + swapnil)',
+    one_liner: 'Two OSS projects in the same category — neither ships closed-loop remediation.',
+    lead:
+      'Tracer\'s 141 tools are architecturally read-only (regex-blocked in code). The swapnil project is dormant. CHA is the only OSS-licensed K8s+cloud autopilot that ships closed-loop.',
+  },
+];
+---
+
+<BaseLayout
+  title="CHA &mdash; Compared with NeuBird, Resolve, Ciroos, OpenSRE"
+  description="Detailed comparisons against NeuBird, Resolve AI, Ciroos, and OpenSRE (Tracer + swapnil)."
+>
+  <PageHero
+    eyebrow="Compare"
+    title="How CHA compares."
+    subtitle="Every claim on these pages traces to a competitor's published material or our shipped code. We quote them verbatim where it matters."
+  />
+
+  <section class="mx-auto max-w-5xl px-6 py-20">
+    <div class="space-y-5">
+      {competitors.map((c) => (
+        <a
+          href={c.href}
+          class="group block rounded-2xl border border-zinc-200/80 bg-white p-7 shadow-sm transition hover:border-zinc-300 hover:shadow-md dark:border-zinc-800/80 dark:bg-zinc-900/60 dark:hover:border-zinc-700"
+        >
+          <div class="flex items-baseline justify-between">
+            <h3 class="text-xl font-semibold text-zinc-900 dark:text-zinc-50">
+              CHA vs. {c.name}
+            </h3>
+            <span class="text-sm font-medium text-accent-600 group-hover:text-accent-700 dark:text-accent-400 dark:group-hover:text-accent-300">
+              Compare &rarr;
+            </span>
+          </div>
+          <p class="mt-2 text-sm text-zinc-500 dark:text-zinc-400">{c.one_liner}</p>
+          <p class="mt-3 text-base leading-relaxed text-zinc-700 dark:text-zinc-300">{c.lead}</p>
+        </a>
+      ))}
+    </div>
+  </section>
+</BaseLayout>

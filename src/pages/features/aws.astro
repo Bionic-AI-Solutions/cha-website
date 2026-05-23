@@ -1,0 +1,21 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import PageHero from '../../components/PageHero.astro';
+import StubBody from '../../components/StubBody.astro';
+---
+
+<BaseLayout
+  title="CHA &mdash; AWS probes"
+  description="10 AWS probes covering RDS, EBS, EKS, IAM, ALB, ACM, KMS, S3, VPC. IRSA-first auth — no long-lived keys in CHA."
+>
+  <PageHero
+    eyebrow="Features &middot; AWS"
+    title="Ten AWS probes. IRSA-first auth."
+    subtitle="RDS, EBS, EKS, IAM, ALB, ACM, KMS, S3, VPC — probed with the workload-identity your cluster already uses."
+  />
+  <StubBody
+    claim="CHA's AWS probes use IRSA (IAM Roles for Service Accounts) — the same workload-identity auth your EKS cluster already uses for application workloads. No long-lived AWS credentials in CHA. Same IAM, same audit trail. Read-only by design in M1; cloud-mutation envelope is M4 with separate approval gates."
+    backHref="/features/"
+    backLabel="← All features"
+  />
+</BaseLayout>

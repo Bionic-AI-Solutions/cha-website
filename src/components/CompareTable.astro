@@ -1,0 +1,53 @@
+---
+interface Row {
+  dimension: string;
+  cha: string;
+  competitor: string;
+  win?: 'cha' | 'competitor' | 'tie';
+}
+interface Props {
+  competitorName: string;
+  rows: Row[];
+}
+const { competitorName, rows } = Astro.props;
+---
+
+<div class="overflow-hidden rounded-2xl border border-zinc-200/80 bg-white shadow-sm dark:border-zinc-800/80 dark:bg-zinc-900/60">
+  <div class="overflow-x-auto">
+    <table class="w-full text-sm">
+      <thead class="bg-zinc-50 dark:bg-zinc-900">
+        <tr class="border-b border-zinc-200/80 dark:border-zinc-800/80">
+          <th class="w-1/4 px-4 py-3 text-left font-semibold text-zinc-900 dark:text-zinc-50">
+            Dimension
+          </th>
+          <th class="px-4 py-3 text-left font-semibold text-accent-700 dark:text-accent-300">
+            CHA
+          </th>
+          <th class="px-4 py-3 text-left font-semibold text-zinc-900 dark:text-zinc-50">
+            {competitorName}
+          </th>
+        </tr>
+      </thead>
+      <tbody>
+        {rows.map((r, i) => (
+          <tr
+            class:list={[
+              'border-b border-zinc-200/60 last:border-0 dark:border-zinc-800/60',
+              i % 2 === 0 ? '' : 'bg-zinc-50/40 dark:bg-zinc-900/30',
+            ]}
+          >
+            <td class="px-4 py-3 align-top font-medium text-zinc-900 dark:text-zinc-100">
+              {r.dimension}
+            </td>
+            <td class="px-4 py-3 align-top text-zinc-700 dark:text-zinc-300">
+              {r.cha}
+            </td>
+            <td class="px-4 py-3 align-top text-zinc-600 dark:text-zinc-400">
+              {r.competitor}
+            </td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  </div>
+</div>

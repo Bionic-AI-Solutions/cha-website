@@ -1,0 +1,46 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+---
+
+<BaseLayout
+  title="CHA &mdash; 404 / DriftReport: page not found"
+  description="The page you're looking for isn't in this cluster. CHA detected the drift; we don't have a fixer for missing URLs yet."
+>
+  <section class="relative overflow-hidden">
+    <div class="absolute inset-0 bg-grid opacity-50 [mask-image:radial-gradient(ellipse_at_center,black_30%,transparent_75%)]"></div>
+    <div class="relative mx-auto flex min-h-[70vh] max-w-3xl flex-col items-center justify-center px-6 py-20 text-center">
+      <p class="font-mono text-xs font-semibold uppercase tracking-widest text-accent-600 dark:text-accent-400">
+        DriftReport / status: open
+      </p>
+      <h1 class="mt-4 text-7xl font-semibold tracking-tight text-zinc-900 sm:text-8xl dark:text-zinc-50">
+        404
+      </h1>
+      <p class="mt-6 max-w-xl text-lg text-zinc-600 dark:text-zinc-400">
+        We detected the drift, but we don't have a fixer for missing URLs yet.
+        The page you're looking for isn't in this cluster.
+      </p>
+
+      <pre class="mt-8 inline-block rounded-lg border border-zinc-200/80 bg-zinc-950 px-5 py-3 text-left font-mono text-xs leading-relaxed text-zinc-100 dark:border-zinc-800/80"><code>$ kubectl get page <span class="text-amber-400">$REQUESTED_URL</span>
+Error from server (NotFound): page <span class="text-amber-400">$REQUESTED_URL</span> not found
+
+# CHA would have opened a DriftReport, but
+# there is no DriftReport CRD for marketing URLs.
+# Yet.</code></pre>
+
+      <div class="mt-9 flex flex-col items-center justify-center gap-3 sm:flex-row">
+        <a
+          href="/"
+          class="inline-flex items-center justify-center rounded-md bg-zinc-900 px-5 py-2.5 text-sm font-medium text-white shadow-sm transition hover:bg-zinc-800 dark:bg-white dark:text-zinc-900 dark:hover:bg-zinc-100"
+        >
+          Back to home
+        </a>
+        <a
+          href="/features/"
+          class="inline-flex items-center justify-center rounded-md border border-zinc-300 bg-white px-5 py-2.5 text-sm font-medium text-zinc-900 shadow-sm transition hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100 dark:hover:bg-zinc-800"
+        >
+          Browse features
+        </a>
+      </div>
+    </div>
+  </section>
+</BaseLayout>

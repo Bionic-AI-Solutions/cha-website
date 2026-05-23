@@ -1,0 +1,19 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import PageHero from '../../components/PageHero.astro';
+import StubBody from '../../components/StubBody.astro';
+---
+
+<BaseLayout
+  title="CHA &mdash; Engineering blog"
+  description="Engineering posts from named authors on probe design, the safety envelope, and live-soak findings."
+>
+  <PageHero
+    eyebrow="Blog"
+    title="Engineering blog"
+    subtitle="Posts from named authors on probe design, the safety envelope, live-soak transcripts, and the cloud-probe framework."
+  />
+  <StubBody
+    claim="First posts are in the queue: 'Why detect → fix → re-verify is the right loop', 'Designing the cloud-probe framework for IRSA / WI / AAD-WI parity', and 'A live-soak transcript: synthetic ImagePullAuth drift, end-to-end'. Subscribe via RSS once the blog ships."
+  />
+</BaseLayout>

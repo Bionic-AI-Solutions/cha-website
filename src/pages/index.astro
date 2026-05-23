@@ -1,0 +1,345 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+
+const flowSteps = [
+  {
+    n: '01',
+    title: 'Install',
+    claim:
+      'helm install cha cha/cluster-health-autopilot — works on any conformant K8s 1.27+, including EKS, GKE, AKS, and k3s edge.',
+    code: `$ helm repo add cha https://bionic-ai-solutions.github.io/cluster-health-autopilot
+$ helm install cha cha/cluster-health-autopilot
+$ kubectl get driftreports -A
+NAMESPACE    NAME                                  AGE
+kube-system  driftreport-stuck-certreq-xz4q9       12s`,
+  },
+  {
+    n: '02',
+    title: 'Detect',
+    claim:
+      '6 K8s probes + 30+ cloud probes across AWS, GCP, and Azure, plus 8 analyzers for the K8s-cloud boundary (secrets, certs, IRSA drift).',
+    code: `Probes  K8s 6   AWS 10  GCP 10  Azure 10
+       events  RDS     CloudSQL  SQL
+       pods    EBS     GCS       Storage
+       nodes   IAM     IAM       Identity
+       PVCs    ALB     LB        AppGateway
+       certs   ACM     KMS       KeyVault
+       ESO     KMS     GKE       AKS  + more`,
+  },
+  {
+    n: '03',
+    title: 'Remediate',
+    claim:
+      '5 whitelisted fixers run by default. AI-tier fix proposals require human approval via signed click-to-fix URLs.',
+    code: `DriftReport  StaleErrorPod    — fixer ran    OK
+DriftReport  StuckJob         — fixer ran    OK
+DriftReport  StuckRS          — fixer ran    OK
+DriftReport  StuckCertReq     — fixer ran    OK
+DriftReport  TLSSecretMismatch — fixer ran   OK
+Re-verify in 60s ...`,
+  },
+  {
+    n: '04',
+    title: 'Report',
+    claim:
+      'Findings flow to Slack, Alertmanager, OpenProject (OSS), and Jira / ServiceNow (paid). DriftReport CRDs let you kubectl get your cluster’s drift state.',
+    code: `kubectl get driftreports -A -o wide
+NAMESPACE   NAME                    KIND              STATUS
+default     drift-tls-secret-1      TLSSecretMismatch resolved
+ai          drift-stuck-job-7       StuckJob          resolved
+mcp         drift-stuck-certreq-3   StuckCertReq      open    → ticketed`,
+  },
+  {
+    n: '05',
+    title: 'Verify',
+    claim:
+      'Re-diagnose after every fix. No "the fix maybe worked" — CHA actively re-checks and closes the loop.',
+    code: `diagnose → fix → re-diagnose → resolve
+                            ↑        |
+                            +--------+
+   Closed-loop is the DEFAULT, not a roadmap milestone.`,
+  },
+];
+
+const integrations = [
+  { row: 'Cloud', items: ['AWS', 'GCP', 'Azure'] },
+  {
+    row: 'K8s distros',
+    items: ['Kubernetes', 'EKS', 'GKE', 'AKS', 'k3s', 'OpenShift', 'RKE2'],
+  },
+  {
+    row: 'Observability & Ticketing',
+    items: [
+      'Prometheus',
+      'Alertmanager',
+      'Grafana',
+      'OpenProject',
+      'Jira',
+      'ServiceNow',
+      'Slack',
+    ],
+  },
+  {
+    row: 'K8s-native infra',
+    items: ['Vault', 'cert-manager', 'CNPG', 'Rook/Ceph', 'External Secrets'],
+  },
+  { row: 'AI providers', items: ['OpenAI', 'Anthropic'] },
+];
+
+const wedges = [
+  {
+    title: 'In-cluster, on every cloud',
+    body:
+      'The only K8s + cloud health autopilot you can run entirely inside your own cluster — air-gapped, sovereign, k3s edge — that ALSO probes the underlying AWS, GCP, and Azure resources with the workload-identity auth your cluster already uses.',
+  },
+  {
+    title: 'Autonomous remediation, with a safety envelope',
+    body:
+      'CHA is the only product in this category that ships detect → fix → re-verify as the default loop. Everyone else is a copilot for the on-call rotation you already have. We are the autopilot for the on-call rotation you want to retire.',
+  },
+  {
+    title: 'Open-core with predictable pricing',
+    body:
+      'Bottom-up adoption via Helm install. CHA-com paid tier adds LLM-augmented investigation, ticketing, multi-cluster federation, and approval-server — at flat per-cluster pricing. No per-investigation surprises.',
+  },
+];
+
+const competitorRows = [
+  {
+    name: 'NeuBird',
+    runs: 'SaaS, pulls telemetry',
+    closedLoop: 'No — "architecturally enforced read-only"',
+    pricing: '$15–25 per investigation',
+  },
+  {
+    name: 'Resolve AI',
+    runs: 'SaaS + thin Satellite',
+    closedLoop: 'Roadmap (their words: "next milestone")',
+    pricing: 'Contact sales',
+  },
+  {
+    name: 'Ciroos',
+    runs: 'SaaS, zero-copy queries',
+    closedLoop: 'Opaque "autonomy slider"',
+    pricing: 'Contact sales',
+  },
+  {
+    name: 'OpenSRE (Tracer)',
+    runs: 'Customer-hosted (docker-compose)',
+    closedLoop: 'No — code-blocks mutations',
+    pricing: 'OSS only',
+  },
+];
+---
+
+<BaseLayout
+  title="CHA &mdash; Detect. Remediate. Verify."
+  description="The autonomous health autopilot for Kubernetes and the clouds underneath it. Detects, fixes, and re-verifies drift across K8s, AWS, GCP, Azure, and the edge."
+>
+  <!-- Hero -->
+  <section class="relative overflow-hidden">
+    <div class="absolute inset-0 bg-grid opacity-50 [mask-image:radial-gradient(ellipse_at_center,black_30%,transparent_75%)]"></div>
+    <div class="relative mx-auto max-w-7xl px-6 pt-24 pb-20 sm:pt-32 sm:pb-28">
+      <div class="mx-auto max-w-3xl text-center">
+        <div class="mb-6 inline-flex items-center gap-2 rounded-full border border-zinc-200/80 bg-white/70 px-3 py-1 text-xs font-medium text-zinc-600 backdrop-blur dark:border-zinc-800/80 dark:bg-zinc-900/70 dark:text-zinc-400">
+          <span class="inline-block h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-500"></span>
+          Open-core. Apache-2.0. Self-hosted.
+        </div>
+        <h1 class="text-5xl font-semibold tracking-tight text-zinc-900 sm:text-6xl md:text-7xl dark:text-zinc-50">
+          <span>Detect.</span>
+          <span class="text-accent-600 dark:text-accent-400">Remediate.</span>
+          <span>Verify.</span>
+        </h1>
+        <p class="mt-6 text-lg leading-relaxed text-zinc-600 sm:text-xl dark:text-zinc-400">
+          The autonomous health autopilot for Kubernetes and the clouds underneath it.
+          Across Kubernetes, AWS, GCP, Azure, and the edge.
+        </p>
+        <div class="mt-9 flex flex-col items-center justify-center gap-3 sm:flex-row">
+          <a
+            href="/playground/"
+            class="inline-flex items-center justify-center rounded-md bg-zinc-900 px-5 py-2.5 text-sm font-medium text-white shadow-sm transition hover:bg-zinc-800 dark:bg-white dark:text-zinc-900 dark:hover:bg-zinc-100"
+          >
+            Try it now
+            <svg class="ml-1.5" width="14" height="14" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
+              <path d="M6.22 3.22a.75.75 0 011.06 0l4.25 4.25a.75.75 0 010 1.06l-4.25 4.25a.75.75 0 11-1.06-1.06L9.94 8 6.22 4.28a.75.75 0 010-1.06z" />
+            </svg>
+          </a>
+          <a
+            href="/pricing/"
+            class="inline-flex items-center justify-center rounded-md border border-zinc-300 bg-white px-5 py-2.5 text-sm font-medium text-zinc-900 shadow-sm transition hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100 dark:hover:bg-zinc-800"
+          >
+            View pricing
+          </a>
+        </div>
+        <p class="mt-6 font-mono text-xs text-zinc-500 dark:text-zinc-500">
+          $ helm install cha cha/cluster-health-autopilot
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Integration logo strip -->
+  <section class="border-y border-zinc-200/70 bg-zinc-50/50 dark:border-zinc-800/70 dark:bg-zinc-950/60">
+    <div class="mx-auto max-w-7xl px-6 py-10">
+      <p class="text-center text-xs font-medium uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
+        One operator. Every cloud. Every stack you already run.
+      </p>
+      <div class="mt-7 space-y-3">
+        {integrations.map((group) => (
+          <div class="flex flex-wrap items-center justify-center gap-x-3 gap-y-2 text-sm text-zinc-700 dark:text-zinc-300">
+            <span class="text-[10px] font-semibold uppercase tracking-widest text-zinc-400 dark:text-zinc-500">
+              {group.row}
+            </span>
+            {group.items.map((item, i) => (
+              <>
+                <span class="inline-flex items-center rounded-md border border-zinc-200/80 bg-white px-2.5 py-1 font-medium dark:border-zinc-800/80 dark:bg-zinc-900">
+                  {item}
+                </span>
+              </>
+            ))}
+          </div>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <!-- 5-section flow -->
+  <section class="mx-auto max-w-7xl px-6 py-24">
+    <div class="mx-auto mb-16 max-w-2xl text-center">
+      <h2 class="text-3xl font-semibold tracking-tight text-zinc-900 sm:text-4xl dark:text-zinc-50">
+        The autopilot loop, by default.
+      </h2>
+      <p class="mt-4 text-lg text-zinc-600 dark:text-zinc-400">
+        Five steps. Re-run on every cycle. Closed-loop is the default mode, not a
+        roadmap milestone.
+      </p>
+    </div>
+
+    <div class="space-y-6">
+      {flowSteps.map((step, i) => (
+        <div class="grid items-center gap-6 rounded-2xl border border-zinc-200/80 bg-white p-6 shadow-sm md:grid-cols-12 md:p-8 dark:border-zinc-800/80 dark:bg-zinc-900/60">
+          <div class="md:col-span-5">
+            <div class="flex items-baseline gap-3">
+              <span class="font-mono text-sm font-semibold text-accent-600 dark:text-accent-400">
+                {step.n}
+              </span>
+              <h3 class="text-2xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">
+                {step.title}
+              </h3>
+            </div>
+            <p class="mt-3 text-zinc-600 dark:text-zinc-400">{step.claim}</p>
+          </div>
+          <div class="md:col-span-7">
+            <pre class="overflow-x-auto rounded-lg border border-zinc-200/80 bg-zinc-950 p-4 text-xs leading-relaxed text-zinc-100 dark:border-zinc-800/80"><code>{step.code}</code></pre>
+          </div>
+        </div>
+      ))}
+    </div>
+  </section>
+
+  <!-- Wedges -->
+  <section class="border-t border-zinc-200/70 bg-zinc-50/50 dark:border-zinc-800/70 dark:bg-zinc-950/60">
+    <div class="mx-auto max-w-7xl px-6 py-24">
+      <div class="mx-auto mb-14 max-w-2xl text-center">
+        <h2 class="text-3xl font-semibold tracking-tight text-zinc-900 sm:text-4xl dark:text-zinc-50">
+          Why CHA, structurally.
+        </h2>
+        <p class="mt-4 text-lg text-zinc-600 dark:text-zinc-400">
+          Three architectural commitments that competitors cannot copy without
+          rewriting their product.
+        </p>
+      </div>
+      <div class="grid gap-6 md:grid-cols-3">
+        {wedges.map((w, i) => (
+          <div class="rounded-2xl border border-zinc-200/80 bg-white p-6 shadow-sm dark:border-zinc-800/80 dark:bg-zinc-900/60">
+            <div class="grid h-9 w-9 place-items-center rounded-md bg-accent-600/10 font-mono text-sm font-semibold text-accent-600 dark:text-accent-400">
+              0{i + 1}
+            </div>
+            <h3 class="mt-4 text-lg font-semibold text-zinc-900 dark:text-zinc-50">
+              {w.title}
+            </h3>
+            <p class="mt-2 text-sm leading-relaxed text-zinc-600 dark:text-zinc-400">
+              {w.body}
+            </p>
+          </div>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <!-- vs the competition -->
+  <section class="mx-auto max-w-7xl px-6 py-24">
+    <div class="mx-auto mb-12 max-w-3xl text-center">
+      <h2 class="text-3xl font-semibold tracking-tight text-zinc-900 sm:text-4xl dark:text-zinc-50">
+        vs. the competition.
+      </h2>
+      <p class="mt-4 text-lg text-zinc-600 dark:text-zinc-400">
+        Detect-fix-verify is the default loop. Every other player is a copilot for
+        the on-call rotation you already have.
+      </p>
+    </div>
+
+    <div class="overflow-hidden rounded-2xl border border-zinc-200/80 bg-white shadow-sm dark:border-zinc-800/80 dark:bg-zinc-900/60">
+      <div class="overflow-x-auto">
+        <table class="w-full text-sm">
+          <thead class="bg-zinc-50 text-left dark:bg-zinc-900">
+            <tr class="border-b border-zinc-200/80 dark:border-zinc-800/80">
+              <th class="px-4 py-3 font-semibold text-zinc-900 dark:text-zinc-50">Product</th>
+              <th class="px-4 py-3 font-semibold text-zinc-900 dark:text-zinc-50">Where it runs</th>
+              <th class="px-4 py-3 font-semibold text-zinc-900 dark:text-zinc-50">Closed-loop?</th>
+              <th class="px-4 py-3 font-semibold text-zinc-900 dark:text-zinc-50">Pricing</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr class="border-b border-zinc-200/60 bg-accent-50/40 dark:border-zinc-800/60 dark:bg-accent-950/30">
+              <td class="px-4 py-3 font-semibold text-accent-700 dark:text-accent-300">CHA (us)</td>
+              <td class="px-4 py-3 text-zinc-700 dark:text-zinc-300">In-cluster operator</td>
+              <td class="px-4 py-3 text-zinc-700 dark:text-zinc-300"><strong>Yes, by default</strong></td>
+              <td class="px-4 py-3 text-zinc-700 dark:text-zinc-300">Flat per-cluster (OSS / Team / Enterprise)</td>
+            </tr>
+            {competitorRows.map((r) => (
+              <tr class="border-b border-zinc-200/60 last:border-0 dark:border-zinc-800/60">
+                <td class="px-4 py-3 font-medium text-zinc-900 dark:text-zinc-100">{r.name}</td>
+                <td class="px-4 py-3 text-zinc-600 dark:text-zinc-400">{r.runs}</td>
+                <td class="px-4 py-3 text-zinc-600 dark:text-zinc-400">{r.closedLoop}</td>
+                <td class="px-4 py-3 text-zinc-600 dark:text-zinc-400">{r.pricing}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <p class="mt-6 text-center text-sm text-zinc-500 dark:text-zinc-400">
+      <a href="/compare/" class="font-medium text-accent-600 hover:text-accent-700 dark:text-accent-400 dark:hover:text-accent-300">
+        See detailed comparisons &rarr;
+      </a>
+    </p>
+  </section>
+
+  <!-- CTA -->
+  <section class="border-t border-zinc-200/70 dark:border-zinc-800/70">
+    <div class="mx-auto max-w-4xl px-6 py-24 text-center">
+      <h2 class="text-3xl font-semibold tracking-tight text-zinc-900 sm:text-4xl dark:text-zinc-50">
+        On-call should be quieter every week.
+      </h2>
+      <p class="mt-4 text-lg text-zinc-600 dark:text-zinc-400">
+        CHA is how you get there. Helm install in 5 minutes. No telemetry exfiltration. No per-investigation surprises.
+      </p>
+      <div class="mt-9 flex flex-col items-center justify-center gap-3 sm:flex-row">
+        <a
+          href="/playground/"
+          class="inline-flex items-center justify-center rounded-md bg-zinc-900 px-5 py-2.5 text-sm font-medium text-white shadow-sm transition hover:bg-zinc-800 dark:bg-white dark:text-zinc-900 dark:hover:bg-zinc-100"
+        >
+          Try the live playground
+        </a>
+        <a
+          href="https://github.com/Bionic-AI-Solutions/cluster-health-autopilot"
+          class="inline-flex items-center justify-center rounded-md border border-zinc-300 bg-white px-5 py-2.5 text-sm font-medium text-zinc-900 shadow-sm transition hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100 dark:hover:bg-zinc-800"
+        >
+          Read the code
+        </a>
+      </div>
+    </div>
+  </section>
+</BaseLayout>

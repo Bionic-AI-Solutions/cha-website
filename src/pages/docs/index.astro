@@ -1,0 +1,19 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import PageHero from '../../components/PageHero.astro';
+import StubBody from '../../components/StubBody.astro';
+---
+
+<BaseLayout
+  title="CHA &mdash; Docs"
+  description="Documentation for installation, configuration, probes, fixers, AI tiers, and the safety envelope."
+>
+  <PageHero
+    eyebrow="Docs"
+    title="Documentation"
+    subtitle="The full docs site is in progress. Until it lands, the README in the repository is the source of truth."
+  />
+  <StubBody
+    claim="The dedicated docs site is being built. For now, see the project README and the docs/ folder in the cluster-health-autopilot GitHub repo for installation, Helm values, probe reference, and the safety envelope writeup."
+  />
+</BaseLayout>

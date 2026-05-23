@@ -1,0 +1,21 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import PageHero from '../../components/PageHero.astro';
+import StubBody from '../../components/StubBody.astro';
+---
+
+<BaseLayout
+  title="CHA &mdash; K8s probes"
+  description="6 native K8s probes + 8 analyzers across 14 GVRs. The K8s-native infra depth (Vault / ESO / CNPG / Ceph / cert-manager) no SaaS tool matches."
+>
+  <PageHero
+    eyebrow="Features &middot; K8s probes"
+    title="Native K8s probes, with infra-grade depth."
+    subtitle="Six probes today and growing — covering pods, nodes, PVCs, ESO, CNPG, Ceph, and cert-manager. Plus eight analyzers for the K8s-cloud boundary."
+  />
+  <StubBody
+    claim="6 K8s probes + 30+ cloud probes covering AWS / GCP / Azure resources, plus 8 analyzers for the K8s-cloud boundary (secrets, certs, IRSA drift). Vault / ESO / CNPG / Ceph / cert-manager depth that no SaaS tool matches because they're not in the cluster."
+    backHref="/features/"
+    backLabel="← All features"
+  />
+</BaseLayout>

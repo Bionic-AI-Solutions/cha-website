@@ -1,0 +1,116 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import PageHero from '../../components/PageHero.astro';
+
+const features = [
+  {
+    href: '/features/k8s-probes/',
+    title: 'K8s probes',
+    summary:
+      '6 native probes + 8 analyzers across 14 GVRs. Vault/ESO/CNPG/Ceph/cert-manager depth no SaaS tool matches.',
+    status: 'shipped',
+  },
+  {
+    href: '/features/aws/',
+    title: 'AWS probes',
+    summary:
+      '10 probes covering RDS, EBS, EKS, IAM, ALB, ACM, KMS, S3, VPC. IRSA-first auth — no long-lived keys.',
+    status: 'shipped',
+  },
+  {
+    href: '/features/gcp/',
+    title: 'GCP probes',
+    summary:
+      '10 probes covering Cloud SQL, GKE, IAM, LB, GCS, KMS. Workload Identity auth via the cluster identity.',
+    status: 'shipped',
+  },
+  {
+    href: '/features/azure/',
+    title: 'Azure probes',
+    summary:
+      '10 probes covering Azure SQL, AKS, Identity, App Gateway, Key Vault. AAD Workload Identity native.',
+    status: 'shipped',
+  },
+  {
+    href: '/features/k3s-edge/',
+    title: 'k3s + edge',
+    summary:
+      'Reduced-footprint values bundle for single-node edge appliances. The same product, on a 2-CPU SBC.',
+    status: 'shipped',
+  },
+  {
+    href: '/features/ai-tiers/',
+    title: 'AI tiers (T0 → T3)',
+    summary:
+      'LLM-augmented enrichment, fix proposal, multi-step planning, and Vault runbook proposer — all approval-gated.',
+    status: 'shipped (paid)',
+  },
+  {
+    href: '/features/ticketing/',
+    title: 'Ticketing integrations',
+    summary:
+      'OpenProject in OSS. Jira and ServiceNow in the paid Enterprise tier. DriftReport-to-ticket idempotency built-in.',
+    status: 'partial',
+  },
+  {
+    href: '/features/safety-envelope/',
+    title: 'Safety envelope',
+    summary:
+      'Whitelisted fixers, signed-JWT click-to-fix URLs, dry-run mode, protected-namespace allowlist. Auditable in code.',
+    status: 'coming soon',
+  },
+];
+
+const statusStyles: Record<string, string> = {
+  shipped:
+    'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-900/40',
+  'shipped (paid)':
+    'bg-accent-50 text-accent-700 border-accent-200 dark:bg-accent-950/40 dark:text-accent-300 dark:border-accent-900/40',
+  partial:
+    'bg-amber-50 text-amber-800 border-amber-200 dark:bg-amber-950/40 dark:text-amber-300 dark:border-amber-900/40',
+  'coming soon':
+    'bg-zinc-100 text-zinc-700 border-zinc-200 dark:bg-zinc-900 dark:text-zinc-300 dark:border-zinc-800',
+};
+---
+
+<BaseLayout
+  title="CHA &mdash; Features"
+  description="Eight feature deep-dives covering K8s probes, AWS/GCP/Azure cloud probes, k3s edge, AI tiers, ticketing, and the safety envelope."
+>
+  <PageHero
+    eyebrow="Features"
+    title="One operator. Every cloud. Every stack you already run."
+    subtitle="Eight capability areas — six K8s probes, thirty cloud probes, five whitelisted fixers, four AI tiers, and the safety envelope holding it all together."
+  />
+
+  <section class="mx-auto max-w-7xl px-6 py-20">
+    <div class="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
+      {features.map((f) => (
+        <a
+          href={f.href}
+          class="group rounded-2xl border border-zinc-200/80 bg-white p-6 shadow-sm transition hover:border-zinc-300 hover:shadow-md dark:border-zinc-800/80 dark:bg-zinc-900/60 dark:hover:border-zinc-700"
+        >
+          <div class="flex items-center justify-between">
+            <h3 class="text-lg font-semibold text-zinc-900 dark:text-zinc-50">
+              {f.title}
+            </h3>
+            <span
+              class:list={[
+                'inline-flex items-center rounded-full border px-2 py-0.5 text-[10px] font-medium uppercase tracking-wider',
+                statusStyles[f.status],
+              ]}
+            >
+              {f.status}
+            </span>
+          </div>
+          <p class="mt-3 text-sm leading-relaxed text-zinc-600 dark:text-zinc-400">
+            {f.summary}
+          </p>
+          <p class="mt-4 text-sm font-medium text-accent-600 group-hover:text-accent-700 dark:text-accent-400 dark:group-hover:text-accent-300">
+            Read more &rarr;
+          </p>
+        </a>
+      ))}
+    </div>
+  </section>
+</BaseLayout>

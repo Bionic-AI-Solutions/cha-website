@@ -1,0 +1,66 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import PageHero from '../../components/PageHero.astro';
+import CompareTable from '../../components/CompareTable.astro';
+
+const rows = [
+  {
+    dimension: 'Where it runs',
+    cha: 'In your cluster — operator + CronJob + Deployment',
+    competitor: 'NeuBird SaaS (Hawkeye) pulls telemetry over allowlisted egress',
+  },
+  {
+    dimension: 'Closed-loop remediation',
+    cha: 'Yes — default behavior; 5 whitelisted fixers run automatically',
+    competitor: 'No — "architecturally enforced read-only" per their security doc',
+  },
+  {
+    dimension: 'Pricing model',
+    cha: 'Flat per-cluster (OSS / Team / Enterprise)',
+    competitor: '$15–25 per investigation (~$75K/yr at 10k investigations)',
+  },
+  {
+    dimension: 'Air-gap / sovereign',
+    cha: 'Yes — no external dep in OSS tier',
+    competitor: 'No — in-VPC private mode is AWS-Bedrock-only',
+  },
+  {
+    dimension: 'Open source',
+    cha: 'Apache-2.0 — full OSS feature set',
+    competitor: 'Proprietary',
+  },
+];
+---
+
+<BaseLayout
+  title="CHA vs. NeuBird"
+  description="CHA is an in-cluster operator with closed-loop remediation by default at flat per-cluster pricing. NeuBird is a SaaS investigator with approval-gated remediation bolted on at $15-25/investigation."
+>
+  <PageHero
+    eyebrow="Compare &middot; NeuBird"
+    title="CHA vs. NeuBird"
+    subtitle="NeuBird is a SaaS investigator with approval-gated remediation bolted on. We're an in-cluster operator with closed-loop remediation by default — and flat per-cluster pricing instead of per-investigation."
+  />
+
+  <section class="mx-auto max-w-5xl px-6 py-20">
+    <CompareTable competitorName="NeuBird" rows={rows} />
+
+    <div class="mt-12 rounded-2xl border border-zinc-200/80 bg-zinc-50/60 p-8 dark:border-zinc-800/80 dark:bg-zinc-950/40">
+      <h2 class="text-xl font-semibold text-zinc-900 dark:text-zinc-50">
+        The structural difference.
+      </h2>
+      <p class="mt-3 text-zinc-600 dark:text-zinc-400">
+        NeuBird's own security documentation calls their remediation
+        <em>"architecturally enforced read-only."</em> That's a deliberate safety
+        posture, and it's a good one for an investigation copilot. But it means they
+        cannot follow CHA into autonomous remediation without breaking that promise.
+      </p>
+      <p class="mt-3 text-zinc-600 dark:text-zinc-400">
+        CHA's safety envelope is different: whitelisted fixers with named scope,
+        protected-namespace allowlist, dry-run mode, opt-in flags per fixer, and
+        signed-JWT click-to-fix URLs for the AI-tier proposals. The brake is in code
+        you can read before you install.
+      </p>
+    </div>
+  </section>
+</BaseLayout>

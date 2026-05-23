@@ -1,0 +1,19 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import PageHero from '../components/PageHero.astro';
+import StubBody from '../components/StubBody.astro';
+---
+
+<BaseLayout
+  title="CHA &mdash; Roadmap"
+  description="Where CHA is going: observability ingestion, multi-cluster federation, cloud-mutation envelope, and benchmark publication."
+>
+  <PageHero
+    eyebrow="Roadmap"
+    title="What's next."
+    subtitle="The closest milestones: observability ingestion (Prometheus / Datadog), multi-cluster federation, cloud-mutation envelope (M4), and a public closed-loop MTTR benchmark."
+  />
+  <StubBody
+    claim="Next-quarter focus: observability ingestion (Prometheus first, then Datadog) so CHA can react to your existing alert stream; multi-cluster federation via the M7 operator pattern + ArgoCD ApplicationSet; cloud-resource mutation (M4) with a separate signed-approval envelope; and a public 'incidents resolved without paging a human' benchmark on an axis competitors can't follow."
+  />
+</BaseLayout>

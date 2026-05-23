@@ -1,0 +1,21 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import PageHero from '../../components/PageHero.astro';
+import StubBody from '../../components/StubBody.astro';
+---
+
+<BaseLayout
+  title="CHA &mdash; Ticketing integrations"
+  description="OpenProject in OSS. Jira and ServiceNow in the paid Enterprise tier. DriftReport-to-ticket idempotency built-in."
+>
+  <PageHero
+    eyebrow="Features &middot; Ticketing"
+    title="OpenProject in OSS. Jira and ServiceNow in Enterprise."
+    subtitle="Every DriftReport can flow to a ticket idempotently — the same drift on the same target produces the same ticket, no matter how many cycles pass."
+  />
+  <StubBody
+    claim="Findings flow to Slack, Alertmanager, and OpenProject (OSS), plus Jira and ServiceNow in the paid Enterprise tier. DriftReport CRDs are the audit object — kubectl get driftreports -A shows the live drift state of your cluster, and tickets are opened idempotently against unresolved drift."
+    backHref="/features/"
+    backLabel="← All features"
+  />
+</BaseLayout>

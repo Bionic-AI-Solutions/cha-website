@@ -1,0 +1,21 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import PageHero from '../../components/PageHero.astro';
+import StubBody from '../../components/StubBody.astro';
+---
+
+<BaseLayout
+  title="CHA &mdash; AI tiers (T0 → T3)"
+  description="LLM-augmented enrichment, fix proposal, multi-step planning, and Vault runbook proposer — all approval-gated via signed JWT URLs."
+>
+  <PageHero
+    eyebrow="Features &middot; AI tiers"
+    title="Four LLM tiers, each approval-gated."
+    subtitle="T0 enricher → T1 fix proposer → T2 multi-step planner → T3 Vault runbook proposer. Every mutation in the paid AI tiers waits on a signed-JWT click-to-fix URL."
+  />
+  <StubBody
+    claim="The CHA-com paid tier adds four LLM-augmented capabilities, each progressively deeper: T0 enriches every DriftReport with LLM context; T1 proposes fixes for non-whitelisted drift; T2 plans multi-step remediations; T3 proposes new runbooks against your Vault. All four require human approval via signed-JWT URLs delivered to Slack or ticket. Without the click, nothing mutates."
+    backHref="/features/"
+    backLabel="← All features"
+  />
+</BaseLayout>
