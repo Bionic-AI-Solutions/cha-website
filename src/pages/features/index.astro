@@ -7,7 +7,7 @@ const features = [
     href: '/features/k8s-probes/',
     title: 'K8s probes',
     summary:
-      '6 native probes + 8 analyzers across 14 GVRs. Vault/ESO/CNPG/Ceph/cert-manager depth no SaaS tool matches.',
+      '12 native probes + 8 analyzers across 14 GVRs. Includes v1.6 additions: NodePressure, system DaemonSets, PendingPods, CrashLoopBackOff, ETCD, FailedMounts. Vault/ESO/CNPG/Ceph/cert-manager depth no SaaS tool matches.',
     status: 'shipped',
   },
   {
@@ -75,12 +75,12 @@ const statusStyles: Record<string, string> = {
 
 <BaseLayout
   title="CHA &mdash; Features"
-  description="Eight feature deep-dives covering K8s probes, AWS/GCP/Azure cloud probes, k3s edge, AI tiers, ticketing, and the safety envelope."
+  description="Capability deep-dives — 12 K8s probes, 10 AWS probes (GCP/Azure on roadmap), 4 default + 1 opt-in fixer with GitOps safety gates, 4 AI tiers, and the safety envelope holding it all together."
 >
   <PageHero
     eyebrow="Features"
     title="One operator. Every cloud. Every stack you already run."
-    subtitle="Eight capability areas — six K8s probes, thirty cloud probes, five whitelisted fixers, four AI tiers, and the safety envelope holding it all together."
+    subtitle="Twelve K8s probes (Sprint 2: NodePressure, DaemonSets, PendingPods, CrashLoopBackOff, ETCD, FailedMounts), ten AWS probes, four default fixers + one opt-in (all GitOps-aware), four AI tiers, and the safety envelope holding it all together."
   />
 
   <section class="mx-auto max-w-7xl px-6 py-20">

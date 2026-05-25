@@ -17,14 +17,20 @@ kube-system  driftreport-stuck-certreq-xz4q9       12s`,
     n: '02',
     title: 'Detect',
     claim:
-      '6 K8s probes + 30+ cloud probes across AWS, GCP, and Azure, plus 8 analyzers for the K8s-cloud boundary (secrets, certs, IRSA drift).',
-    code: `Probes  K8s 6   AWS 10  GCP 10  Azure 10
-       events  RDS     CloudSQL  SQL
-       pods    EBS     GCS       Storage
-       nodes   IAM     IAM       Identity
-       PVCs    ALB     LB        AppGateway
-       certs   ACM     KMS       KeyVault
-       ESO     KMS     GKE       AKS  + more`,
+      '12 K8s probes + 10 AWS probes (GCP/Azure on roadmap), plus 8 analyzers for the K8s-cloud boundary (secrets, certs, IRSA drift).',
+    code: `Probes  K8s 12          AWS 10
+       Ceph              RDS
+       Nodes             EBS
+       Postgres          EKS
+       PVCs              IAM
+       Services          ALB
+       Endpoints         ACM
+       NodePressure      KMS
+       DaemonSets        S3
+       PendingPods       VPC
+       CrashLoopBackOff  KMS
+       ETCD              + GCP / Azure
+       FailedMounts      on roadmap`,
   },
   {
     n: '03',

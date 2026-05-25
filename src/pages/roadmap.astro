@@ -1,19 +1,93 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
 import PageHero from '../components/PageHero.astro';
-import StubBody from '../components/StubBody.astro';
+
+const milestones = [
+  {
+    label: 'v1.6.0',
+    status: 'Shipped — 2026-05-25',
+    state: 'shipped',
+    items: [
+      'Six new probes: NodePressure, system DaemonSets, PendingPods, CrashLoopBackOff, ETCD, FailedMounts',
+      'Fixer safety nets: GitOps detection (Argo / Flux / Helm), spec.paused, CronJob.spec.suspend, cert-manager health gate',
+      'Configurable critical-workloads list via env + annotation',
+      'Lease-based leader election for HA watcher deployments',
+      'AI safety hardening (paid): patch-payload allow-list, investigation rate budget, cold-start mitigation, event-message secret scrubbing, audit hash chain',
+      'CronJob runtime caps: backoffLimit=1, activeDeadlineSeconds=120',
+      'Chart unit tests (helm-unittest) wired into CI',
+    ],
+  },
+  {
+    label: 'v1.7',
+    status: 'Next — Sprint 5 + M2 probes',
+    state: 'next',
+    items: [
+      'Operator port to controller-runtime (kubebuilder) — inherits the v1.6 client-go leader election',
+      'HealthPolicy CRD with status-subresource reconciliation',
+      'Kong route / upstream health probe',
+      'HPA scaling-failure probe',
+      'ArgoCD Application sync-status probe',
+      'Velero backup-completion probe',
+    ],
+  },
+  {
+    label: 'v1.8 — v2.0',
+    status: 'Roadmap',
+    state: 'roadmap',
+    items: [
+      'Observability ingestion — Prometheus alerts as a CHA trigger (trigger-class C)',
+      'External webhook ingestion — Vault rotations, cert-manager Issued, Cloudflare cert renewals (trigger-class E)',
+      'Multi-cluster federation via ArgoCD ApplicationSet over the operator pattern',
+      'Cloud-resource mutation (M4) with a separate signed-approval envelope, distinct from the K8s remediator role',
+      'GCP + Azure cloud probes (currently roadmap; AWS shipped in v1.4)',
+      'Public "incidents resolved without paging a human" benchmark',
+    ],
+  },
+];
 ---
 
 <BaseLayout
   title="CHA &mdash; Roadmap"
-  description="Where CHA is going: observability ingestion, multi-cluster federation, cloud-mutation envelope, and benchmark publication."
+  description="Where CHA is going. v1.6.0 shipped; v1.7 operator port + M2 probes; v1.8+ observability ingestion, multi-cluster federation, cloud-mutation envelope."
 >
   <PageHero
     eyebrow="Roadmap"
-    title="What's next."
-    subtitle="The closest milestones: observability ingestion (Prometheus / Datadog), multi-cluster federation, cloud-mutation envelope (M4), and a public closed-loop MTTR benchmark."
+    title="What's shipped, what's next."
+    subtitle="v1.6.0 closed 22 of 23 items from the 2026-05 adversarial review. v1.7 takes the watcher to a controller-runtime operator and adds the M2 probe slice (Kong, HPA, ArgoCD, Velero). v1.8+ opens trigger-classes B / C / E."
   />
-  <StubBody
-    claim="Next-quarter focus: observability ingestion (Prometheus first, then Datadog) so CHA can react to your existing alert stream; multi-cluster federation via the M7 operator pattern + ArgoCD ApplicationSet; cloud-resource mutation (M4) with a separate signed-approval envelope; and a public 'incidents resolved without paging a human' benchmark on an axis competitors can't follow."
-  />
+
+  <section class="mx-auto max-w-5xl px-6 py-16">
+    <div class="space-y-8">
+      {milestones.map((m) => (
+        <article class="rounded-2xl border border-white/10 bg-white/5 p-7">
+          <header class="mb-4 flex flex-wrap items-baseline justify-between gap-3">
+            <h3 class="text-2xl font-semibold text-white">{m.label}</h3>
+            <span class={`rounded px-2 py-1 text-xs font-mono ${
+              m.state === 'shipped'
+                ? 'bg-emerald-900/40 text-emerald-300'
+                : m.state === 'next'
+                ? 'bg-cyan-900/40 text-cyan-300'
+                : 'bg-slate-800 text-slate-400'
+            }`}>{m.status}</span>
+          </header>
+          <ul class="space-y-2 text-sm leading-relaxed text-slate-300">
+            {m.items.map((i) => (
+              <li class="pl-4 -indent-4 before:content-['—'] before:mr-2 before:text-slate-500">
+                {i}
+              </li>
+            ))}
+          </ul>
+        </article>
+      ))}
+    </div>
+
+    <div class="mt-10 rounded-2xl border border-white/10 bg-white/5 p-6 text-sm text-slate-300">
+      <p>
+        Full design docs and the adversarial-review punch list live in the
+        OSS repo at
+        <a href="https://github.com/Bionic-AI-Solutions/cluster-health-autopilot/tree/main/docs/design"
+           class="text-cyan-400 hover:text-cyan-300">docs/design/</a>.
+      </p>
+    </div>
+  </section>
 </BaseLayout>
