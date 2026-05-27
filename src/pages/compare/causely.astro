@@ -1,0 +1,85 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import PageHero from '../../components/PageHero.astro';
+import CompareTable from '../../components/CompareTable.astro';
+
+const rows = [
+  {
+    dimension: 'Where it runs',
+    cha: 'In your cluster — operator + CronJob + Deployment',
+    competitor: 'Causely SaaS with an in-cluster ingestor agent',
+  },
+  {
+    dimension: 'Closed-loop remediation',
+    cha: 'Yes — 5 policy-bounded fixers + AI-tier proposals on operator approval',
+    competitor: 'Causal RCA + recommendation; remediation is an external system call (PagerDuty, ticket, etc.)',
+  },
+  {
+    dimension: 'Method',
+    cha: 'Probes + analyzers + LLM agent reasoning over closed-enum tools',
+    competitor: 'Causal graph over telemetry; identifies the upstream root cause node',
+  },
+  {
+    dimension: 'LLM provider',
+    cha: 'Bring-your-own — any OpenAI-compatible endpoint',
+    competitor: 'Vendor-managed; causal model is proprietary',
+  },
+  {
+    dimension: 'Pricing model',
+    cha: 'Flat per-cluster (Open Core free / AI SRE Team / Enterprise)',
+    competitor: 'Contact-sales SaaS pricing',
+  },
+  {
+    dimension: 'Air-gap / sovereign',
+    cha: 'Yes — OSS engine and CHA-com both run entirely in-cluster',
+    competitor: 'No — telemetry flows to Causely SaaS for graph inference',
+  },
+  {
+    dimension: 'Open source',
+    cha: 'Apache-2.0 engine; commercial AI SRE tier',
+    competitor: 'Proprietary',
+  },
+];
+---
+
+<BaseLayout
+  title="CHA vs. Causely"
+  description="Causely uses a causal-AI graph to find root causes across observability telemetry but doesn't remediate. CHA probes the cluster, proposes specific fixes inside operator policy, and executes them with one click."
+>
+  <PageHero
+    eyebrow="Compare &middot; Causely"
+    title="CHA vs. Causely"
+    subtitle="Causely is a causal-AI root-cause tool. CHA is an autonomous SRE agent that closes the loop — detect, propose, approve, execute, re-verify. Different value at different layers; if you want both, the integration is a webhook."
+  />
+
+  <section class="mx-auto max-w-5xl px-6 py-20">
+    <CompareTable competitorName="Causely" rows={rows} />
+
+    <div class="mt-12 rounded-2xl border border-zinc-200/80 bg-zinc-50/60 p-8 dark:border-zinc-800/80 dark:bg-zinc-950/40">
+      <h2 class="text-xl font-semibold text-zinc-900 dark:text-zinc-50">
+        The structural difference.
+      </h2>
+      <p class="mt-3 text-zinc-600 dark:text-zinc-400">
+        Causely's strength is causal inference over telemetry &mdash; given a
+        symptom in one service, identify which upstream service or
+        infrastructure component is the actual cause. That's a useful primitive
+        for noisy multi-service incidents, and Causely does it well.
+      </p>
+      <p class="mt-3 text-zinc-600 dark:text-zinc-400">
+        But finding the root cause is one step in a five-step loop &mdash;
+        detect, root-cause, propose, approve, execute, re-verify. Causely sells
+        the second step. The remaining steps still need either an SRE to act
+        manually or another tool wired in. The telemetry is also outbound to
+        their SaaS for the causal graph computation.
+      </p>
+      <p class="mt-3 text-zinc-600 dark:text-zinc-400">
+        CHA covers all five steps in one in-cluster runtime: probes detect the
+        drift, the LLM Investigator agent reasons about it, the T1 fix
+        proposer (or T2 planner) proposes specific action_kinds within
+        operator policy, the operator clicks once, the runtime executes, and
+        the watcher re-verifies. If you want the best of both, point Causely's
+        webhook at the CHA approval-server and you have a complete pipeline.
+      </p>
+    </div>
+  </section>
+</BaseLayout>

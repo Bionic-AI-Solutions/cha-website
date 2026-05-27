@@ -4,6 +4,27 @@ import PageHero from '../../components/PageHero.astro';
 
 const competitors = [
   {
+    href: '/compare/komodor/',
+    name: 'Komodor',
+    one_liner: 'Hosted K8s observability + AI investigation; in-cluster agent + SaaS control plane.',
+    lead:
+      'Polished hosted UI and cross-cluster observability, but the LLM and control plane live in their SaaS — cluster posture and events flow outbound. Operator still copies the suggested kubectl. CHA runs the agent + LLM inside your cluster and actually executes the fix.',
+  },
+  {
+    href: '/compare/robusta/',
+    name: 'Robusta',
+    one_liner: 'Alert enrichment + AI investigation around Prometheus; OSS engine + paid SaaS.',
+    lead:
+      'Robusta is alert-driven (Prometheus fires → playbook investigates → AI summarises into Slack). Remediation is still a human kubectl. CHA probes directly, proposes specific action_kinds inside operator policy, and executes them on one click.',
+  },
+  {
+    href: '/compare/causely/',
+    name: 'Causely',
+    one_liner: 'Causal-AI root-cause across observability telemetry; SaaS-hosted graph inference.',
+    lead:
+      'Causely is excellent at finding which upstream service caused a symptom. But that\'s step 2 of a 5-step loop (detect → root-cause → propose → approve → execute → re-verify). They cover one step; CHA covers all five.',
+  },
+  {
     href: '/compare/neubird/',
     name: 'NeuBird',
     one_liner: 'Well-funded SaaS investigator with approval-gated remediation bolted on.',
@@ -35,8 +56,8 @@ const competitors = [
 ---
 
 <BaseLayout
-  title="CHA &mdash; Compared with NeuBird, Resolve, Ciroos, OpenSRE"
-  description="Detailed comparisons against NeuBird, Resolve AI, Ciroos, and OpenSRE (Tracer + swapnil)."
+  title="CHA &mdash; Compared with Komodor, Robusta, Causely, NeuBird, Resolve, Ciroos, OpenSRE"
+  description="Side-by-side against Komodor, Robusta, Causely, NeuBird, Resolve AI, Ciroos, and OpenSRE. Every claim traces to a competitor's published material or our shipped code."
 >
   <PageHero
     eyebrow="Compare"

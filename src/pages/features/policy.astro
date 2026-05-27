@@ -1,0 +1,123 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import PageHero from '../../components/PageHero.astro';
+
+const layers = [
+  {
+    name: 'Action-kind allowlist',
+    summary:
+      "The agent can only propose action_kinds you've authorised in your Helm values. Today the open list is DeletePod, PatchDeploymentAnnotation, DeleteJob, DeleteCertificateRequest, PatchIngressTLS. Anything outside the list is rejected by the validator before the proposal even reaches an operator.",
+    where: "pkg/ai/types.go — ActionKind closed enum",
+  },
+  {
+    name: 'Target-resource scope',
+    summary:
+      "Each action_kind ships with a hard-coded target-resource filter. DeletePod only matches Pod resources. PatchDeploymentAnnotation only patches the kubectl restartedAt annotation — not container images, not replicas. The patch validator (ai/approval/patch_validator.go) gates the exact JSONPath of every mutation.",
+    where: "ai/approval/patch_validator.go — allow-list of JSONPaths",
+  },
+  {
+    name: 'Namespace protection',
+    summary:
+      "Protected namespaces (kube-system, vault, external-secrets, cnpg-system, rook-ceph by default; configurable) are refused by the agent. The operator extends this list per cluster.",
+    where: "pkg/ai/validate.go — IsProtectedNamespace",
+  },
+  {
+    name: 'GitOps-managed skip',
+    summary:
+      "Resources labelled by Argo CD, Flux, or Helm (app.kubernetes.io/managed-by, argocd.argoproj.io/instance, helm.sh/release) are skipped — the agent doesn't fight a reconciliation loop.",
+    where: "internal/fix/gitops.go — GitOpsReason()",
+  },
+  {
+    name: 'Signed JWT click-to-fix',
+    summary:
+      "Every T1+ mutation is wrapped in an Ed25519-signed JWT URL delivered to the operator via Slack or ticket. The approval-server verifies signature + expiry + JTI (one-time use). Without the click, nothing mutates.",
+    where: "ai/approval/{signer,verifier,replay}.go",
+  },
+  {
+    name: 'Dual-approval for T3',
+    summary:
+      "Vault break-glass runbooks (T3) require two distinct approvers separated by at least 30 minutes. The runbook itself is never executed by CHA — the operator runs it manually after dual approval. Key names only, never values; ${VALUE_*} placeholders in command templates.",
+    where: "ai/approval/runbook_store.go — RecordApproval",
+  },
+  {
+    name: 'Hash-chained audit',
+    summary:
+      "Every AI action (LLM call, proposal created, validator decision, approval granted, action applied, post-apply verify) emits an AuditEvent with prev_hash chained against the prior event. Tamper-evident even if a downstream sink is compromised.",
+    where: "pkg/audit/hash_chain.go",
+  },
+  {
+    name: 'Investigation rate budget',
+    summary:
+      "Layer-2 LLM investigator calls have their own per-(approver, diagnostic_class) token-bucket budget independent of the proposal budget. Default 10/hour; per-class override. Prevents flapping-workload cost blowup.",
+    where: "ai/rate_limit.go — TakeInvestigation",
+  },
+];
+---
+
+<BaseLayout
+  title="CHA &mdash; Action policy (the leash on the agent)"
+  description="The agent has reasoning power; the policy has the leash. Operator-defined action_kinds, target-namespace allowlists, GitOps-managed skip, signed JWT click-to-fix URLs, dual-approval for T3, hash-chained audit. Every layer is in the Apache-2.0 source."
+>
+  <PageHero
+    eyebrow="Features &middot; Action policy"
+    title="The agent reasons. The policy decides what it can touch."
+    subtitle="Every layer of CHA's safety envelope is operator-defined and in code you can read before you install. Eight layers; here's all of them."
+  />
+
+  <section class="mx-auto max-w-5xl px-6 py-20">
+    <div class="prose dark:prose-invert max-w-none">
+      <p class="text-lg leading-relaxed text-zinc-700 dark:text-zinc-300">
+        Komodor, Robusta, Causely, NeuBird &mdash; they observe and suggest.
+        CHA mutates. That changes the safety story. An agent that can actually
+        change cluster state needs a policy that says <em>which</em> changes
+        are allowed, <em>where</em>, and under <em>which approval</em>. Eight
+        layers, all in code you can read before you install.
+      </p>
+    </div>
+
+    <div class="mt-12 space-y-5">
+      {layers.map((l, i) => (
+        <div class="rounded-2xl border border-zinc-200/80 bg-white p-7 shadow-sm dark:border-zinc-800/80 dark:bg-zinc-900/60">
+          <div class="flex items-baseline justify-between">
+            <h3 class="text-lg font-semibold text-zinc-900 dark:text-zinc-50">
+              {i + 1}. {l.name}
+            </h3>
+            <code class="ml-4 text-xs font-mono text-zinc-500 dark:text-zinc-500">
+              {l.where}
+            </code>
+          </div>
+          <p class="mt-3 text-sm leading-relaxed text-zinc-600 dark:text-zinc-400">
+            {l.summary}
+          </p>
+        </div>
+      ))}
+    </div>
+
+    <div class="mt-12 rounded-2xl border border-zinc-200/80 bg-zinc-50/60 p-8 dark:border-zinc-800/80 dark:bg-zinc-950/40">
+      <h2 class="text-xl font-semibold text-zinc-900 dark:text-zinc-50">
+        Why this matters for an AI SRE.
+      </h2>
+      <p class="mt-3 text-zinc-600 dark:text-zinc-400">
+        An LLM-powered agent without policy is a liability &mdash; reasoning
+        capability without a brake. CHA's design says the LLM can propose
+        anything, but only operator-allowlisted action_kinds against
+        operator-allowlisted namespaces can ever be executed, and only
+        after a signed-JWT operator click (dual-approval for break-glass).
+      </p>
+      <p class="mt-3 text-zinc-600 dark:text-zinc-400">
+        That makes CHA suitable for the kinds of deployments where pure-LLM
+        autonomy is a non-starter: regulated industries, sovereign clouds,
+        air-gapped clusters, FedRAMP track. The agent gets to be smart; the
+        policy decides what smart looks like in your environment.
+      </p>
+      <p class="mt-3 text-zinc-600 dark:text-zinc-400">
+        <a
+          href="/security/"
+          class="font-medium text-accent-600 hover:text-accent-700 dark:text-accent-400 dark:hover:text-accent-300"
+        >
+          Read the full security posture &rarr;
+        </a>
+      </p>
+    </div>
+  </section>
+</BaseLayout>

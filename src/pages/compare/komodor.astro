@@ -1,0 +1,82 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import PageHero from '../../components/PageHero.astro';
+import CompareTable from '../../components/CompareTable.astro';
+
+const rows = [
+  {
+    dimension: 'Where it runs',
+    cha: 'In your cluster — operator + CronJob + Deployment',
+    competitor: 'Komodor SaaS with a per-cluster agent; control plane is hosted',
+  },
+  {
+    dimension: 'Closed-loop remediation',
+    cha: 'Yes — 5 policy-bounded fixers + AI-tier proposals run on operator approval',
+    competitor: 'Drift detection + runbook suggestions; remediation is a human kubectl',
+  },
+  {
+    dimension: 'LLM provider',
+    cha: 'Bring-your-own (OpenAI-compatible endpoint — your in-cluster vLLM, Azure OpenAI, your gateway)',
+    competitor: 'Vendor-managed LLM; cluster data leaves your perimeter for inference',
+  },
+  {
+    dimension: 'Pricing model',
+    cha: 'Flat per-cluster (Open Core free / AI SRE Team / Enterprise)',
+    competitor: 'Per-node tiered SaaS; "contact sales" beyond starter',
+  },
+  {
+    dimension: 'Air-gap / sovereign',
+    cha: 'Yes — OSS engine and CHA-com both run entirely in-cluster',
+    competitor: 'No — control plane is hosted by Komodor',
+  },
+  {
+    dimension: 'Open source',
+    cha: 'Apache-2.0 engine; commercial AI SRE tier',
+    competitor: 'Proprietary',
+  },
+];
+---
+
+<BaseLayout
+  title="CHA vs. Komodor"
+  description="Komodor is a SaaS K8s observability + AI-suggestion platform; the agent runs in-cluster but the control plane and LLM are hosted. CHA runs entirely in your cluster, mutates with operator approval, and lets you point at any LLM endpoint you choose."
+>
+  <PageHero
+    eyebrow="Compare &middot; Komodor"
+    title="CHA vs. Komodor"
+    subtitle="Komodor watches your cluster from a hosted control plane and suggests runbooks. CHA runs entirely inside your cluster, proposes specific fixes, and (with your one-click approval) actually executes them. Different category."
+  />
+
+  <section class="mx-auto max-w-5xl px-6 py-20">
+    <CompareTable competitorName="Komodor" rows={rows} />
+
+    <div class="mt-12 rounded-2xl border border-zinc-200/80 bg-zinc-50/60 p-8 dark:border-zinc-800/80 dark:bg-zinc-950/40">
+      <h2 class="text-xl font-semibold text-zinc-900 dark:text-zinc-50">
+        The structural difference.
+      </h2>
+      <p class="mt-3 text-zinc-600 dark:text-zinc-400">
+        Komodor is an excellent K8s observability + investigation platform.
+        Their agent runs in your cluster, but the control plane, the LLM, and
+        the AI-suggestion logic all live in their SaaS. Your cluster posture,
+        events, and (with optional features) Kubernetes-object diffs flow
+        outbound for analysis. That's the model.
+      </p>
+      <p class="mt-3 text-zinc-600 dark:text-zinc-400">
+        CHA's model is different in two ways. First, the agent <em>and</em> the
+        LLM both run inside your perimeter &mdash; bring-your-own OpenAI-compatible
+        endpoint (your in-cluster vLLM, Azure OpenAI deployment, regional
+        gateway). Nothing leaves the cluster. Second, the agent <em>mutates</em>
+        on operator approval &mdash; signed click-to-fix URL, JWT-bounded action
+        kinds, hash-chained audit. Komodor's design choice means an SRE still
+        has to copy the suggested kubectl and run it; CHA closes the loop.
+      </p>
+      <p class="mt-3 text-zinc-600 dark:text-zinc-400">
+        Pick Komodor if you want a polished hosted UI with cross-cluster
+        observability and you're comfortable sending cluster state to a SaaS.
+        Pick CHA if you need air-gap / sovereign / k3s-edge, want to keep your
+        LLM in-house, and want the agent to actually remediate, not just
+        suggest.
+      </p>
+    </div>
+  </section>
+</BaseLayout>
