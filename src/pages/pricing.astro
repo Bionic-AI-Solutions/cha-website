@@ -4,8 +4,8 @@ import PageHero from '../components/PageHero.astro';
 
 const tiers = [
   {
-    name: 'OSS',
-    audience: 'SREs, platform engineers, hobbyists',
+    name: 'CHA Open Core',
+    audience: 'The cluster runtime — SREs, platform engineers, hobbyists',
     price: 'Free',
     priceNote: 'Apache-2.0 license',
     cta: { label: 'Helm install', href: 'https://github.com/Bionic-AI-Solutions/cluster-health-autopilot' },
@@ -14,7 +14,7 @@ const tiers = [
       'All 12 K8s probes — Ceph, Postgres, Nodes, PVCs, Critical services, Endpoints, NodePressure, DaemonSets, PendingPods, CrashLoopBackOff, ETCD, FailedMounts',
       '10 AWS cloud probes (off-by-default, opt-in via cloud.enabled) — RDS, EBS, EKS, IAM, ALB, ACM, KMS, S3, VPC + IRSA',
       'GCP / Azure cloud probes — roadmap M2 (v1.7+)',
-      'All 5 whitelisted fixers + GitOps / paused / suspended safety gates',
+      'All 5 policy-bounded fixers + GitOps / paused / suspended safety gates',
       'Lease-based leader election (HA-ready watcher)',
       'OpenProject MCP ticketing',
       'Slack 3-channel + Alertmanager routing, per-severity repeat intervals',
@@ -23,8 +23,8 @@ const tiers = [
     ],
   },
   {
-    name: 'CHA-com Team',
-    audience: 'Small teams adopting AI-augmented investigation',
+    name: 'AI SRE Team',
+    audience: 'Small teams adopting an autonomous SRE agent',
     price: '$X',
     priceNote: 'per cluster / month',
     cta: { label: 'Contact us', href: 'mailto:hello@bionicaisolutions.com' },
@@ -39,7 +39,7 @@ const tiers = [
     ],
   },
   {
-    name: 'CHA-com Enterprise',
+    name: 'AI SRE Enterprise',
     audience: 'Enterprise SREs running fleets of clusters',
     price: '$Y',
     priceNote: 'per cluster / month',
@@ -81,7 +81,7 @@ const tiers = [
   <PageHero
     eyebrow="Pricing"
     title="Transparent, flat per-cluster pricing."
-    subtitle="No per-investigation pricing. No 'contact sales' wall for the OSS tier. Helm install, evaluate, pay only when you want AI-tier features."
+    subtitle="No per-investigation pricing. No 'contact sales' wall for the open-core engine. Helm install, evaluate, upgrade to the AI SRE tier when you're ready to put an agent on top."
   />
 
   <section class="mx-auto max-w-7xl px-6 py-20">

@@ -11,7 +11,7 @@ const rows = [
   },
   {
     dimension: 'Closed-loop remediation',
-    cha: 'Yes — default behavior; 5 whitelisted fixers run automatically',
+    cha: 'Yes — default behavior; 5 policy-bounded fixers run automatically',
     competitor: 'No — "architecturally enforced read-only" per their security doc',
   },
   {
@@ -56,10 +56,11 @@ const rows = [
         cannot follow CHA into autonomous remediation without breaking that promise.
       </p>
       <p class="mt-3 text-zinc-600 dark:text-zinc-400">
-        CHA's safety envelope is different: whitelisted fixers with named scope,
-        protected-namespace allowlist, dry-run mode, opt-in flags per fixer, and
-        signed-JWT click-to-fix URLs for the AI-tier proposals. The brake is in code
-        you can read before you install.
+        CHA's safety envelope is different: operator-policy-bounded fixers with
+        named scope, protected-namespace allowlist, dry-run mode, opt-in flags per
+        fixer, and signed-JWT click-to-fix URLs for the AI-tier proposals. The brake
+        is the operator's policy on the agent; both are in code you can read before
+        you install.
       </p>
     </div>
   </section>

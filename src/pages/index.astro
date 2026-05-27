@@ -36,7 +36,7 @@ kube-system  driftreport-stuck-certreq-xz4q9       12s`,
     n: '03',
     title: 'Remediate',
     claim:
-      '5 whitelisted fixers run by default. AI-tier fix proposals require human approval via signed click-to-fix URLs.',
+      '5 policy-bounded fixers run by default. AI-tier fix proposals require human approval via signed click-to-fix URLs.',
     code: `DriftReport  StaleErrorPod    — fixer ran    OK
 DriftReport  StuckJob         — fixer ran    OK
 DriftReport  StuckRS          — fixer ran    OK
@@ -94,19 +94,19 @@ const integrations = [
 
 const wedges = [
   {
-    title: 'In-cluster, on every cloud',
+    title: 'An agent that actually mutates',
     body:
-      'The only K8s + cloud health autopilot you can run entirely inside your own cluster — air-gapped, sovereign, k3s edge — that ALSO probes the underlying AWS, GCP, and Azure resources with the workload-identity auth your cluster already uses.',
+      'Komodor, Robusta, Causely, Resolve — they observe and summarise. CHA-com proposes an action, signs it as a JWT, and (with one operator click) executes it. Every action lands inside the operator-defined policy: which action_kinds, which namespaces, which resources. The agent has reasoning power; the policy has the leash.',
   },
   {
-    title: 'Autonomous remediation, with a safety envelope',
+    title: 'In-cluster + bring-your-own-LLM',
     body:
-      'CHA is the only product in this category that ships detect → fix → re-verify as the default loop. Everyone else is a copilot for the on-call rotation you already have. We are the autopilot for the on-call rotation you want to retire.',
+      'No SaaS. No vendor LLM lock-in. Point CHA-com at any OpenAI-compatible endpoint — your in-cluster vLLM, an Azure OpenAI deployment, your own gateway. Cluster data and prompts never leave your perimeter. Air-gap, sovereign, k3s edge — all supported.',
   },
   {
-    title: 'Open-core with predictable pricing',
+    title: 'Open core, audit-anchored',
     body:
-      'Bottom-up adoption via Helm install. CHA-com paid tier adds LLM-augmented investigation, ticketing, multi-cluster federation, and approval-server — at flat per-cluster pricing. No per-investigation surprises.',
+      'OSS engine is Apache-2.0 — twelve K8s probes, ten AWS cloud probes, five policy-bounded fixers, deterministic investigator baseline. CHA-com paid tier adds the LLM Investigator agent and the T0–T3 AI SRE flow: narration → fix proposal → multi-step plan → vault break-glass runbook. Every AI action is JWT-signed, hash-chained, and replayable.',
   },
 ];
 
@@ -139,8 +139,8 @@ const competitorRows = [
 ---
 
 <BaseLayout
-  title="CHA &mdash; Detect. Remediate. Verify."
-  description="The autonomous health autopilot for Kubernetes and the clouds underneath it. Detects, fixes, and re-verifies drift across K8s, AWS, GCP, Azure, and the edge."
+  title="CHA &mdash; Autonomous SRE for Kubernetes"
+  description="Autonomous SRE for Kubernetes — policy-bounded, audit-anchored, bring-your-own-LLM. In-cluster agent that detects, proposes, and (with operator approval) remediates drift across K8s, AWS, GCP, Azure, and the edge."
 >
   <!-- Hero -->
   <section class="relative overflow-hidden">
@@ -149,16 +149,18 @@ const competitorRows = [
       <div class="mx-auto max-w-3xl text-center">
         <div class="mb-6 inline-flex items-center gap-2 rounded-full border border-zinc-200/80 bg-white/70 px-3 py-1 text-xs font-medium text-zinc-600 backdrop-blur dark:border-zinc-800/80 dark:bg-zinc-900/70 dark:text-zinc-400">
           <span class="inline-block h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-500"></span>
-          Open-core. Apache-2.0. Self-hosted.
+          AI SRE &middot; In-cluster &middot; Bring-your-own-LLM &middot; Open core
         </div>
         <h1 class="text-5xl font-semibold tracking-tight text-zinc-900 sm:text-6xl md:text-7xl dark:text-zinc-50">
-          <span>Detect.</span>
-          <span class="text-accent-600 dark:text-accent-400">Remediate.</span>
-          <span>Verify.</span>
+          <span>Autonomous</span>
+          <span class="text-accent-600 dark:text-accent-400">SRE</span>
+          <span>for Kubernetes.</span>
         </h1>
         <p class="mt-6 text-lg leading-relaxed text-zinc-600 sm:text-xl dark:text-zinc-400">
-          The autonomous health autopilot for Kubernetes and the clouds underneath it.
-          Across Kubernetes, AWS, GCP, Azure, and the edge.
+          Policy-bounded. Audit-anchored. Bring-your-own-LLM. An in-cluster agent
+          that detects drift, proposes fixes, and &mdash; with operator approval &mdash;
+          remediates across Kubernetes, AWS, GCP, Azure, and the edge. Everyone else
+          observes; CHA actually mutates.
         </p>
         <div class="mt-9 flex flex-col items-center justify-center gap-3 sm:flex-row">
           <a
