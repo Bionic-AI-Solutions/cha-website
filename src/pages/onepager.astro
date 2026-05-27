@@ -1,0 +1,183 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+---
+
+<BaseLayout
+  title="CHA &mdash; AI SRE one-pager"
+  description="One-page rationale + architecture for CHA — the in-cluster, policy-bounded, audit-anchored autonomous SRE for Kubernetes. Bring-your-own-LLM. Open core. Slack-able."
+>
+  <style is:global>
+    @media print {
+      header[role='banner'], header, nav, footer { display: none !important; }
+      main { padding: 0 !important; }
+      .onepager { padding: 0.5in !important; }
+      .onepager-grid { gap: 0.35in !important; }
+      a { color: inherit !important; text-decoration: none !important; }
+      .no-print { display: none !important; }
+      body { background: #fff !important; }
+    }
+    @page { size: Letter portrait; margin: 0.4in; }
+  </style>
+
+  <section class="onepager mx-auto max-w-5xl px-6 py-12 text-zinc-900 dark:text-zinc-100">
+    <div class="no-print mb-6 flex items-center justify-between text-sm">
+      <a
+        href="/"
+        class="font-medium text-accent-600 hover:text-accent-700 dark:text-accent-400 dark:hover:text-accent-300"
+      >
+        &larr; Back to home
+      </a>
+      <button
+        type="button"
+        onclick="window.print()"
+        class="rounded-md border border-zinc-300 bg-white px-3 py-1.5 text-xs font-medium text-zinc-900 shadow-sm transition hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100 dark:hover:bg-zinc-800"
+      >
+        Print &middot; Save as PDF
+      </button>
+    </div>
+
+    <header class="border-b-2 border-zinc-900 pb-4 dark:border-zinc-100">
+      <p class="text-xs font-semibold uppercase tracking-widest text-accent-600 dark:text-accent-400">
+        CHA &middot; Cluster Health Autopilot
+      </p>
+      <h1 class="mt-1 text-3xl font-bold tracking-tight">
+        Autonomous SRE for Kubernetes.
+      </h1>
+      <p class="mt-2 text-sm text-zinc-600 dark:text-zinc-400">
+        In-cluster &middot; Policy-bounded &middot; Audit-anchored &middot;
+        Bring-your-own-LLM &middot; Apache-2.0 open core
+      </p>
+    </header>
+
+    <div class="onepager-grid mt-6 grid gap-8 md:grid-cols-2">
+
+      <div>
+        <h2 class="text-base font-semibold uppercase tracking-wider text-zinc-900 dark:text-zinc-100">
+          Why agentic SRE &gt; AIOps observability
+        </h2>
+        <dl class="mt-3 space-y-3 text-sm leading-snug text-zinc-700 dark:text-zinc-300">
+          <div>
+            <dt class="font-semibold text-zinc-900 dark:text-zinc-100">
+              Closed-loop is the default, not a roadmap milestone.
+            </dt>
+            <dd class="mt-0.5">
+              Every cycle: detect &rarr; propose fix &rarr; (operator click) &rarr;
+              apply &rarr; re-diagnose. Komodor, Robusta, Causely, NeuBird,
+              Resolve, Ciroos: they observe and summarise. CHA mutates.
+            </dd>
+          </div>
+          <div>
+            <dt class="font-semibold text-zinc-900 dark:text-zinc-100">
+              In-cluster &mdash; no telemetry exfiltration.
+            </dt>
+            <dd class="mt-0.5">
+              No SaaS endpoint. No vendor LLM lock-in. Point at any
+              OpenAI-compatible endpoint &mdash; in-cluster vLLM, Azure OpenAI,
+              your own gateway. Cluster data and prompts never leave your
+              perimeter. Air-gap, sovereign, k3s edge: all supported.
+            </dd>
+          </div>
+          <div>
+            <dt class="font-semibold text-zinc-900 dark:text-zinc-100">
+              Eight-layer action policy &mdash; the leash on the agent.
+            </dt>
+            <dd class="mt-0.5">
+              Action-kind allowlist, target-resource scope, namespace
+              protection, GitOps-managed skip, signed JWT click-to-fix,
+              dual-approval for T3 vault break-glass, hash-chained audit,
+              per-(approver, class) rate budget. All in Apache-2.0 source.
+            </dd>
+          </div>
+          <div>
+            <dt class="font-semibold text-zinc-900 dark:text-zinc-100">
+              Open core &mdash; you can read it before you install.
+            </dt>
+            <dd class="mt-0.5">
+              OSS engine is Apache-2.0: 12 K8s probes, 10 AWS cloud probes,
+              3 drift-class analyzers (v1.7.0), 5 policy-bounded fixers.
+              CHA-com paid tier adds the LLM Investigator + T0&ndash;T3 AI SRE
+              ladder.
+            </dd>
+          </div>
+        </dl>
+      </div>
+
+      <div>
+        <h2 class="text-base font-semibold uppercase tracking-wider text-zinc-900 dark:text-zinc-100">
+          Architecture &mdash; the autopilot loop
+        </h2>
+        <pre class="mt-3 overflow-hidden whitespace-pre rounded-md border border-zinc-300 bg-zinc-50 p-3 font-mono text-[10px] leading-tight text-zinc-900 dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-100">{`
+   ┌──────────────────────────────────────────────────────┐
+   │   In-cluster watcher (leader-elected, K8s 1.27+)     │
+   │                                                      │
+   │   Probes ── 12 K8s ── 10 AWS ── 3 drift-class        │
+   │     │        Nodes    RDS     GitOps (Argo/Flux)     │
+   │     │        Pods     EBS     WorkloadState (CNPG)   │
+   │     │        Postgres EKS     RBAC (wildcards/SA)    │
+   │     │        Ceph     IAM                            │
+   │     ▼                                                │
+   │   Diagnose ──► DriftReport CRDs                      │
+   │     │                                                │
+   │     ▼                                                │
+   │   T0 narration (LLM) ──► Slack / Alertmanager        │
+   │     │                                                │
+   │     ▼                                                │
+   │   T1 fix proposer (LLM, JSON-mode)                   │
+   │     │   ╭── patch_validator: JSONPath allow-list     │
+   │     │   ╰── action_kind allowlist (closed enum)      │
+   │     ▼                                                │
+   │   Ed25519-signed JWT click-to-fix URL                │
+   │     │   ── delivered to operator via Slack / ticket  │
+   │     │   ── expiry + JTI replay protection            │
+   │     ▼                                                │
+   │   Operator clicks ──► Mutate (5 fixers)              │
+   │     │                                                │
+   │     ▼                                                │
+   │   T2 multi-step planner / T3 vault runbook           │
+   │   (dual-approval, 30-min window, key names only)     │
+   │     │                                                │
+   │     ▼                                                │
+   │   Re-diagnose ──► DriftReport status: resolved       │
+   │     │                                                │
+   │     ▼                                                │
+   │   AuditEvent (hash-chained, prev_hash)               │
+   │     ── JSONL sink (operator-controlled)              │
+   │     ── Prometheus metrics                            │
+   └──────────────────────────────────────────────────────┘
+`}</pre>
+
+        <h2 class="mt-4 text-base font-semibold uppercase tracking-wider text-zinc-900 dark:text-zinc-100">
+          T0 &rarr; T3 tier ladder
+        </h2>
+        <ul class="mt-2 space-y-1 text-xs leading-snug text-zinc-700 dark:text-zinc-300">
+          <li><strong class="text-zinc-900 dark:text-zinc-100">T0 Narration</strong> &mdash; LLM-enriched diagnostic text in Slack &middot; sub-second latency on in-cluster Qwen 3.6 35B</li>
+          <li><strong class="text-zinc-900 dark:text-zinc-100">T1 Fix proposer</strong> &mdash; agent picks action_kind from whitelist; JWT click-to-fix URL</li>
+          <li><strong class="text-zinc-900 dark:text-zinc-100">T2 Planner</strong> &mdash; multi-step plan, each step still a JWT click; plan signed as a unit</li>
+          <li><strong class="text-zinc-900 dark:text-zinc-100">T3 Vault break-glass</strong> &mdash; runbook text + dual-approval timeline; CHA never executes, operator runs manually</li>
+        </ul>
+      </div>
+
+    </div>
+
+    <footer class="mt-8 border-t-2 border-zinc-900 pt-4 text-xs text-zinc-600 dark:border-zinc-100 dark:text-zinc-400">
+      <div class="flex flex-wrap items-baseline justify-between gap-3">
+        <div>
+          <p class="font-mono">
+            $ helm repo add cha https://bionic-ai-solutions.github.io/cluster-health-autopilot/
+          </p>
+          <p class="font-mono">$ helm install cha cha/cluster-health-autopilot</p>
+        </div>
+        <div class="text-right">
+          <p class="font-semibold text-zinc-900 dark:text-zinc-100">
+            https://asre.baisoln.com
+          </p>
+          <p>github.com/Bionic-AI-Solutions/cluster-health-autopilot</p>
+          <p>salil.kadam@gmail.com</p>
+        </div>
+      </div>
+      <p class="mt-2 text-[10px] text-zinc-500 dark:text-zinc-500">
+        v1.7.0 shipped 2026-05-27 &middot; OSS Apache-2.0 &middot; T0&ndash;T3 verified live against Qwen 3.6 35B (in-cluster vLLM)
+      </p>
+    </footer>
+  </section>
+</BaseLayout>
