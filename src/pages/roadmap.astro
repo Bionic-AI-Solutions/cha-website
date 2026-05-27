@@ -4,15 +4,20 @@ import PageHero from '../components/PageHero.astro';
 
 const milestones = [
   {
-    label: 'v1.6.0',
-    status: 'Shipped — 2026-05-25',
+    label: 'v1.6.2',
+    status: 'Shipped — 2026-05-27',
     state: 'shipped',
     items: [
-      'Six new probes: NodePressure, system DaemonSets, PendingPods, CrashLoopBackOff, ETCD, FailedMounts',
+      'Six new K8s probes: NodePressure, system DaemonSets, PendingPods, CrashLoopBackOff, ETCD, FailedMounts (now 12 K8s probes total)',
+      '10 AWS cloud probes: RDS, EBS, EKS-cluster, EKS-nodegroups, IAM-roles, ALB, ACM, KMS, S3 public-access, VPC-subnets (off by default; cloud.enabled=false)',
       'Fixer safety nets: GitOps detection (Argo / Flux / Helm), spec.paused, CronJob.spec.suspend, cert-manager health gate',
       'Configurable critical-workloads list via env + annotation',
-      'Lease-based leader election for HA watcher deployments',
-      'AI safety hardening (paid): patch-payload allow-list, investigation rate budget, cold-start mitigation, event-message secret scrubbing, audit hash chain',
+      'Lease-based leader election for HA watcher deployments (genuinely active in cluster as of v1.6.2)',
+      'pkg/ai/redact: Kubernetes Event message scrubbing before LLM consumption',
+      'Per-severity Slack repeat intervals — --slack-critical-repeat-interval splits warning vs critical cadence',
+      'OpenProject MCP ticketing — auto-files unfixable diagnostics with dedup',
+      'AI safety hardening (paid): patch-payload allow-list, investigation rate budget, cold-start mitigation, audit hash chain',
+      'CHA-com paid v1.6.0: T0 narration, T1 fix proposer, T2 multi-step planner, T3 vault break-glass runbook with dual-approval, JWT-signed click-to-fix URLs, cha-com watch with JSONL audit log',
       'CronJob runtime caps: backoffLimit=1, activeDeadlineSeconds=120',
       'Chart unit tests (helm-unittest) wired into CI',
     ],
@@ -24,6 +29,8 @@ const milestones = [
     items: [
       'Operator port to controller-runtime (kubebuilder) — inherits the v1.6 client-go leader election',
       'HealthPolicy CRD with status-subresource reconciliation',
+      'GCP cloud probes (Workload Identity native) — fills the pkg/cloud/gcp scaffold',
+      'Azure cloud probes (AAD Workload Identity) — fills the pkg/cloud/azure scaffold',
       'Kong route / upstream health probe',
       'HPA scaling-failure probe',
       'ArgoCD Application sync-status probe',
@@ -39,7 +46,7 @@ const milestones = [
       'External webhook ingestion — Vault rotations, cert-manager Issued, Cloudflare cert renewals (trigger-class E)',
       'Multi-cluster federation via ArgoCD ApplicationSet over the operator pattern',
       'Cloud-resource mutation (M4) with a separate signed-approval envelope, distinct from the K8s remediator role',
-      'GCP + Azure cloud probes (currently roadmap; AWS shipped in v1.4)',
+      'Redis-backed RunbookStore for HA approval-server (single-replica today)',
       'Public "incidents resolved without paging a human" benchmark',
     ],
   },
@@ -48,12 +55,12 @@ const milestones = [
 
 <BaseLayout
   title="CHA &mdash; Roadmap"
-  description="Where CHA is going. v1.6.0 shipped; v1.7 operator port + M2 probes; v1.8+ observability ingestion, multi-cluster federation, cloud-mutation envelope."
+  description="Where CHA is going. v1.6.2 shipped (12 K8s probes, 10 AWS cloud probes, leader election, paid AI tiers T0–T3); v1.7 operator port + GCP/Azure cloud probes + M2 K8s probes; v1.8+ observability ingestion, multi-cluster federation, cloud-mutation envelope."
 >
   <PageHero
     eyebrow="Roadmap"
     title="What's shipped, what's next."
-    subtitle="v1.6.0 closed 22 of 23 items from the 2026-05 adversarial review. v1.7 takes the watcher to a controller-runtime operator and adds the M2 probe slice (Kong, HPA, ArgoCD, Velero). v1.8+ opens trigger-classes B / C / E."
+    subtitle="v1.6.2 closed all 22 hardening items from the 2026-05 adversarial review and brought AWS cloud probes + paid AI tiers T0–T3 live. v1.7 takes the watcher to a controller-runtime operator, adds GCP/Azure probes and the M2 K8s probe slice (Kong, HPA, ArgoCD, Velero). v1.8+ opens trigger-classes B / C / E."
   />
 
   <section class="mx-auto max-w-5xl px-6 py-16">

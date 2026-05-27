@@ -5,16 +5,16 @@ import StubBody from '../../components/StubBody.astro';
 ---
 
 <BaseLayout
-  title="CHA &mdash; Azure probes"
-  description="10 Azure probes covering Azure SQL, AKS, Identity, App Gateway, Key Vault. AAD Workload Identity native."
+  title="CHA &mdash; Azure probes (roadmap M2 / v1.7+)"
+  description="Azure probes covering Azure SQL, AKS, Identity, App Gateway, Key Vault — scoped for M2 (v1.7+). AAD Workload Identity native."
 >
   <PageHero
-    eyebrow="Features &middot; Azure"
-    title="Ten Azure probes. AAD Workload Identity."
-    subtitle="Azure SQL, AKS, Identity, App Gateway, Key Vault — probed via AAD Workload Identity."
+    eyebrow="Features &middot; Azure (roadmap)"
+    title="Azure probes — roadmap M2 (v1.7+)."
+    subtitle="Azure SQL, AKS, Identity, App Gateway, Key Vault. The pkg/cloud/azure client is scaffolded today; the probe set ships in v1.7+, modelled on the AWS IRSA pattern already live."
   />
   <StubBody
-    claim="CHA on AKS uses AAD Workload Identity to probe Azure SQL, AKS control-plane state, AAD Identity, Application Gateway, Key Vault, and more. Zero long-lived credentials. Read-only by design in M2."
+    claim="Azure cloud probes are roadmap M2 (v1.7+). The pkg/cloud/azure/client.go scaffold is in the OSS repo today; the probe implementations (modelled on the 10 AWS probes that shipped in v1.6.2) land in v1.7+. CHA on AKS will use AAD Workload Identity to probe Azure SQL, AKS control-plane state, AAD Identity, Application Gateway, Key Vault, and more. Zero long-lived credentials. Read-only by design."
     backHref="/features/"
     backLabel="← All features"
   />
