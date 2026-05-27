@@ -4,6 +4,21 @@ import PageHero from '../components/PageHero.astro';
 
 const milestones = [
   {
+    label: 'v1.7.0',
+    status: 'Shipped — 2026-05-27',
+    state: 'shipped',
+    items: [
+      'Drift-class expansion — agent investigation surface broadens from secret/credential drift to three new classes that page oncall in practice',
+      'GitOpsDrift analyzer: Argo CD Application out-of-sync / Degraded + Flux Kustomization / HelmRelease Ready=False past grace; *Failed reasons escalate to critical',
+      'WorkloadStateDrift analyzer: CNPG cluster phase, follower-degraded-while-healthy, primary switchover stuck; StatefulSet ordinal-zero gaps',
+      'RBACDrift analyzer: wildcard verbs in user-defined Roles + unbound ServiceAccounts mounted by Pods; system roles excluded',
+      'Reader ClusterRole extended for Argo/Flux CRDs + RBAC/ServiceAccount resources',
+      'Helm wiring: analyzers.{gitopsDrift,workloadStateDrift,rbacDrift}.enabled toggles (default ON); CHA_ANALYZER_<NAME>=off env-gate',
+      'Demo v3 (run-demo-v3.sh) — sales walkthrough leading with the AI SRE agent flow (T0 → T1 → T3 vault break-glass)',
+      'CHA-com v1.7.0: LLMFixerMatcher (opt-in --ai-llm-fixer-matcher) — fixer selection becomes LLM-classified, falls back to keyword on error',
+    ],
+  },
+  {
     label: 'v1.6.2',
     status: 'Shipped — 2026-05-27',
     state: 'shipped',
@@ -23,12 +38,15 @@ const milestones = [
     ],
   },
   {
-    label: 'v1.7',
-    status: 'Next — Sprint 5 + M2 probes',
+    label: 'v1.8',
+    status: 'Next — operator port + remaining drift classes + cloud probe expansion',
     state: 'next',
     items: [
       'Operator port to controller-runtime (kubebuilder) — inherits the v1.6 client-go leader election',
       'HealthPolicy CRD with status-subresource reconciliation',
+      'Config drift analyzer (CM hash divergence, CRD version mismatch, Helm-values vs cluster-live)',
+      'Capacity drift analyzer (HPA min/max divergence, PVC growth trajectory) — needs metrics-server',
+      'Security drift analyzer (PSS downgrade, image attestation, NetworkPolicy coverage gaps)',
       'GCP cloud probes (Workload Identity native) — fills the pkg/cloud/gcp scaffold',
       'Azure cloud probes (AAD Workload Identity) — fills the pkg/cloud/azure scaffold',
       'Kong route / upstream health probe',
@@ -38,7 +56,7 @@ const milestones = [
     ],
   },
   {
-    label: 'v1.8 — v2.0',
+    label: 'v1.9 — v2.0',
     status: 'Roadmap',
     state: 'roadmap',
     items: [
@@ -55,12 +73,12 @@ const milestones = [
 
 <BaseLayout
   title="CHA &mdash; Roadmap"
-  description="Where CHA is going. v1.6.2 shipped (12 K8s probes, 10 AWS cloud probes, leader election, paid AI tiers T0–T3); v1.7 operator port + GCP/Azure cloud probes + M2 K8s probes; v1.8+ observability ingestion, multi-cluster federation, cloud-mutation envelope."
+  description="Where CHA is going. v1.7.0 shipped (drift-class expansion: GitOpsDrift, WorkloadStateDrift, RBACDrift + LLM-classified fixer matcher); v1.8 operator port + remaining drift classes + GCP/Azure cloud probes + M2 K8s probes; v1.9+ observability ingestion, multi-cluster federation, cloud-mutation envelope."
 >
   <PageHero
     eyebrow="Roadmap"
     title="What's shipped, what's next."
-    subtitle="v1.6.2 closed all 22 hardening items from the 2026-05 adversarial review and brought AWS cloud probes + paid AI tiers T0–T3 live. v1.7 takes the watcher to a controller-runtime operator, adds GCP/Azure probes and the M2 K8s probe slice (Kong, HPA, ArgoCD, Velero). v1.8+ opens trigger-classes B / C / E."
+    subtitle="v1.7.0 closed Workstream B of the AI SRE positioning plan: three new drift-class analyzers (GitOps, workload-state, RBAC) and an opt-in LLM-classified fixer matcher in the paid tier. v1.8 takes the watcher to a controller-runtime operator, fills the remaining drift classes (config / capacity / security), and adds GCP/Azure cloud probes + the M2 K8s probe slice (Kong, HPA, ArgoCD, Velero)."
   />
 
   <section class="mx-auto max-w-5xl px-6 py-16">

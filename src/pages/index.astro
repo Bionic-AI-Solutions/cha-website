@@ -17,14 +17,14 @@ kube-system  driftreport-stuck-certreq-xz4q9       12s`,
     n: '02',
     title: 'Detect',
     claim:
-      '12 K8s probes + 10 AWS probes (GCP/Azure on roadmap), plus 8 analyzers for the K8s-cloud boundary (secrets, certs, IRSA drift).',
-    code: `Probes  K8s 12          AWS 10
-       Ceph              RDS
-       Nodes             EBS
-       Postgres          EKS
-       PVCs              IAM
-       Services          ALB
-       Endpoints         ACM
+      '12 K8s probes + 10 AWS probes (GCP/Azure on roadmap), plus 3 drift-class analyzers (GitOps, workload-state, RBAC) and 8 boundary analyzers (secrets, certs, IRSA drift). New in v1.7.0.',
+    code: `Probes  K8s 12          AWS 10          Drift v1.7
+       Ceph              RDS             GitOps
+       Nodes             EBS              Argo / Flux
+       Postgres          EKS             WorkloadState
+       PVCs              IAM              CNPG / STS
+       Services          ALB             RBAC
+       Endpoints         ACM              wildcards / SA
        NodePressure      KMS
        DaemonSets        S3
        PendingPods       VPC
@@ -106,7 +106,7 @@ const wedges = [
   {
     title: 'Open core, audit-anchored',
     body:
-      'OSS engine is Apache-2.0 — twelve K8s probes, ten AWS cloud probes, five policy-bounded fixers, deterministic investigator baseline. CHA-com paid tier adds the LLM Investigator agent and the T0–T3 AI SRE flow: narration → fix proposal → multi-step plan → vault break-glass runbook. Every AI action is JWT-signed, hash-chained, and replayable.',
+      'OSS engine is Apache-2.0 — twelve K8s probes, ten AWS cloud probes, three drift-class analyzers (v1.7.0), five policy-bounded fixers, deterministic investigator baseline. CHA-com paid tier adds the LLM Investigator agent and the T0–T3 AI SRE flow: narration → fix proposal → multi-step plan → vault break-glass runbook. Every AI action is JWT-signed, hash-chained, and replayable. T0–T3 verified live against in-cluster vLLM (Qwen 3.6 35B).',
   },
 ];
 
