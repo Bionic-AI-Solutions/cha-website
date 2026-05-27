@@ -1,0 +1,306 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import PageHero from '../../components/PageHero.astro';
+
+const meta = {
+  author: 'Salil Kadam',
+  date: '2026-05-27',
+  reading: '7 min',
+};
+
+const driftClasses = [
+  {
+    name: 'GitOpsDrift',
+    pr: '#69',
+    body: 'Argo CD Application out-of-sync or Degraded, Flux Kustomization / HelmRelease Ready=False past a 10-minute grace. Reasons matching *Failed (BuildFailed, UpgradeFailed, InstallFailed) escalate to critical. Reader ClusterRole gets read on the Argo and Flux CRDs.',
+  },
+  {
+    name: 'WorkloadStateDrift',
+    pr: '#70',
+    body: 'State-tier signals the basic "X/Y ready" probe misses. CNPG cluster: non-healthy phase, follower lag while phase healthy, primary switchover stuck. StatefulSet ordinal-zero: pod-0 missing while higher ordinals run; pod-0 unready while higher ordinals Ready.',
+  },
+  {
+    name: 'RBACDrift',
+    pr: '#71',
+    body: 'Wildcard verbs in user-defined Role / ClusterRole (skips cluster-admin, system:*, and the kube-system / kube-public / kube-node-lease namespaces). Unbound ServiceAccount mounted by a Pod (skips the default SA, skips kube-system Pods). Remediation includes the exact kubectl create rolebinding command.',
+  },
+];
+---
+
+<BaseLayout
+  title="CHA &mdash; From cluster health analyzer to AI SRE"
+  description="Why we re-framed CHA, what shipped in v1.7.0, and the safety story under the new name. External GTM feedback, three new drift-class analyzers, and an opt-in LLM-classified fixer matcher in the paid tier."
+>
+  <PageHero
+    eyebrow="Blog &middot; Engineering"
+    title="From cluster health analyzer to AI SRE."
+    subtitle="Why we re-framed CHA, what shipped in v1.7.0, and the safety envelope under the new name."
+  />
+
+  <section class="mx-auto max-w-3xl px-6 py-16">
+    <div class="mb-10 flex items-center gap-4 text-sm text-zinc-600 dark:text-zinc-400">
+      <span class="font-medium text-zinc-900 dark:text-zinc-100">{meta.author}</span>
+      <span>&middot;</span>
+      <span>{meta.date}</span>
+      <span>&middot;</span>
+      <span>{meta.reading}</span>
+    </div>
+
+    <div class="prose prose-zinc dark:prose-invert max-w-none">
+      <h2 id="feedback">The feedback</h2>
+      <p>
+        Earlier this month an external GTM reviewer looked at the CHA pitch
+        and gave us three specific notes:
+      </p>
+      <ol>
+        <li>
+          The name <em>cluster health analyzer</em> sells the v1.0 product, not
+          the v1.6 product. It anchors readers on observability instead of on
+          the closed-loop agent we actually shipped.
+        </li>
+        <li>
+          The catalog is still secret-heavy. Vault and ESO are the
+          most-developed drift class &mdash; but real on-call rotations also
+          page on GitOps stuck syncs, CNPG primary failover, and RBAC
+          blast-radius growth. Broaden the surface.
+        </li>
+        <li>
+          The language in the docs is rule-based ("if condition then fixer").
+          That framing makes the product feel static and reactive. Lead with
+          the LLM-driven investigation surface, not the deterministic
+          fixers underneath.
+        </li>
+      </ol>
+      <p>
+        Each note had teeth. None of them were "rewrite the product." They
+        were "describe the product you actually built, and finish the catalog
+        you said you would." We turned them into a four-week implementation
+        plan and started shipping.
+      </p>
+
+      <h2 id="reframe">The reframe (Workstream A &middot; C)</h2>
+      <p>
+        The OSS engine kept its name &mdash; <code>cluster-health-autopilot</code>{' '}
+        and the <code>cha</code> binary. Those Helm releases are in production
+        on pilot clusters; renaming them would have been a backwards-incompatibility
+        without an upside. What changed was the <em>marketing surface</em> and
+        the <em>paid tier framing</em>:
+      </p>
+      <ul>
+        <li>
+          The homepage hero leads with "Autonomous SRE for Kubernetes."
+          The eyebrow chip reads <em>AI SRE &middot; In-cluster &middot;
+          Bring-your-own-LLM &middot; Open core</em>. The H1 itself stays
+          <em>Detect. Remediate. Verify.</em> &mdash; that line tested as the
+          most evocative anchor of what the product does.
+        </li>
+        <li>
+          The "vs. the competition" table names Komodor, Robusta, Causely,
+          NeuBird, Resolve AI, Ciroos, and Tracer/OpenSRE by name &mdash; and
+          calls out the structural difference: <em>they observe; CHA mutates</em>.
+        </li>
+        <li>
+          The paid tier is now "CHA-com AI SRE" rather than "CHA-com paid."
+          The T0&ndash;T3 tier ladder (narration &rarr; fix proposal &rarr;
+          multi-step plan &rarr; vault break-glass runbook) is above the fold
+          on pricing.
+        </li>
+        <li>
+          A new <a href="/features/policy/">/features/policy</a> page documents
+          the eight-layer action policy that constrains the agent. "Reasoning
+          power is the agent; the policy is the leash" became the explicit
+          framing.
+        </li>
+      </ul>
+
+      <h2 id="drift-classes">Three new drift-class analyzers (Workstream B)</h2>
+      <p>
+        The biggest mechanical change in v1.7.0: the OSS engine's catalog
+        broadens from secret/credential drift into three additional classes,
+        each with its own analyzer registered in <code>catalog/</code> and
+        toggleable in Helm.
+      </p>
+    </div>
+
+    <div class="mt-8 space-y-4">
+      {driftClasses.map((d, i) => (
+        <div class="rounded-2xl border border-zinc-200/80 bg-white p-6 shadow-sm dark:border-zinc-800/80 dark:bg-zinc-900/60">
+          <div class="flex items-baseline justify-between">
+            <h3 class="text-lg font-semibold text-zinc-900 dark:text-zinc-50">
+              {i + 1}. {d.name}
+            </h3>
+            <code class="ml-4 text-xs font-mono text-zinc-500 dark:text-zinc-500">
+              PR {d.pr}
+            </code>
+          </div>
+          <p class="mt-3 text-sm leading-relaxed text-zinc-600 dark:text-zinc-400">
+            {d.body}
+          </p>
+        </div>
+      ))}
+    </div>
+
+    <div class="prose prose-zinc dark:prose-invert max-w-none mt-12">
+      <p>
+        All three analyzers are default-on. Each has an opt-out Helm value
+        (<code>analyzers.gitopsDrift.enabled</code>, etc.) plus an env-var gate
+        (<code>CHA_ANALYZER_GITOPS_DRIFT=off</code>) for clusters that don't
+        run Argo / Flux or want to defer the RBAC noise until they've cleaned
+        their wildcards. The Reader ClusterRole picks up the new CRD reads
+        through the chart's RBAC template &mdash; no manual edits required.
+      </p>
+
+      <h2 id="llm-matcher">An LLM-classified fixer matcher (Workstream C)</h2>
+      <p>
+        In CHA-com v1.7.0 (the paid binary), the keyword
+        <code>DefaultFixerMatcher</code> &mdash; a switch statement that
+        keyword-matches diagnostic.Source to a fixer name &mdash; is joined by
+        an opt-in <code>LLMFixerMatcher</code>. When you pass
+        <code>--ai-llm-fixer-matcher</code>, the agent makes a small JSON-mode
+        LLM call against the diagnostic ("which fixer name, from this
+        whitelist, best handles this finding?"), permissively parses the
+        response (strict JSON / fenced JSON / JSON-in-prose / bare name), and
+        falls back to the keyword matcher on any error or hallucination.
+      </p>
+      <p>
+        Worst case is identical to v1.6.x behavior. Best case, the agent
+        recognises new diagnostic surfaces without us shipping a new keyword
+        rule first. The <code>action_kind</code> whitelist is still in force
+        &mdash; the LLM gets to <em>pick a fixer name</em>, not to invent one.
+      </p>
+
+      <h2 id="safety">The safety story under the new name</h2>
+      <p>
+        Repositioning as an AI SRE means the policy story matters more, not
+        less. The eight-layer action policy hasn't changed structurally since
+        v1.6:
+      </p>
+      <ul>
+        <li>
+          <strong>Action-kind allowlist</strong> &mdash;
+          <code>pkg/ai/types.go</code>, closed enum. DeletePod,
+          PatchDeploymentAnnotation, DeleteJob, DeleteCertificateRequest,
+          PatchIngressTLS. Anything else is rejected by the validator before
+          it reaches an operator.
+        </li>
+        <li>
+          <strong>Target-resource scope</strong> &mdash; each action_kind ships
+          with a hard-coded resource filter. PatchDeploymentAnnotation only
+          patches the kubectl restartedAt annotation &mdash; never container
+          images, never replicas.
+        </li>
+        <li>
+          <strong>Namespace protection</strong> &mdash; protected namespaces
+          (kube-system, vault, external-secrets, cnpg-system, rook-ceph by
+          default; configurable) are refused.
+        </li>
+        <li>
+          <strong>GitOps-managed skip</strong> &mdash; resources labelled by
+          Argo / Flux / Helm are skipped. The agent doesn't fight a
+          reconciliation loop. (And v1.7.0 now also <em>detects</em> when one
+          of those loops is itself the drift.)
+        </li>
+        <li>
+          <strong>Signed JWT click-to-fix</strong> &mdash; every T1+ mutation
+          is wrapped in an Ed25519-signed URL with expiry + JTI replay
+          protection. Without the click, nothing mutates.
+        </li>
+        <li>
+          <strong>Dual-approval for T3</strong> &mdash; vault break-glass
+          runbooks require two distinct approvers separated by at least 30
+          minutes. The runbook is <em>never</em> executed by CHA; the operator
+          runs it manually after dual approval. Key names only, never values.
+        </li>
+        <li>
+          <strong>Hash-chained audit</strong> &mdash; every AI action emits an
+          AuditEvent with prev_hash chained against the prior event.
+          Tamper-evident even if a downstream sink is compromised.
+        </li>
+        <li>
+          <strong>Investigation rate budget</strong> &mdash; layer-2 LLM
+          investigator calls have their own per-(approver, diagnostic_class)
+          token-bucket budget independent of the proposal budget. Default
+          10/hour; prevents flapping-workload cost blowup.
+        </li>
+      </ul>
+      <p>
+        The full eight layers are on the{' '}
+        <a href="/features/policy/">/features/policy</a> page; the code paths
+        are linked from each row.
+      </p>
+
+      <h2 id="evidence">Live-evidence</h2>
+      <p>
+        Yesterday's verification run hit the T0&ndash;T3 ladder against
+        Qwen 3.6 35B served by an in-cluster vLLM endpoint:
+      </p>
+      <ul>
+        <li>
+          <strong>T0 narration</strong> &mdash; latency under one second; the
+          enrichment lands in the Slack alert body before an operator has
+          finished reading the title.
+        </li>
+        <li>
+          <strong>T1 fix proposal</strong> &mdash; LLM picks an action_kind
+          from the whitelist; the validator's patch_validator.go gates the
+          JSONPath of the proposed mutation before the click-to-fix URL is
+          ever issued.
+        </li>
+        <li>
+          <strong>T2 multi-step plan</strong> &mdash; the planner emits a
+          structured sequence of T1 actions that the operator approves as a
+          set. Each step is still a JWT click; the plan is signed as a unit.
+        </li>
+        <li>
+          <strong>T3 vault break-glass</strong> &mdash; runbook text only.
+          Dual-approval timeline enforced; key names never values; nothing
+          executes server-side.
+        </li>
+      </ul>
+      <p>
+        The same flow runs against OpenAI's hosted models and Anthropic's
+        Claude family for customers who prefer not to host their own
+        endpoint. The protocol is OpenAI-compatible JSON-mode; the policy
+        envelope is identical regardless of which model is on the other end
+        of the call.
+      </p>
+
+      <h2 id="whats-next">What's next (v1.8)</h2>
+      <p>
+        v1.7.0 closed Workstream B's first three drift classes. v1.8 takes the
+        watcher to a controller-runtime operator (kubebuilder), adds the
+        remaining three drift classes (<em>config</em>: CM hash divergence,
+        CRD version mismatch, Helm-values vs cluster-live; <em>capacity</em>:
+        HPA min/max divergence, PVC growth trajectory &mdash; needs
+        metrics-server; <em>security</em>: PSS downgrade, image attestation,
+        NetworkPolicy coverage gaps), and brings in GCP / Azure cloud probes
+        plus the M2 K8s probe slice (Kong, HPA, ArgoCD, Velero).
+      </p>
+      <p>
+        The full sequencing lives on the{' '}
+        <a href="/roadmap/">roadmap page</a>; v1.7.0 itself is documented in
+        the <a href="https://github.com/Bionic-AI-Solutions/cluster-health-autopilot/blob/main/CHANGELOG.md">CHANGELOG</a>{' '}
+        with PR-level granularity. The implementation plan that drove the
+        repositioning is checked into the OSS repo as
+        <code>docs/design/2026-05-ai-sre-positioning.md</code> &mdash; the
+        feedback is reproduced verbatim, the workstream allocation is the
+        commit you're reading.
+      </p>
+
+      <hr />
+      <p class="text-sm text-zinc-500 dark:text-zinc-400">
+        Questions, pushback, or pilot interest:{' '}
+        <a href="mailto:salil.kadam@gmail.com">salil.kadam@gmail.com</a>.
+      </p>
+    </div>
+
+    <div class="mt-12 flex items-center gap-4 text-sm">
+      <a
+        href="/blog/"
+        class="font-medium text-accent-600 hover:text-accent-700 dark:text-accent-400 dark:hover:text-accent-300"
+      >
+        &larr; Back to blog
+      </a>
+    </div>
+  </section>
+</BaseLayout>
