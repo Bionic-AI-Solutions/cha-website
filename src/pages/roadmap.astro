@@ -38,21 +38,19 @@ const milestones = [
     ],
   },
   {
-    label: 'v1.8',
-    status: 'Next — operator port + remaining drift classes + cloud probe expansion',
-    state: 'next',
+    label: 'v1.8.2 / v1.8.4',
+    status: 'Shipped — 2026-05-28',
+    state: 'shipped',
     items: [
-      'Operator port to controller-runtime (kubebuilder) — inherits the v1.6 client-go leader election',
-      'HealthPolicy CRD with status-subresource reconciliation',
-      'Config drift analyzer (CM hash divergence, CRD version mismatch, Helm-values vs cluster-live)',
-      'Capacity drift analyzer (HPA min/max divergence, PVC growth trajectory) — needs metrics-server',
-      'Security drift analyzer (PSS downgrade, image attestation, NetworkPolicy coverage gaps)',
-      'GCP cloud probes (Workload Identity native) — fills the pkg/cloud/gcp scaffold',
-      'Azure cloud probes (AAD Workload Identity) — fills the pkg/cloud/azure scaffold',
-      'Kong route / upstream health probe',
-      'HPA scaling-failure probe',
-      'ArgoCD Application sync-status probe',
-      'Velero backup-completion probe',
+      'Operator port to controller-runtime (Phase 1 + 1b): ClusterHealthAutopilot CRD + cha-operator manager reconciling watcher Deployment / CronJobs / SA, with Ready + WatcherRunning conditions (opt-in via operator.enabled)',
+      'ConfigDrift analyzer (CRD multi-storedVersions, stuck rollouts, disagreeing pod config-checksums)',
+      'CapacityDrift analyzer (HPA pinned at min/max past grace, AbleToScale=False, FailedGetResourceMetric, PVC expansion stuck)',
+      'SecurityDrift analyzer (PSS-unlabeled/privileged namespaces, mutable :tag image refs, zero-NetworkPolicy namespaces)',
+      'M2 K8s probes: Kong, HPA scaling, ArgoCD Application, Velero — each auto-skips when its CRD is absent; per-probe Helm toggles (probes.<name>.enabled)',
+      '30 cloud probes — 10 each AWS / GCP / Azure — with live SDK wrappers (IRSA / GCP + AAD Workload Identity). AWS fetches every signal live; a few GCP/Azure signals (subnet IP-utilization, SQL storage-%, App Gateway backend health) honestly report "not measured" pending the cloud Monitoring API rather than silently passing',
+      'Cloud-probe honesty hardening + operator BYO-ServiceAccount fix (v1.8.2)',
+      'Paid tier deploys as a purely additive companion: OSS install + ai.enabled=true stands up a separate cha-com aiwatch Deployment (the AI-layered counterpart), OSS workloads untouched — see DEPLOYMENT.md (v1.8.4)',
+      'CHA-com bumped to OSS v1.8.2 so the paid binary carries the full v1.8 detection surface alongside the T0–T3 AI tiers',
     ],
   },
   {
@@ -73,12 +71,12 @@ const milestones = [
 
 <BaseLayout
   title="CHA &mdash; Roadmap"
-  description="Where CHA is going. v1.7.0 shipped (drift-class expansion: GitOpsDrift, WorkloadStateDrift, RBACDrift + LLM-classified fixer matcher); v1.8 operator port + remaining drift classes + GCP/Azure cloud probes + M2 K8s probes; v1.9+ observability ingestion, multi-cluster federation, cloud-mutation envelope."
+  description="Where CHA is going. v1.8 shipped (controller-runtime operator port, config/capacity/security drift classes, M2 K8s probes, 30 AWS/GCP/Azure cloud probes, and the purely-additive paid AI companion); v1.9+ cloud Monitoring-API signal wiring, operator Phase 1c, observability ingestion, multi-cluster federation, cloud-mutation envelope."
 >
   <PageHero
     eyebrow="Roadmap"
     title="What's shipped, what's next."
-    subtitle="v1.7.0 closed Workstream B of the AI SRE positioning plan: three new drift-class analyzers (GitOps, workload-state, RBAC) and an opt-in LLM-classified fixer matcher in the paid tier. v1.8 takes the watcher to a controller-runtime operator, fills the remaining drift classes (config / capacity / security), and adds GCP/Azure cloud probes + the M2 K8s probe slice (Kong, HPA, ArgoCD, Velero)."
+    subtitle="v1.8 took the watcher to a controller-runtime operator, filled the remaining drift classes (config / capacity / security), added GCP/Azure cloud probes + the M2 K8s probe slice (Kong, HPA, ArgoCD, Velero), and made the paid AI tier a purely additive one-flag companion. CHA-com now rides the same v1.8.2 engine as OSS."
   />
 
   <section class="mx-auto max-w-5xl px-6 py-16">

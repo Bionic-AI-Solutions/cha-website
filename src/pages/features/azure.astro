@@ -5,16 +5,16 @@ import StubBody from '../../components/StubBody.astro';
 ---
 
 <BaseLayout
-  title="CHA &mdash; Azure probes (roadmap M2 / v1.7+)"
-  description="Azure probes covering Azure SQL, AKS, Identity, App Gateway, Key Vault — scoped for M2 (v1.7+). AAD Workload Identity native."
+  title="CHA &mdash; Azure probes (shipped v1.8)"
+  description="10 Azure probes covering Azure SQL, AKS control-plane + node pools, Managed Identity, Subnets, App Gateway, certs, Storage public-access, Key Vault. AAD Workload Identity native, read-only."
 >
   <PageHero
-    eyebrow="Features &middot; Azure (roadmap)"
-    title="Azure probes — roadmap M2 (v1.7+)."
-    subtitle="Azure SQL, AKS, Identity, App Gateway, Key Vault. The pkg/cloud/azure client is scaffolded today; the probe set ships in v1.7+, modelled on the AWS IRSA pattern already live."
+    eyebrow="Features &middot; Azure"
+    title="Azure probes — shipped (v1.8)."
+    subtitle="10 probes via a live azure-sdk-for-go wrapper: Azure SQL, AKS control-plane + node pools, Managed Identities, Subnets, Application Gateway backends, App Service certs, Storage public-access, Key Vaults. AAD Workload Identity — zero long-lived credentials. Read-only by design."
   />
   <StubBody
-    claim="Azure cloud probes are roadmap M2 (v1.7+). The pkg/cloud/azure/client.go scaffold is in the OSS repo today; the probe implementations (modelled on the 10 AWS probes that shipped in v1.6.2) land in v1.7+. CHA on AKS will use AAD Workload Identity to probe Azure SQL, AKS control-plane state, AAD Identity, Application Gateway, Key Vault, and more. Zero long-lived credentials. Read-only by design."
+    claim="10 Azure cloud probes shipped in v1.8, modelled on the AWS set, using a live azure-sdk-for-go wrapper and AAD Workload Identity (off by default; cloud.azure.enabled=true). A few signals that the Azure REST surface doesn't expose directly — subnet IP-utilization, SQL storage-%, and App Gateway backend health — honestly report 'not measured' pending Azure Monitor metrics wiring (v1.9) rather than silently passing. Everything else (Azure SQL state/backup/tier, AKS control-plane + node pools, Managed Identity role-assignments, cert expiry, Storage public-access, Key Vault) is fetched live. Read-only by design."
     backHref="/features/"
     backLabel="← All features"
   />

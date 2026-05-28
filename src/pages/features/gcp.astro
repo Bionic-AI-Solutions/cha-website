@@ -5,16 +5,16 @@ import StubBody from '../../components/StubBody.astro';
 ---
 
 <BaseLayout
-  title="CHA &mdash; GCP probes (roadmap M2 / v1.7+)"
-  description="GCP probes covering Cloud SQL, GKE, IAM, Load Balancers, GCS, KMS — scoped for M2 (v1.7+). Workload Identity native."
+  title="CHA &mdash; GCP probes (shipped v1.8)"
+  description="10 GCP probes covering Cloud SQL, GKE control-plane + node pools, IAM service accounts, Subnets, Load Balancer backends, managed certs, GCS public-access, KMS. Workload Identity native, read-only."
 >
   <PageHero
-    eyebrow="Features &middot; GCP (roadmap)"
-    title="GCP probes — roadmap M2 (v1.7+)."
-    subtitle="Cloud SQL, GKE, IAM, Load Balancers, GCS, KMS. The pkg/cloud/gcp client is scaffolded today; the probe set ships in v1.7+, modelled on the AWS IRSA pattern already live."
+    eyebrow="Features &middot; GCP"
+    title="GCP probes — shipped (v1.8)."
+    subtitle="10 probes via a live google.golang.org/api wrapper: Cloud SQL, GKE control-plane + node pools, IAM service accounts, Subnets, Load Balancer backends, managed certificates, GCS public-access, KMS. GKE Workload Identity — zero long-lived credentials. Read-only by design."
   />
   <StubBody
-    claim="GCP cloud probes are roadmap M2 (v1.7+). The pkg/cloud/gcp/client.go scaffold is in the OSS repo today; the probe implementations (modelled on the 10 AWS probes that shipped in v1.6.2) land in v1.7+. CHA on GKE will use Workload Identity — the cluster's GCP service-account binding — to probe Cloud SQL, GKE control-plane state, IAM, Load Balancers, GCS, KMS, and more. Zero long-lived credentials. Read-only by design."
+    claim="10 GCP cloud probes shipped in v1.8, modelled on the AWS set, using a live google.golang.org/api wrapper and GKE Workload Identity (off by default; cloud.gcp.enabled=true). A couple of signals the Compute/SQL Admin list APIs don't expose directly — subnet IP-utilization and Cloud SQL storage-% — honestly report 'not measured' pending Cloud Monitoring API wiring (v1.9) rather than silently passing. Everything else (Cloud SQL state/backup, GKE control-plane + node pools, IAM service accounts, LB backend health, managed-cert status, GCS public-access, KMS) is fetched live. Read-only by design."
     backHref="/features/"
     backLabel="← All features"
   />
