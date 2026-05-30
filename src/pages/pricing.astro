@@ -13,7 +13,8 @@ const tiers = [
     features: [
       'All 12 K8s probes — Ceph, Postgres, Nodes, PVCs, Critical services, Endpoints, NodePressure, DaemonSets, PendingPods, CrashLoopBackOff, ETCD, FailedMounts',
       '10 AWS cloud probes (off-by-default, opt-in via cloud.enabled) — RDS, EBS, EKS, IAM, ALB, ACM, KMS, S3, VPC + IRSA',
-      'GCP / Azure cloud probes — roadmap M2 (v1.7+)',
+      '7 GCP cloud probes — Cloud SQL (live Cloud Monitoring disk utilization), GKE, IAM SA, Subnet, LB+Cert, GCS+KMS, Persistent Disk. Workload-Identity auth.',
+      '8 Azure cloud probes — SQL DB (live storage_percent), AKS, Identity, Subnet (live IP-pool count), AppGW (live BackendHealth LRO), Key Vault, Storage, Disk. AAD Workload Identity native.',
       'All 5 policy-bounded fixers + GitOps / paused / suspended safety gates',
       'Lease-based leader election (HA-ready watcher)',
       'OpenProject MCP ticketing',
