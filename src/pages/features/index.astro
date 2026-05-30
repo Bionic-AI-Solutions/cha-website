@@ -21,21 +21,21 @@ const features = [
     href: '/features/gcp/',
     title: 'GCP probes',
     summary:
-      'Cloud SQL, GKE, IAM, LB, GCS, KMS — scoped for M2 (v1.7+). Same Workload-Identity auth pattern as the AWS IRSA probes already shipping.',
-    status: 'roadmap',
+      '7 probe families: Cloud SQL, GKE, IAM SA, Subnet, LB + Cert, GCS + KMS, Persistent Disk. Live SDK wrapper + Cloud Monitoring API (disk-utilization on Cloud SQL). Workload-Identity auth.',
+    status: 'shipped',
   },
   {
     href: '/features/azure/',
     title: 'Azure probes',
     summary:
-      'Azure SQL, AKS, Identity, App Gateway, Key Vault — scoped for M2 (v1.7+). AAD Workload Identity native; mirrors the AWS IRSA model.',
-    status: 'roadmap',
+      '8 probe families: SQL DB (live storage_percent), AKS, Identity, Subnet (live IP-pool count), AppGW (live BackendHealth LRO), Key Vault, Storage, Disk. AAD Workload Identity native.',
+    status: 'shipped',
   },
   {
     href: '/features/k3s-edge/',
-    title: 'k3s + edge',
+    title: 'k3s',
     summary:
-      'Reduced-footprint values bundle for single-node edge appliances. The same product, on a 2-CPU SBC.',
+      'CHA runs on any conformant K8s 1.27+ including k3s and RKE2. The same Helm chart, the same probes, the same fixers.',
     status: 'shipped',
   },
   {
@@ -75,12 +75,12 @@ const statusStyles: Record<string, string> = {
 
 <BaseLayout
   title="CHA &mdash; Features"
-  description="Capability deep-dives — 12 K8s probes, 10 AWS probes (GCP/Azure on roadmap), 4 default + 1 opt-in fixer with GitOps safety gates, 4 AI tiers, and the safety envelope holding it all together."
+  description="Capability deep-dives — 12 K8s probes, 10 AWS + 7 GCP + 8 Azure probe families, 4 default + 1 opt-in fixer with GitOps safety gates, 4 AI tiers, and the safety envelope holding it all together."
 >
   <PageHero
     eyebrow="Features"
     title="One operator. Every cloud. Every stack you already run."
-    subtitle="Twelve K8s probes (Sprint 2: NodePressure, DaemonSets, PendingPods, CrashLoopBackOff, ETCD, FailedMounts), ten AWS probes, four default fixers + one opt-in (all GitOps-aware), four AI tiers, and the safety envelope holding it all together."
+    subtitle="Twelve K8s probes (Sprint 2: NodePressure, DaemonSets, PendingPods, CrashLoopBackOff, ETCD, FailedMounts), ten AWS + seven GCP + eight Azure probe families (live SDK + Cloud Monitoring / Azure Monitor wiring), four default fixers + one opt-in (all GitOps-aware), four AI tiers, and the safety envelope holding it all together."
   />
 
   <section class="mx-auto max-w-7xl px-6 py-20">

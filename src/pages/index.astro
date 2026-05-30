@@ -6,7 +6,7 @@ const flowSteps = [
     n: '01',
     title: 'Install',
     claim:
-      'helm install cha cha/cluster-health-autopilot — works on any conformant K8s 1.27+, including EKS, GKE, AKS, and k3s edge.',
+      'helm install cha cha/cluster-health-autopilot — works on any conformant K8s 1.27+ (EKS, GKE, AKS, k3s, RKE2, OpenShift).',
     code: `$ helm repo add cha https://bionic-ai-solutions.github.io/cluster-health-autopilot
 $ helm install cha cha/cluster-health-autopilot
 $ kubectl get driftreports -A
@@ -17,20 +17,20 @@ kube-system  driftreport-stuck-certreq-xz4q9       12s`,
     n: '02',
     title: 'Detect',
     claim:
-      '12 K8s probes + 10 AWS probes (GCP/Azure on roadmap), plus 3 drift-class analyzers (GitOps, workload-state, RBAC) and 8 boundary analyzers (secrets, certs, IRSA drift). New in v1.7.0.',
-    code: `Probes  K8s 12          AWS 10          Drift v1.7
-       Ceph              RDS             GitOps
-       Nodes             EBS              Argo / Flux
-       Postgres          EKS             WorkloadState
-       PVCs              IAM              CNPG / STS
-       Services          ALB             RBAC
-       Endpoints         ACM              wildcards / SA
-       NodePressure      KMS
-       DaemonSets        S3
-       PendingPods       VPC
-       CrashLoopBackOff  KMS
-       ETCD              + GCP / Azure
-       FailedMounts      on roadmap`,
+      '12 K8s probes + 10 AWS + 7 GCP + 8 Azure probe families (live SDK + Cloud Monitoring / Azure Monitor wiring), 3 drift-class analyzers (GitOps, workload-state, RBAC), 8 boundary analyzers (secrets, certs, IRSA drift).',
+    code: `Probes  K8s 12          AWS 10          GCP 7
+       Ceph              RDS             CloudSQL
+       Nodes             EBS             GKE
+       Postgres          EKS             Persistent Disk
+       PVCs              IAM             IAM SA / Subnet
+       Services          ALB             LB / Cert
+       Endpoints         ACM             GCS / KMS
+       NodePressure      KMS             Backend Health
+       DaemonSets        S3              Azure 8
+       PendingPods       VPC             SQL DB
+       CrashLoopBackOff                  AKS
+       ETCD                              Disk / Identity
+       FailedMounts                      Subnet / AppGW`,
   },
   {
     n: '03',
@@ -68,7 +68,7 @@ mcp         drift-stuck-certreq-3   StuckCertReq      open    → ticketed`,
 ];
 
 const integrations = [
-  { row: 'Cloud', items: ['AWS', 'GCP (roadmap)', 'Azure (roadmap)'] },
+  { row: 'Cloud', items: ['AWS', 'GCP', 'Azure'] },
   {
     row: 'K8s distros',
     items: ['Kubernetes', 'EKS', 'GKE', 'AKS', 'k3s', 'OpenShift', 'RKE2'],
@@ -101,7 +101,7 @@ const wedges = [
   {
     title: 'In-cluster + bring-your-own-LLM',
     body:
-      'No SaaS. No vendor LLM lock-in. Point CHA-com at any OpenAI-compatible endpoint — your in-cluster vLLM, an Azure OpenAI deployment, your own gateway. Cluster data and prompts never leave your perimeter. Air-gap, sovereign, k3s edge — all supported.',
+      'No SaaS. No vendor LLM lock-in. Point CHA-com at any OpenAI-compatible endpoint — your in-cluster vLLM, an Azure OpenAI deployment, your own gateway. Cluster data and prompts never leave your perimeter.',
   },
   {
     title: 'Open core, audit-anchored',
