@@ -54,7 +54,20 @@ const milestones = [
     ],
   },
   {
-    label: 'v1.9 — v2.0',
+    label: 'v1.10',
+    status: 'Next — designed',
+    state: 'next',
+    items: [
+      'DNSChainDrift analyzer — walks Cloudflare DNS record → cluster ingress LB → Ingress with matching host → Service → ready Endpoints, end-to-end per host',
+      'Emits a structured finding for the highest broken layer (one ticket per root cause, not three): missing-cloudflare-record, cloudflare-points-elsewhere, missing-ingress, ingress-orphan-service, service-no-endpoints',
+      'Cloudflare hop is optional config (spec.externalDNS.cloudflare); K8s-only mode runs the cluster-side hops and flags the external DNS hop as not verified',
+      'Host discovery: every cluster Ingress + the DefaultEndpointTargets static seed list, deduped, honouring the existing cha.bionicaisolutions.com/probe-disable opt-out annotation',
+      'Closes the gap behind today’s "DNS resolution failed — check Cloudflare / upstream" hint with an actual diagnosis pointing at the file the fix belongs in (deploy/lib/dns.sh)',
+      'Natural paid-tier extension queued behind it: MultiCloudDNSDrift across Route53 + Cloudflare + GCP Cloud DNS with drift detection vs DNS-as-code source of truth',
+    ],
+  },
+  {
+    label: 'v1.10+ — v2.0',
     status: 'Roadmap',
     state: 'roadmap',
     items: [
@@ -71,12 +84,12 @@ const milestones = [
 
 <BaseLayout
   title="CHA &mdash; Roadmap"
-  description="Where CHA is going. v1.8 shipped (controller-runtime operator port, config/capacity/security drift classes, M2 K8s probes, 30 AWS/GCP/Azure cloud probes, and the purely-additive paid AI companion); v1.9+ cloud Monitoring-API signal wiring, operator Phase 1c, observability ingestion, multi-cluster federation, cloud-mutation envelope."
+  description="Where CHA is going. v1.8 shipped (controller-runtime operator port, config/capacity/security drift classes, M2 K8s probes, 30 AWS/GCP/Azure cloud probes, and the purely-additive paid AI companion); v1.10 lands the DNS-chain drift analyzer (Cloudflare → Ingress → Service → Endpoints, end-to-end per host); v1.10+ cloud Monitoring-API signal wiring, observability ingestion, multi-cluster federation, cloud-mutation envelope."
 >
   <PageHero
     eyebrow="Roadmap"
     title="What's shipped, what's next."
-    subtitle="v1.8 took the watcher to a controller-runtime operator, filled the remaining drift classes (config / capacity / security), added GCP/Azure cloud probes + the M2 K8s probe slice (Kong, HPA, ArgoCD, Velero), and made the paid AI tier a purely additive one-flag companion. CHA-com now rides the same v1.8.2 engine as OSS."
+    subtitle="v1.8 took the watcher to a controller-runtime operator, filled the remaining drift classes (config / capacity / security), added GCP/Azure cloud probes + the M2 K8s probe slice (Kong, HPA, ArgoCD, Velero), and made the paid AI tier a purely additive one-flag companion. Next: v1.10's DNS-chain drift analyzer turns today's 'check Cloudflare' hint into an actual end-to-end diagnosis — Cloudflare record → ingress LB → Ingress host → Service → Endpoints — pointing at the exact broken layer."
   />
 
   <section class="mx-auto max-w-5xl px-6 py-16">
