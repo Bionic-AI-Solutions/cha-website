@@ -17,31 +17,36 @@ kube-system  driftreport-stuck-certreq-xz4q9       12s`,
     n: '02',
     title: 'Detect',
     claim:
-      '12 K8s probes + 10 AWS + 7 GCP + 8 Azure probe families (live SDK + Cloud Monitoring / Azure Monitor wiring), 3 drift-class analyzers (GitOps, workload-state, RBAC), 8 boundary analyzers (secrets, certs, IRSA drift).',
-    code: `Probes  K8s 12          AWS 10          GCP 7
-       Ceph              RDS             CloudSQL
-       Nodes             EBS             GKE
-       Postgres          EKS             Persistent Disk
-       PVCs              IAM             IAM SA / Subnet
-       Services          ALB             LB / Cert
-       Endpoints         ACM             GCS / KMS
-       NodePressure      KMS             Backend Health
-       DaemonSets        S3              Azure 8
-       PendingPods       VPC             SQL DB
-       CrashLoopBackOff                  AKS
-       ETCD                              Disk / Identity
-       FailedMounts                      Subnet / AppGW`,
+      '14 K8s probes (incl. KongRoutes + GPUNodes) + 10 AWS + 7 GCP + 8 Azure probe families. 13 drift / log / workload analyzers (LogPatternMatcher, OOMKillRecurrence, PVOrphan, CronJobStuck, DisruptionDrift on top of GitOps/Workload/RBAC/Capacity/Security/Config). Three trigger classes (resource events, Prometheus alerts via Alertmanager, external HMAC-authed webhooks).',
+    code: `Probes 14 K8s     10 AWS   7 GCP    8 Azure
+       Ceph        RDS      CloudSQL SQL DB
+       Nodes       EBS      GKE      AKS
+       Postgres    EKS      PD       Disk
+       PVCs        IAM      IAM SA   Identity
+       Endpoints   ALB      LB       AppGW
+       NodePr.     ACM      Cert     Backend
+       DaemonSet   KMS      GCS/KMS  Subnet
+       Pending     S3       Backend  ...
+       CrashLoop   VPC
+       ETCD
+       FailedMnt
+       KongRoutes ←  M2 (v1.23.0)
+       GPUNodes   ←  M3 (v1.23.0)`,
   },
   {
     n: '03',
     title: 'Remediate',
     claim:
-      '5 policy-bounded fixers run by default. AI-tier fix proposals require human approval via signed click-to-fix URLs.',
-    code: `DriftReport  StaleErrorPod    — fixer ran    OK
-DriftReport  StuckJob         — fixer ran    OK
-DriftReport  StuckRS          — fixer ran    OK
-DriftReport  StuckCertReq     — fixer ran    OK
-DriftReport  TLSSecretMismatch — fixer ran   OK
+      '5 policy-bounded fixers run by default. AI-tier fix proposals require human approval via signed click-to-fix URLs — OR auto-merge silently at very-high confidence (Phase 3.B v1.19.0): matching approve-class policy + verified Ed25519 attestation + Wilson-bound class success-rate ≥ threshold (default 0.95) + closed circuit breaker.',
+    code: `DriftReport  StaleErrorPod    — fixer ran        OK
+DriftReport  StuckJob         — fixer ran        OK
+DriftReport  StuckRS          — fixer ran        OK
+DriftReport  StuckCertReq     — fixer ran        OK
+DriftReport  TLSSecretMismatch — fixer ran       OK
+DriftReport  SecurityDrift    — DigestPin PR
+                                 attestation: Ed25519 ✓
+                                 auto-merge gate: 5/5 ✓
+                                 squash-merged via API ✓
 Re-verify in 60s ...`,
   },
   {
@@ -87,9 +92,13 @@ const integrations = [
   },
   {
     row: 'K8s-native infra',
-    items: ['Vault', 'cert-manager', 'CNPG', 'Rook/Ceph', 'External Secrets'],
+    items: ['Vault', 'cert-manager', 'CNPG', 'Rook/Ceph', 'External Secrets', 'Kong', 'ArgoCD'],
   },
-  { row: 'AI providers', items: ['OpenAI', 'Anthropic'] },
+  {
+    row: 'Trigger sources',
+    items: ['K8s informers', 'Alertmanager polling', 'Webhook (HMAC)', 'CronJob resync'],
+  },
+  { row: 'AI providers', items: ['OpenAI', 'Anthropic', 'In-cluster vLLM'] },
 ];
 
 const wedges = [
@@ -106,7 +115,17 @@ const wedges = [
   {
     title: 'Open core, audit-anchored',
     body:
-      'OSS engine is Apache-2.0 — twelve K8s probes, ten AWS cloud probes, three drift-class analyzers (v1.7.0), five policy-bounded fixers, deterministic investigator baseline. CHA-com paid tier adds the LLM Investigator agent and the T0–T3 AI SRE flow: narration → fix proposal → multi-step plan → vault break-glass runbook. Every AI action is JWT-signed, hash-chained, and replayable. T0–T3 verified live against in-cluster vLLM (Qwen 3.6 35B).',
+      'OSS engine is Apache-2.0 — 14 K8s probes, 10 AWS + 7 GCP + 8 Azure cloud probe families, 13 drift / log / workload analyzers, 5 policy-bounded fixers. CHA-com paid tier adds the LLM Investigator agent + the T0–T3 AI SRE flow + Phase 2 closure (HA aiwatch via leader-election, Prometheus instrumentation, cosign-style PR attestation) + Phase 3 (auto-merge gate, target-history RAG grounding, SOC2 audit-bundle exporter). Every AI action is JWT-signed, hash-chained, replayable.',
+  },
+  {
+    title: 'Compliance-ready audit bundle',
+    body:
+      'cha-com audit-bundle --since 30d --output bundle.tar.gz produces a SOC2-friendly evidence pack with manifest.json (versions + SHA-256 of each file), audit.jsonl (verbatim copy of the JSONL audit log: every approval click + auto-apply + LLM call + verifier result), and outcomes.jsonl (every RAG outcome within --since). Local-only — no network egress. Shipped v1.18.0.',
+  },
+  {
+    title: 'Auto-merge at very-high confidence',
+    body:
+      'When the Phase 2.B "approve+remember class" policy matches AND the Phase 2.H Ed25519 attestation verifies AND the Phase 2.C Wilson-bound class success-rate clears the operator-set threshold (default 0.95) AND the circuit breaker is closed, freshly-opened DigestPin PRs auto-merge via the Forge API without a human click. Closes the "incidents resolved without paging a human" promise. Shipped v1.19.0.',
   },
 ];
 

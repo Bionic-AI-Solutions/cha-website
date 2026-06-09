@@ -4,92 +4,101 @@ import PageHero from '../components/PageHero.astro';
 
 const milestones = [
   {
-    label: 'v1.7.0',
-    status: 'Shipped — 2026-05-27',
+    label: 'v1.23.0 (OSS) + v1.19.0 (paid)',
+    status: 'Shipped — 2026-06-09',
     state: 'shipped',
     items: [
-      'Drift-class expansion — agent investigation surface broadens from secret/credential drift to three new classes that page oncall in practice',
-      'GitOpsDrift analyzer: Argo CD Application out-of-sync / Degraded + Flux Kustomization / HelmRelease Ready=False past grace; *Failed reasons escalate to critical',
-      'WorkloadStateDrift analyzer: CNPG cluster phase, follower-degraded-while-healthy, primary switchover stuck; StatefulSet ordinal-zero gaps',
-      'RBACDrift analyzer: wildcard verbs in user-defined Roles + unbound ServiceAccounts mounted by Pods; system roles excluded',
-      'Reader ClusterRole extended for Argo/Flux CRDs + RBAC/ServiceAccount resources',
-      'Helm wiring: analyzers.{gitopsDrift,workloadStateDrift,rbacDrift}.enabled toggles (default ON); CHA_ANALYZER_<NAME>=off env-gate',
-      'Demo v3 (run-demo-v3.sh) — sales walkthrough leading with the AI SRE agent flow (T0 → T1 → T3 vault break-glass)',
-      'CHA-com v1.7.0: LLMFixerMatcher (opt-in --ai-llm-fixer-matcher) — fixer selection becomes LLM-classified, falls back to keyword on error',
+      'Trigger-expansion roadmap M1–M7 bundled: closes the docs/design/2026-05-trigger-expansion-roadmap plan that v1.6.0 opened M1 against',
+      'M1 — watcher inform-loop expanded with Ingress + HPA + ArgoCD Application (DaemonSet was already in)',
+      'M2 — KongRoutes probe: for each Kong-managed Ingress, verifies the backend Service has ≥1 ready Endpoint + KongPlugin/Consumer annotation refs resolve',
+      'M3 — GPUNodes probe (NotReady / cordoned / zero-allocatable signals on nvidia.com/gpu + amd.com/gpu nodes) + LogPatternMatcher analyzer (ImagePullBackOff, OOMKilled, probe failed, volume attach failed, RBAC Forbidden — deduped per (object, pattern))',
+      'M4 — Endpoints probe Layer-7 mode: cha.bionicaisolutions.com/probe-l7-{path,expect,status} annotations on an Ingress assert response status AND body content (substring or regex:). Closes the "Kong returns 200 but body is wrong" failure class',
+      'M5 — Prometheus class-C trigger: internal/trigger/prom polls Alertmanager /api/v2/alerts and pushes a debounced signal to the watcher on every new firing-alert fingerprint. Closes the slow-drift gap (disk fill, cert expiry creep, error-budget burn, GPU ECC accumulation) that classes A and B miss entirely',
+      'M6 — external webhook receiver (class E): HMAC-SHA256-authenticated POST to /webhook/<source> triggers an immediate diagnose cycle. Sign() helper exported for external integrators (Vault, Argo CD, cert-manager, Cloudflare)',
+      'M7 — pkg/probe.GVRWatcher foundation interface: probes declare which Kubernetes resource kinds they consume; sets up phase 2 (per-probe dispatch) and phase 3 (full controller-runtime) without changing today\'s semantics',
+      'Phase 3.B production wiring (paid): the v1.17.0 release shipped the AutoMergeGate interface + tests but never instantiated the gate at runtime. v1.19.0 closes the loop — shared CircuitBreaker between auto-apply and auto-merge, ClassSuccessConfidence exported, --digest-pin-min-success-rate flag (default 0.95), construct-gate-on-startup wiring with actionable errors on half-config',
     ],
   },
   {
-    label: 'v1.6.2',
-    status: 'Shipped — 2026-05-27',
+    label: 'v1.22.x (OSS) + v1.18.0 (paid)',
+    status: 'Shipped — 2026-06-09',
     state: 'shipped',
     items: [
-      'Six new K8s probes: NodePressure, system DaemonSets, PendingPods, CrashLoopBackOff, ETCD, FailedMounts (now 12 K8s probes total)',
-      '10 AWS cloud probes: RDS, EBS, EKS-cluster, EKS-nodegroups, IAM-roles, ALB, ACM, KMS, S3 public-access, VPC-subnets (off by default; cloud.enabled=false)',
-      'Fixer safety nets: GitOps detection (Argo / Flux / Helm), spec.paused, CronJob.spec.suspend, cert-manager health gate',
-      'Configurable critical-workloads list via env + annotation',
-      'Lease-based leader election for HA watcher deployments (genuinely active in cluster as of v1.6.2)',
-      'pkg/ai/redact: Kubernetes Event message scrubbing before LLM consumption',
-      'Per-severity Slack repeat intervals — --slack-critical-repeat-interval splits warning vs critical cadence',
-      'OpenProject MCP ticketing — auto-files unfixable diagnostics with dedup',
-      'AI safety hardening (paid): patch-payload allow-list, investigation rate budget, cold-start mitigation, audit hash chain',
-      'CHA-com paid v1.6.0: T0 narration, T1 fix proposer, T2 multi-step planner, T3 vault break-glass runbook with dual-approval, JWT-signed click-to-fix URLs, cha-com watch with JSONL audit log',
-      'CronJob runtime caps: backoffLimit=1, activeDeadlineSeconds=120',
-      'Chart unit tests (helm-unittest) wired into CI',
+      'Phase 3.C — investigator-level RAG grounding: the enricher prepends a <target_history> prompt block on repeat findings. "This exact target has been touched 14 times — 11 cleared, 2 still-present, 1 reverted. Most recent (4h ago) cleared with ApplyManifest." Reuses Phase 2.A outcome memory; nil retriever = legacy (no block). Expected ~90% reduction in investigator wall-clock + token cost on recurring findings',
+      'Phase 3.F — cha-com audit-bundle subcommand: produces a SOC2-friendly tar.gz with manifest.json (versions, timestamps, SHA-256 of each file), audit.jsonl (verbatim copy of the audit log), and outcomes.jsonl (every RAG outcome within --since, default 30d). Local-only — no network egress',
+      'Phase 3.E — 3 new workload-tier analyzers: OOMKillRecurrence (pod with ≥3 OOMKilled restarts in 24h), PVOrphan (PersistentVolume Released >7d — still billing on the underlying cloud disk), CronJobStuck (warning/critical for >24h-since-success / never-succeeded / suspended)',
+      'Phase 3.D — operator schema parity: spec.ai.metrics + spec.ai.llmProposer typed CR fields with operator reconciler. ArgoCD/Flux/kubectl-apply installs no longer need extraArgs escape hatches for these surfaces',
+      'CronJobStuck firing live on dev cluster on bionic-diagnose + bionic-remediate (never-succeeded) + pg/pg-password-* (suspended) + kube-system/namespace-cleanup* (never-succeeded)',
+      'PVOrphan firing on dev cluster\'s 117 Released PVs once v1.22.2 added the persistentvolumes RBAC verb',
     ],
   },
   {
-    label: 'v1.8.2 / v1.8.4',
-    status: 'Shipped — 2026-05-28',
+    label: 'v1.21.x (OSS) + v1.16.0–v1.17.0 (paid)',
+    status: 'Shipped — 2026-06-07/08',
     state: 'shipped',
     items: [
-      'Operator port to controller-runtime (Phase 1 + 1b): ClusterHealthAutopilot CRD + cha-operator manager reconciling watcher Deployment / CronJobs / SA, with Ready + WatcherRunning conditions (opt-in via operator.enabled)',
-      'ConfigDrift analyzer (CRD multi-storedVersions, stuck rollouts, disagreeing pod config-checksums)',
-      'CapacityDrift analyzer (HPA pinned at min/max past grace, AbleToScale=False, FailedGetResourceMetric, PVC expansion stuck)',
-      'SecurityDrift analyzer (PSS-unlabeled/privileged namespaces, mutable :tag image refs, zero-NetworkPolicy namespaces)',
-      'M2 K8s probes: Kong, HPA scaling, ArgoCD Application, Velero — each auto-skips when its CRD is absent; per-probe Helm toggles (probes.<name>.enabled)',
-      '30 cloud probes — 10 each AWS / GCP / Azure — with live SDK wrappers (IRSA / GCP + AAD Workload Identity). AWS fetches every signal live; a few GCP/Azure signals (subnet IP-utilization, SQL storage-%, App Gateway backend health) honestly report "not measured" pending the cloud Monitoring API rather than silently passing',
-      'Cloud-probe honesty hardening + operator BYO-ServiceAccount fix (v1.8.2)',
-      'Paid tier deploys as a purely additive companion: OSS install + ai.enabled=true stands up a separate cha-com aiwatch Deployment (the AI-layered counterpart), OSS workloads untouched — see DEPLOYMENT.md (v1.8.4)',
-      'CHA-com bumped to OSS v1.8.2 so the paid binary carries the full v1.8 detection surface alongside the T0–T3 AI tiers',
+      'Phase 2 paid-tier closure across 8 sub-deliverables (PR #45). All locally tested and live-verified on the dev cluster as cha-com:1.16.0-dev1 before canonical tagging',
+      'Phase 2.A — RAG memory READ path + revert detection + per-cycle observability log line (outcomes: cycle=N applied=A reverted=R)',
+      'Phase 2.B — "Approve+remember class" workflow end-to-end: PolicyEntry + PolicyStore (RAG-backed) + autonomy engine bypass on matching approve-policy + 3 scoped click routes (/approve-class /deny-class /silence-class) + 4-button Slack render row + per-cycle "policies: active=A muted=M" log + per-message MessagePattern matching (not just wildcards)',
+      'Phase 2.C — Wilson-bound class-success-rate confidence merged into DecideAutonomy via max() with similarity confidence. Rescues high-volume well-tested classes (50/50 ≈ 0.93 confidence) without over-claiming on small samples',
+      'Phase 2.D — LLM-driven proposer for diagnostics outside FixProposer\'s keyword set. Closed-enum gate enforces ActionKind validity. Memory-grounded prompts include per-(source, action_kind) success stats',
+      'Phase 2.E — DisruptionDrift analyzer (PDB blocks all evictions / stuck Indexed-Job failed indexes / ResourceQuota at 100% past 1h)',
+      'Phase 2.F — lease-based leader election: HA aiwatch with --leader-election*. coordination.k8s.io/v1.Lease named <release>-aiwatch-leader; failover ~20s on lease loss',
+      'Phase 2.G — Prometheus instrumentation: 8 cha_* metric families on /metrics:9090 + chart-rendered ServiceMonitor / PrometheusRule (ChaWatcherStuck, ChaBreakerOpen, ChaAutonomyRejectionSpike) / Grafana dashboard ConfigMap',
+      'Phase 2.H — cosign-style attestation on DigestPin PRs: Ed25519 over canonical (action_id, repo, ref, file_path, before_digest, after_digest, observed_at) + embedded public-key PEM. Reviewers verify with openssl before approving — prevents a stolen GitHub PAT from opening look-alike PRs',
+      'Phase 3.B — auto-merge gate impl + 5-gate guard (feature flag + attestation configured + closed breaker + matching approve-class policy + Wilson rate ≥ threshold). Production wiring landed in v1.19.0',
     ],
   },
   {
-    label: 'v1.10',
-    status: 'Next — designed',
+    label: 'v1.8.x — v1.20.x (OSS) + v1.6.0 — v1.15.x (paid)',
+    status: 'Shipped earlier — 2026-05',
+    state: 'shipped',
+    items: [
+      'Operator port (Phase 1c): ClusterHealthAutopilot CRD + cha-operator manager reconciling the full AI stack end-to-end — aiwatch Deployment + Qdrant StatefulSet + approval-server + Ingress + Ed25519 signing key Secret + RBAC chain. 5 status conditions; 112 unit tests + bundle-smoke gate',
+      'DNSChainDrift analyzer: Cloudflare DNS record → cluster ingress LB → Ingress host → Service → ready Endpoints. Emits the highest broken layer per host (one ticket per root cause, not three)',
+      'M1 of the original M1–M5 K8s-probe slice (Kong / HPA / ArgoCD / Velero / CapacityDrift PVC expansion) — M1 was opened in v1.6.0 and partially expanded in v1.23.0 (this release)',
+      '30 cloud probes — 10 each AWS / GCP / Azure — with live SDK wrappers (IRSA / GCP Workload Identity / AAD WI). Honest "not measured" where the cloud Monitoring API is required',
+      'ConfigDrift, CapacityDrift, SecurityDrift, GitOpsDrift, WorkloadStateDrift, RBACDrift analyzers (per-class Helm toggles + per-analyzer CHA_ANALYZER_<NAME> env opt-out)',
+      'CHA-com paid tier: T0 narration, T1 fix proposer, T2 multi-step planner, T3 vault break-glass runbook with dual approval, JWT-signed click-to-fix URLs, JSONL audit log, hash-chained audit',
+      'Lease-based leader election for HA watcher deployments; per-severity Slack repeat intervals; OpenProject MCP ticketing; pkg/ai/redact for K8s Event message scrubbing',
+    ],
+  },
+  {
+    label: 'Pending / roadmap',
+    status: 'Next',
     state: 'next',
     items: [
-      'DNSChainDrift analyzer — walks Cloudflare DNS record → cluster ingress LB → Ingress with matching host → Service → ready Endpoints, end-to-end per host',
-      'Emits a structured finding for the highest broken layer (one ticket per root cause, not three): missing-cloudflare-record, cloudflare-points-elsewhere, missing-ingress, ingress-orphan-service, service-no-endpoints',
-      'Cloudflare hop is optional config (spec.externalDNS.cloudflare); K8s-only mode runs the cluster-side hops and flags the external DNS hop as not verified',
-      'Host discovery: every cluster Ingress + the DefaultEndpointTargets static seed list, deduped, honouring the existing cha.bionicaisolutions.com/probe-disable opt-out annotation',
-      'Closes the gap behind today’s "DNS resolution failed — check Cloudflare / upstream" hint with an actual diagnosis pointing at the file the fix belongs in (deploy/lib/dns.sh)',
-      'Natural paid-tier extension queued behind it: MultiCloudDNSDrift across Route53 + Cloudflare + GCP Cloud DNS with drift detection vs DNS-as-code source of truth',
+      'Phase 3.A — cross-cluster RAG federation (paid). Substrate ready (pkg/rag.Entry.ClusterID already partitions outcomes); federation hook is one wider-list call. ICP-gated until first paying customer runs >1 cluster (~half-day when triggered)',
+      'M7 phase 2 — per-probe dispatch: watcher gates each probe on its declared GVRs() (today every probe runs on every trigger). v1.23.0 ships the GVRWatcher interface; phase 2 flips the dispatcher',
+      'M7 phase 3 — full controller-runtime/kubebuilder reconciler per probe (~10 days, separate design doc)',
+      'Operator CRD field for spec.ai.metrics.serviceMonitor + spec.ai.metrics.prometheusRule (currently chart-only; CR-driven installs need helm-rendered output to layer them on)',
+      'Multi-tenant CHA-com — one binary serving N customer clusters (cloud SaaS path, not yet planned)',
+      'Public "incidents resolved without paging a human" benchmark page (GTM milestone)',
+      'Anonymized run-log opt-in collection (day 14-90 of the GTM brief)',
+      'Paid landing page + signup (day 60 of the GTM brief)',
     ],
   },
-  {
-    label: 'v1.10+ — v2.0',
-    status: 'Roadmap',
-    state: 'roadmap',
-    items: [
-      'Observability ingestion — Prometheus alerts as a CHA trigger (trigger-class C)',
-      'External webhook ingestion — Vault rotations, cert-manager Issued, Cloudflare cert renewals (trigger-class E)',
-      'Multi-cluster federation via ArgoCD ApplicationSet over the operator pattern',
-      'Cloud-resource mutation (M4) with a separate signed-approval envelope, distinct from the K8s remediator role',
-      'Redis-backed RunbookStore for HA approval-server (single-replica today)',
-      'Public "incidents resolved without paging a human" benchmark',
-    ],
-  },
+];
+
+const openItems = [
+  { label: 'Phase 3.A cross-cluster RAG federation', why: 'ICP-gated; substrate ready', when: 'On first paying customer with >1 cluster' },
+  { label: 'M7 phase 2 — per-probe dispatch', why: 'GVRWatcher foundation shipped; dispatcher rewrite next', when: 'Q3 2026' },
+  { label: 'M7 phase 3 — controller-runtime reconciler per probe', why: '10-day effort + separate design doc', when: 'Q4 2026' },
+  { label: 'CR fields for ai.metrics.serviceMonitor + prometheusRule', why: 'Chart-only today; ArgoCD/Flux installs hit a gap', when: 'Next minor release' },
+  { label: 'Anonymized run-log collection', why: 'GTM day 14–90 milestone (no engineering blocker)', when: 'Product/marketing track' },
+  { label: 'Paid landing page + signup', why: 'GTM day 60 milestone', when: 'Product/marketing track' },
+  { label: 'Multi-tenant SaaS variant', why: 'Not yet designed; needs RFC', when: 'Post first 3 paying customers' },
 ];
 ---
 
 <BaseLayout
-  title="CHA &mdash; Roadmap"
-  description="Where CHA is going. v1.8 shipped (controller-runtime operator port, config/capacity/security drift classes, M2 K8s probes, 30 AWS/GCP/Azure cloud probes, and the purely-additive paid AI companion); v1.10 lands the DNS-chain drift analyzer (Cloudflare → Ingress → Service → Endpoints, end-to-end per host); v1.10+ cloud Monitoring-API signal wiring, observability ingestion, multi-cluster federation, cloud-mutation envelope."
+  title="CHA — Roadmap"
+  description="What's shipped and what's next on Cluster Health Autopilot. As of 2026-06-09: Phase 2 (paid-tier closure across 8 sub-deliverables), Phase 3 (auto-merge + investigator RAG + audit bundle + 3 workload analyzers), and the M1-M7 trigger-expansion roadmap are all shipped + live on the production cluster."
 >
   <PageHero
     eyebrow="Roadmap"
-    title="What's shipped, what's next."
-    subtitle="v1.8 took the watcher to a controller-runtime operator, filled the remaining drift classes (config / capacity / security), added GCP/Azure cloud probes + the M2 K8s probe slice (Kong, HPA, ArgoCD, Velero), and made the paid AI tier a purely additive one-flag companion. Next: v1.10's DNS-chain drift analyzer turns today's 'check Cloudflare' hint into an actual end-to-end diagnosis — Cloudflare record → ingress LB → Ingress host → Service → Endpoints — pointing at the exact broken layer."
+    title="What's shipped, what's running, what's next."
+    subtitle="As of 2026-06-09, the v1.23.0 OSS + v1.19.0 paid binaries close two major arcs back-to-back: Phase 2 (the test→learn→next-cycle-detect loop with HA aiwatch + Prometheus + attestation), and Phase 3 (auto-merge at very-high confidence + investigator-level RAG grounding + SOC2 audit bundle + 3 new analyzers). The trigger-expansion roadmap M1-M7 lands in the same release: Ingress/HPA/ArgoCD watch + KongRoutes + GPUNodes + LogPatternMatcher + L7 body assertion + Prometheus class-C trigger + webhook class-E receiver + GVRWatcher foundation. The remaining open items are listed below."
   />
 
   <section class="mx-auto max-w-5xl px-6 py-16">
@@ -117,12 +126,44 @@ const milestones = [
       ))}
     </div>
 
+    <h2 class="mt-16 mb-4 text-xl font-semibold text-white">Visible open-items list</h2>
+    <p class="mb-6 text-sm text-slate-400">
+      Living list of pending work. Each item shows the gating reason and the
+      target window. Engineering items below the "GTM track" line are
+      product/marketing work, not engineering — they don't block shipped
+      capability.
+    </p>
+    <div class="overflow-x-auto rounded-2xl border border-white/10 bg-white/5">
+      <table class="w-full text-left text-sm">
+        <thead class="bg-white/5 text-slate-400">
+          <tr>
+            <th class="px-5 py-3 font-medium">Item</th>
+            <th class="px-5 py-3 font-medium">Why pending</th>
+            <th class="px-5 py-3 font-medium">When</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-white/5 text-slate-300">
+          {openItems.map((i) => (
+            <tr>
+              <td class="px-5 py-3 font-medium text-white">{i.label}</td>
+              <td class="px-5 py-3">{i.why}</td>
+              <td class="px-5 py-3 font-mono text-xs text-cyan-300">{i.when}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+
     <div class="mt-10 rounded-2xl border border-white/10 bg-white/5 p-6 text-sm text-slate-300">
       <p>
         Full design docs and the adversarial-review punch list live in the
         OSS repo at
         <a href="https://github.com/Bionic-AI-Solutions/cluster-health-autopilot/tree/main/docs/design"
            class="text-cyan-400 hover:text-cyan-300">docs/design/</a>.
+        The consolidated 2026-06-09 plan that supersedes the per-phase docs
+        for forward planning is at
+        <a href="https://github.com/Bionic-AI-Solutions/cluster-health-autopilot/blob/main/docs/superpowers/plans/2026-06-09-cha-consolidated-roadmap.md"
+           class="text-cyan-400 hover:text-cyan-300">docs/superpowers/plans/2026-06-09-cha-consolidated-roadmap.md</a>.
       </p>
     </div>
   </section>
