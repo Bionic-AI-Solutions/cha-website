@@ -1,0 +1,109 @@
+---
+import DocsLayout from '../../layouts/DocsLayout.astro';
+import PageHero from '../../components/PageHero.astro';
+
+const tiers = [
+  {
+    tier: 'T0',
+    name: 'Diagnostic narrative',
+    does: 'Enriches every DriftReport finding with an LLM-generated narrative summary — what happened, why it matters, and the most likely root cause. Read-only; no action proposed.',
+    approval: 'None',
+  },
+  {
+    tier: 'T1',
+    name: 'Fix proposals',
+    does: 'Proposes a specific action (bounded to the operator-defined action_kind policy) and delivers a signed click-to-fix URL to Slack or the ticket. Nothing mutates until the URL is clicked.',
+    approval: 'One-click signed URL',
+  },
+  {
+    tier: 'T2',
+    name: 'Multi-step planner',
+    does: 'For complex findings, proposes a plan of up to 5 prerequisite-linked steps. Each step requires its own approval click. Steps are linked — later steps can reference earlier results.',
+    approval: 'Per-step signed URL',
+  },
+  {
+    tier: 'T3',
+    name: 'Vault runbook proposer',
+    does: 'Proposes break-glass Vault runbooks for Vault-related outages. Delivered as a structured document, never auto-run. Requires dual approval before any Vault path is touched.',
+    approval: 'Dual approval',
+  },
+];
+---
+
+<DocsLayout
+  title="CHA &mdash; AI Tiers"
+  description="T0 narration, T1 fix proposals, T2 multi-step planning, T3 Vault runbooks — all approval-gated and bounded by operator policy."
+  topic="AI Tiers"
+>
+  <PageHero
+    eyebrow="Docs"
+    title="AI Tiers"
+    subtitle="Four LLM-augmented capabilities, each approval-gated. Available in the paid cha-com binary — same policy bounds and RBAC ceiling as the OSS engine."
+  />
+
+  <section class="mx-auto max-w-5xl space-y-16 px-6 py-16">
+
+    <div>
+      <p class="text-base leading-relaxed text-zinc-600 dark:text-zinc-400">
+        The paid <code class="font-mono">cha-com</code> binary runs alongside the OSS watcher — it never replaces it. AI tiers add an LLM layer on top of OSS findings. The architectural invariant: the paid binary cannot exceed the OSS RBAC ceiling. Every mutation flows through the same <code class="font-mono">snapshot.Mutator</code> interface and the operator-defined action policy.
+      </p>
+      <div class="mt-4 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 dark:border-amber-900/50 dark:bg-amber-950/30">
+        <p class="text-sm text-amber-800 dark:text-amber-300">
+          <strong>Nothing mutates without a human click.</strong> T1 and above require an approval action — a signed URL delivered to Slack or your ticket. Without the click, no cluster state changes.
+        </p>
+      </div>
+    </div>
+
+    <div>
+      <h2 class="text-xl font-semibold text-zinc-900 dark:text-zinc-50">Tier reference</h2>
+      <div class="mt-1 h-0.5 w-8 rounded-full bg-accent-500"></div>
+      <div class="mt-6 space-y-4">
+        {tiers.map((t) => (
+          <div class="rounded-2xl border border-zinc-200/80 bg-white p-6 shadow-sm dark:border-zinc-800/80 dark:bg-zinc-900/60">
+            <div class="flex items-start justify-between gap-4">
+              <div>
+                <div class="flex items-center gap-3">
+                  <span class="inline-flex h-7 w-7 items-center justify-center rounded-full bg-accent-600 text-xs font-bold text-white">{t.tier}</span>
+                  <h3 class="text-base font-semibold text-zinc-900 dark:text-zinc-50">{t.name}</h3>
+                </div>
+                <p class="mt-2 text-sm leading-relaxed text-zinc-600 dark:text-zinc-400">{t.does}</p>
+              </div>
+              <div class="shrink-0 text-right">
+                <span class="text-xs font-medium text-zinc-500 dark:text-zinc-400">Approval</span>
+                <p class="mt-0.5 text-sm font-medium text-zinc-900 dark:text-zinc-100">{t.approval}</p>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+
+    <div>
+      <h2 class="text-xl font-semibold text-zinc-900 dark:text-zinc-50">Enabling AI tiers</h2>
+      <div class="mt-1 h-0.5 w-8 rounded-full bg-accent-500"></div>
+      <p class="mt-4 text-sm leading-relaxed text-zinc-600 dark:text-zinc-400">
+        AI tiers are additive — the same Helm chart, plus <code class="font-mono">ai.enabled=true</code>. The OSS watcher workloads are untouched.
+      </p>
+      <pre class="mt-4 overflow-x-auto rounded-lg bg-zinc-900 px-5 py-4 text-sm text-zinc-100 dark:bg-zinc-950"><code>{`helm upgrade cha cha/cluster-health-autopilot --reuse-values \\
+  --set ai.enabled=true \\
+  --set ai.tier=t1 \\
+  --set ai.endpoint=https://your-llm-endpoint/v1 \\
+  --set ai.model=your-model-name \\
+  --set ai.apiKey.secretName=cha-ai-llm-key`}</code></pre>
+    </div>
+
+    <div>
+      <h2 class="text-xl font-semibold text-zinc-900 dark:text-zinc-50">Bring your own LLM</h2>
+      <div class="mt-1 h-0.5 w-8 rounded-full bg-accent-500"></div>
+      <p class="mt-4 text-sm leading-relaxed text-zinc-600 dark:text-zinc-400">
+        CHA-com uses any OpenAI-compatible endpoint — your in-cluster vLLM instance, Azure OpenAI, or any other gateway. Cluster diagnostics and prompts never leave your perimeter when using an in-cluster LLM. Set <code class="font-mono">ai.endpoint</code> to the <code class="font-mono">/v1</code> base URL of your endpoint.
+      </p>
+      <div class="mt-4 rounded-lg border border-zinc-200/80 bg-zinc-50 px-4 py-3 dark:border-zinc-800/80 dark:bg-zinc-900/60">
+        <p class="text-sm text-zinc-700 dark:text-zinc-300">
+          <strong>Recommended:</strong> run an in-cluster vLLM instance behind a ClusterIP service. Set <code class="font-mono">ai.allowSaas=false</code> to block any external LLM calls. Cluster data never crosses the cluster boundary.
+        </p>
+      </div>
+    </div>
+
+  </section>
+</DocsLayout>
