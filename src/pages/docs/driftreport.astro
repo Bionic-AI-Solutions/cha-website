@@ -1,0 +1,118 @@
+---
+import DocsLayout from '../../layouts/DocsLayout.astro';
+import PageHero from '../../components/PageHero.astro';
+
+const statusValues = [
+  { value: 'open', desc: 'Finding detected; no fix attempted or fix unresolved' },
+  { value: 'resolved', desc: 'Fix applied and re-verify passed' },
+  { value: 'suppressed', desc: 'Finding silenced by operator policy (paid tier)' },
+];
+
+const specFields = [
+  { field: 'subject.kind', desc: 'Kubernetes Kind of the affected resource (e.g. Pod, Deployment)' },
+  { field: 'subject.name', desc: 'Name of the affected resource' },
+  { field: 'subject.namespace', desc: 'Namespace of the affected resource' },
+  { field: 'analyzer', desc: 'Name of the analyzer that produced this finding' },
+  { field: 'severity', desc: 'Critical | Warning | Info' },
+  { field: 'summary', desc: 'Human-readable one-line finding description' },
+  { field: 'remediationHint', desc: 'Actionable suggestion for manual remediation' },
+  { field: 'fixerApplied', desc: 'Name of the fixer that ran (if any)' },
+  { field: 'detectedAt', desc: 'RFC3339 timestamp of first detection' },
+  { field: 'resolvedAt', desc: 'RFC3339 timestamp of resolution (if resolved)' },
+];
+---
+
+<DocsLayout
+  title="CHA &mdash; DriftReport CRD"
+  description="DriftReport is the kubectl-queryable representation of CHA findings. Every detected issue creates or updates a DriftReport CR."
+  topic="DriftReport CRD"
+>
+  <PageHero
+    eyebrow="Docs"
+    title="DriftReport CRD"
+    subtitle="Every CHA finding creates or updates a DriftReport custom resource. kubectl get driftreports -A is your cluster's real-time drift state."
+  />
+
+  <section class="mx-auto max-w-5xl space-y-16 px-6 py-16">
+
+    <div>
+      <p class="text-base leading-relaxed text-zinc-600 dark:text-zinc-400">
+        DriftReports are first-class Kubernetes objects. They persist in etcd, appear in <code class="font-mono">kubectl get</code>, work with OPA admission policies, and can be read by ArgoCD ApplicationSet generators and other tooling. CHA creates one DriftReport per finding per subject — re-detecting the same issue updates the existing CR rather than creating a new one.
+      </p>
+    </div>
+
+    <div>
+      <h2 class="text-xl font-semibold text-zinc-900 dark:text-zinc-50">Spec fields</h2>
+      <div class="mt-1 h-0.5 w-8 rounded-full bg-accent-500"></div>
+      <div class="mt-6 overflow-x-auto">
+        <table class="w-full border-collapse text-sm">
+          <thead>
+            <tr class="border-b border-zinc-200 dark:border-zinc-800">
+              <th class="py-2 pr-6 text-left font-medium text-zinc-500 dark:text-zinc-400">Field</th>
+              <th class="py-2 text-left font-medium text-zinc-500 dark:text-zinc-400">Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            {specFields.map((f) => (
+              <tr class="border-b border-zinc-100 dark:border-zinc-800/60">
+                <td class="py-3 pr-6 font-mono text-xs font-medium text-zinc-900 dark:text-zinc-100">{f.field}</td>
+                <td class="py-3 text-zinc-600 dark:text-zinc-400">{f.desc}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div>
+      <h2 class="text-xl font-semibold text-zinc-900 dark:text-zinc-50">Status values</h2>
+      <div class="mt-1 h-0.5 w-8 rounded-full bg-accent-500"></div>
+      <div class="mt-6 overflow-x-auto">
+        <table class="w-full border-collapse text-sm">
+          <thead>
+            <tr class="border-b border-zinc-200 dark:border-zinc-800">
+              <th class="py-2 pr-6 text-left font-medium text-zinc-500 dark:text-zinc-400">Status</th>
+              <th class="py-2 text-left font-medium text-zinc-500 dark:text-zinc-400">Meaning</th>
+            </tr>
+          </thead>
+          <tbody>
+            {statusValues.map((s) => (
+              <tr class="border-b border-zinc-100 dark:border-zinc-800/60">
+                <td class="py-3 pr-6 font-mono text-xs font-semibold text-zinc-900 dark:text-zinc-100">{s.value}</td>
+                <td class="py-3 text-zinc-600 dark:text-zinc-400">{s.desc}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div>
+      <h2 class="text-xl font-semibold text-zinc-900 dark:text-zinc-50">kubectl examples</h2>
+      <div class="mt-1 h-0.5 w-8 rounded-full bg-accent-500"></div>
+      <pre class="mt-4 overflow-x-auto rounded-lg bg-zinc-900 px-5 py-4 text-sm text-zinc-100 dark:bg-zinc-950"><code>{`# List all findings across all namespaces
+kubectl get driftreports -A
+
+# Wide output with kind and status
+kubectl get driftreports -A -o wide
+
+# Filter by status
+kubectl get driftreports -A --field-selector status.state=open
+
+# Describe a specific finding
+kubectl describe driftreport drift-tls-secret-1 -n default
+
+# Watch for new findings in real time
+kubectl get driftreports -A -w`}</code></pre>
+    </div>
+
+    <div>
+      <h2 class="text-xl font-semibold text-zinc-900 dark:text-zinc-50">Using DriftReports in GitOps</h2>
+      <div class="mt-1 h-0.5 w-8 rounded-full bg-accent-500"></div>
+      <p class="mt-4 text-sm leading-relaxed text-zinc-600 dark:text-zinc-400">
+        DriftReports are standard Kubernetes CRs. You can reference them in OPA/Gatekeeper constraints (block deploys to namespaces with open Critical findings), ArgoCD ApplicationSet generators (exclude clusters with drift), or your own controllers via a standard informer on the <code class="font-mono">driftreports.cha.bionicaisolutions.com</code> GVR.
+      </p>
+    </div>
+
+  </section>
+</DocsLayout>
