@@ -1,0 +1,126 @@
+---
+import DocsLayout from '../../layouts/DocsLayout.astro';
+import PageHero from '../../components/PageHero.astro';
+
+const aws = [
+  { name: 'RDS', checks: 'Instance/cluster status, storage %, multi-AZ, backup retention drift' },
+  { name: 'EBSVolumes', checks: 'Orphan/unattached volumes, snapshot age' },
+  { name: 'EKSControlPlane', checks: 'Version skew vs node groups, addon staleness' },
+  { name: 'EKSNodeGroups', checks: 'Capacity, scaling activity, version drift' },
+  { name: 'IAMRoles', checks: 'Trust policy drift on cluster service-account roles' },
+  { name: 'ALBTargetHealth', checks: 'Unhealthy targets in Load Balancer Controller-managed target groups' },
+  { name: 'ACMCertExpiry', checks: 'Certs expiring within 14 days' },
+  { name: 'KMSKeys', checks: 'Pending-deletion KMS keys still referenced by cluster resources' },
+  { name: 'S3BucketPublicAccess', checks: 'Public-ACL drift on buckets referenced by cluster IAM' },
+  { name: 'VPCSubnets', checks: 'Exhausted IP space affecting pod CIDR allocation' },
+];
+
+const gcp = [
+  { name: 'CloudSQL', checks: 'Instance status, storage utilization via Cloud Monitoring API' },
+  { name: 'GKE', checks: 'Node pool version drift, cluster status' },
+  { name: 'IAMServiceAccounts', checks: 'Workload Identity binding drift' },
+  { name: 'Subnets', checks: 'IP utilization' },
+  { name: 'LoadBalancer', checks: 'Backend health, cert expiry' },
+  { name: 'GCSAndKMS', checks: 'Bucket/key policy drift' },
+  { name: 'PersistentDisk', checks: 'Disk health and attachment status' },
+];
+
+const azure = [
+  { name: 'SQLDatabase', checks: 'Instance status, storage_percent (live Azure Monitor)' },
+  { name: 'AKS', checks: 'Node pool status, version drift' },
+  { name: 'Identity', checks: 'AAD Workload Identity binding drift' },
+  { name: 'Subnet', checks: 'Live IP-pool count' },
+  { name: 'AppGateway', checks: 'Live BackendHealth LRO' },
+  { name: 'KeyVault', checks: 'Key/secret expiry' },
+  { name: 'Storage', checks: 'Access policy drift' },
+  { name: 'Disk', checks: 'Disk health and attachment' },
+];
+
+const cloudRows = [
+  { provider: 'AWS', count: '10', enable: 'cloudProbes.aws.enabled: true', auth: 'IRSA (no long-lived keys)' },
+  { provider: 'GCP', count: '7', enable: 'cloudProbes.gcp.enabled: true', auth: 'GCP Workload Identity' },
+  { provider: 'Azure', count: '8', enable: 'cloudProbes.azure.enabled: true', auth: 'AAD Workload Identity' },
+];
+
+const sections = [
+  { title: 'AWS probes (10)', probes: aws },
+  { title: 'GCP probes (7)', probes: gcp },
+  { title: 'Azure probes (8)', probes: azure },
+];
+---
+
+<DocsLayout
+  title="CHA &mdash; Cloud Probes"
+  description="25 cloud probe families across AWS, GCP, and Azure. Workload-identity auth only. Enable per-provider in Helm values."
+  topic="Cloud Probes"
+>
+  <PageHero
+    eyebrow="Docs"
+    title="Cloud Probes"
+    subtitle="25 probe families across AWS, GCP, and Azure. Workload-identity auth only — no long-lived credentials. All off by default; enable per-provider."
+  />
+
+  <section class="mx-auto max-w-5xl space-y-16 px-6 py-16">
+
+    <div>
+      <p class="text-base leading-relaxed text-zinc-600 dark:text-zinc-400">
+        Cloud probes run alongside the K8s probes on every cycle. They use the same workload-identity credentials your cluster already has — IRSA on EKS, GCP Workload Identity on GKE, AAD Workload Identity on AKS. No cloud credentials are stored in CHA.
+      </p>
+
+      <div class="mt-6 overflow-x-auto">
+        <table class="w-full border-collapse text-sm">
+          <thead>
+            <tr class="border-b border-zinc-200 dark:border-zinc-800">
+              <th class="py-2 pr-6 text-left font-medium text-zinc-500 dark:text-zinc-400">Provider</th>
+              <th class="py-2 pr-6 text-left font-medium text-zinc-500 dark:text-zinc-400">Probes</th>
+              <th class="py-2 pr-6 text-left font-medium text-zinc-500 dark:text-zinc-400">Enable (Helm)</th>
+              <th class="py-2 text-left font-medium text-zinc-500 dark:text-zinc-400">Auth</th>
+            </tr>
+          </thead>
+          <tbody>
+            {cloudRows.map((r) => (
+              <tr class="border-b border-zinc-100 dark:border-zinc-800/60">
+                <td class="py-3 pr-6 font-semibold text-zinc-900 dark:text-zinc-100">{r.provider}</td>
+                <td class="py-3 pr-6 text-zinc-600 dark:text-zinc-400">{r.count}</td>
+                <td class="py-3 pr-6 font-mono text-xs text-zinc-500 dark:text-zinc-400">{r.enable}</td>
+                <td class="py-3 text-zinc-600 dark:text-zinc-400">{r.auth}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      <div class="mt-4 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 dark:border-amber-900/50 dark:bg-amber-950/30">
+        <p class="text-sm text-amber-800 dark:text-amber-300">
+          Cloud probes are <strong>off by default</strong>. Enable with <code class="font-mono">--set cloudProbes.aws.enabled=true</code> (or equivalent for GCP/Azure). The K8s-only value is unchanged if you never enable cloud probes.
+        </p>
+      </div>
+    </div>
+
+    {sections.map((s) => (
+      <div>
+        <h2 class="text-xl font-semibold text-zinc-900 dark:text-zinc-50">{s.title}</h2>
+        <div class="mt-1 h-0.5 w-8 rounded-full bg-accent-500"></div>
+        <div class="mt-6 overflow-x-auto">
+          <table class="w-full border-collapse text-sm">
+            <thead>
+              <tr class="border-b border-zinc-200 dark:border-zinc-800">
+                <th class="py-2 pr-6 text-left font-medium text-zinc-500 dark:text-zinc-400">Probe</th>
+                <th class="py-2 text-left font-medium text-zinc-500 dark:text-zinc-400">What it checks</th>
+              </tr>
+            </thead>
+            <tbody>
+              {s.probes.map((p) => (
+                <tr class="border-b border-zinc-100 dark:border-zinc-800/60">
+                  <td class="py-3 pr-6 font-mono text-xs font-semibold text-zinc-900 dark:text-zinc-100">{p.name}</td>
+                  <td class="py-3 text-zinc-600 dark:text-zinc-400">{p.checks}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    ))}
+
+  </section>
+</DocsLayout>
