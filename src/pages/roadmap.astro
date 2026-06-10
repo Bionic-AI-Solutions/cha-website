@@ -4,6 +4,18 @@ import PageHero from '../components/PageHero.astro';
 
 const milestones = [
   {
+    label: 'v1.23.1 (OSS) + v1.20.1 (paid)',
+    status: 'Shipped — 2026-06-10',
+    state: 'shipped',
+    items: [
+      'Adversarial-review fix pass after v1.23.0 + v1.19.0 shipped — caught 8 gaps where shipped packages were unreachable on the live cluster',
+      'OSS v1.23.1: M5 Prometheus trigger CLI flags (--prom-trigger-{url,interval,alert-filter}), M6 webhook HTTP server actually started in watcher.Run() (was compiled-but-never-loaded in v1.23.0), Helm watcher.triggers.{prom,webhook}.* values knobs + watcher-webhook-service.yaml template, discovery.k8s.io/endpointslices RBAC for KongRoutes (was silently falling back to legacy v1.Endpoints), 2 untracked plan docs committed (consolidated roadmap + Phase 3 master)',
+      'CHA-com v1.20.0: audit-bundle accepts --since 30d (parseSinceDuration with day suffix), registers --rag-store-url + the cluster-knowledge flag family, goreleaser workflow adds pre-checkout disk cleanup (~25 GiB freed) — restored multi-arch binary distribution after 4 consecutive single-arch fallbacks (v1.16.0–v1.19.0)',
+      'CHA-com v1.20.1: HOTFIX — v1.20.0 introduced "panic: audit-bundle flag redefined: cluster-name" which crashed every aiwatch pod into CrashLoopBackOff; rolled back to v1.19.0 + fixed by removing the subcommand-local --cluster-name (collision with ck.register). Caught during live verification, not in CI',
+      '11 of 11 prior-review gaps closed + 1 regression caught and hotfixed',
+    ],
+  },
+  {
     label: 'v1.23.0 (OSS) + v1.19.0 (paid)',
     status: 'Shipped — 2026-06-09',
     state: 'shipped',
@@ -81,10 +93,14 @@ const milestones = [
 ];
 
 const openItems = [
-  { label: 'Phase 3.A cross-cluster RAG federation', why: 'ICP-gated; substrate ready', when: 'On first paying customer with >1 cluster' },
+  { label: 'Phase 3.A cross-cluster RAG federation', why: 'ICP-gated; substrate verified (rag_qdrant.go applies cluster_id filter on reads)', when: 'On first paying customer with >1 cluster' },
   { label: 'M7 phase 2 — per-probe dispatch', why: 'GVRWatcher foundation shipped; dispatcher rewrite next', when: 'Q3 2026' },
   { label: 'M7 phase 3 — controller-runtime reconciler per probe', why: '10-day effort + separate design doc', when: 'Q4 2026' },
-  { label: 'CR fields for ai.metrics.serviceMonitor + prometheusRule', why: 'Chart-only today; ArgoCD/Flux installs hit a gap', when: 'Next minor release' },
+  { label: 'KEDA ScaledObject in watchedGVRs (M1 expansion)', why: 'Known production signal source not yet watched; HPA covers raw K8s autoscaling but not KEDA scaledobjects', when: 'v1.24.0' },
+  { label: 'Operator CR fields for watcher.triggers.{prom,webhook}', why: 'Chart-only today; ArgoCD/Flux installs can\'t activate M5/M6 from a pure CR-driven config', when: 'v1.24.0' },
+  { label: 'M5/M6 end-to-end live smoke (helm upgrade with values + curl webhook)', why: 'helm-template smoke proved templates render correctly but the full chart→running-pod→open-port path has not been integration-tested', when: 'Operator activation' },
+  { label: 'audit-bundle live content inspection (sidecar Pod with tar)', why: 'cha-com audit-bundle returns exit 0 on cluster but distroless container blocks in-place tarball extraction; no proof manifest+audit+outcomes have valid content yet', when: 'Operator activation' },
+  { label: 'Phase 3.B + 3.C startup log lines', why: 'Auto-merge gate construction and target-history block fires are not observably logged today — wired but no visibility into whether they actually fire in production', when: 'v1.21.0 CHA-com' },
   { label: 'Anonymized run-log collection', why: 'GTM day 14–90 milestone (no engineering blocker)', when: 'Product/marketing track' },
   { label: 'Paid landing page + signup', why: 'GTM day 60 milestone', when: 'Product/marketing track' },
   { label: 'Multi-tenant SaaS variant', why: 'Not yet designed; needs RFC', when: 'Post first 3 paying customers' },
