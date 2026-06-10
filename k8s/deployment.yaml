@@ -36,7 +36,7 @@ spec:
           type: RuntimeDefault
       containers:
         - name: cha-website
-          image: docker4zerocool/cha-website:v0.1.0
+          image: docker4zerocool/cha-website:v0.1.1
           imagePullPolicy: IfNotPresent
           ports:
             - name: http
