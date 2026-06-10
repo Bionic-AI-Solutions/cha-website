@@ -1,0 +1,91 @@
+---
+import DocsLayout from '../../layouts/DocsLayout.astro';
+import PageHero from '../../components/PageHero.astro';
+
+const probes = [
+  { name: 'Ceph', checks: 'Rook-Ceph health, OSD readiness, capacity %', fires: 'HEALTH_ERR or ≥80% capacity', disable: 'CHA_PROBE_CEPH=off' },
+  { name: 'PostgreSQL', checks: 'CNPG + Zalando Spilo/Patroni clusters (auto-detected)', fires: 'Replica not ready, primary missing', disable: 'CHA_PROBE_POSTGRES=off' },
+  { name: 'CriticalWorkloads', checks: 'Configurable list of critical Deployments/StatefulSets', fires: 'READY count < desired', disable: 'CHA_PROBE_CRITICAL_WORKLOADS=off' },
+  { name: 'ClusterNodes', checks: 'Node Ready condition', fires: 'Any node NotReady', disable: 'CHA_PROBE_NODES=off' },
+  { name: 'PVCs', checks: 'PersistentVolumeClaim phase', fires: 'Any PVC not Bound', disable: 'CHA_PROBE_PVCS=off' },
+  { name: 'Endpoints', checks: 'HTTP/S probe of each Ingress host (auto-discovered)', fires: '2-of-2 consecutive failures (flake-suppressed)', disable: 'CHA_PROBE_ENDPOINTS=off' },
+  { name: 'NodePressure', checks: 'DiskPressure / MemoryPressure / PIDPressure / NetworkUnavailable', fires: 'Any pressure condition True; DiskPressure → Critical', disable: 'CHA_PROBE_NODE_PRESSURE=off' },
+  { name: 'DaemonSets', checks: '8 system namespaces (kube-system, cilium, calico, flannel, rook-ceph, longhorn, openebs, metallb)', fires: 'desiredNumberScheduled ≠ numberReady', disable: 'CHA_PROBE_DAEMONSETS=off' },
+  { name: 'PendingPods', checks: 'Pods with PodScheduled=False past 60s grace', fires: 'Insufficient CPU/Memory, unbound PVC, taint/nodeSelector mismatch', disable: 'CHA_PROBE_PENDING_PODS=off' },
+  { name: 'CrashLoopBackOff', checks: 'Any namespace; protected-ns escalates immediately', fires: 'Protected-ns: always Critical; user-ns: past restart threshold (default 10)', disable: 'CHA_PROBE_CRASHLOOP=off' },
+  { name: 'ETCD', checks: 'kubeadm static-pod etcd members; "blind probe" warning on managed etcd', fires: 'Member unhealthy; Warning on managed/external etcd', disable: 'CHA_PROBE_ETCD=off' },
+  { name: 'FailedMounts', checks: 'Pods stuck ContainerCreating past 90s + kubelet FailedMount/FailedAttach events', fires: 'Volume mount failure confirmed by kubelet event', disable: 'CHA_PROBE_FAILED_MOUNTS=off' },
+  { name: 'KongRoutes', checks: 'For each Kong-managed Ingress: backend Service has ≥1 ready Endpoint + KongPlugin/Consumer annotation refs resolve', fires: 'No ready endpoints or dangling annotation', disable: 'CHA_PROBE_KONG_ROUTES=off' },
+  { name: 'GPUNodes', checks: 'nvidia.com/gpu + amd.com/gpu node allocatability', fires: 'GPU node NotReady, cordoned, or zero allocatable GPU', disable: 'CHA_PROBE_GPU_NODES=off' },
+];
+---
+
+<DocsLayout
+  title="CHA &mdash; K8s Probes"
+  description="14 Kubernetes probes covering storage, compute, networking, GPU, and workload health. Each runs on every cycle against the Kubernetes API — no metrics scraping."
+  topic="K8s Probes"
+>
+  <PageHero
+    eyebrow="Docs"
+    title="Kubernetes Probes"
+    subtitle="14 probes run on every cycle against the Kubernetes API — read-only, no metrics scraping, no log shipping."
+  />
+
+  <section class="mx-auto max-w-5xl space-y-16 px-6 py-16">
+
+    <div>
+      <p class="text-base leading-relaxed text-zinc-600 dark:text-zinc-400">
+        Probes are the detection layer. Each probe reads one area of cluster state and emits a health signal (Healthy / Warning / Critical). Probe results feed the analyzers and fixers. All probes are read-only — they never modify cluster state.
+      </p>
+      <div class="mt-6 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 dark:border-amber-900/50 dark:bg-amber-950/30">
+        <p class="text-sm text-amber-800 dark:text-amber-300">
+          <strong>Disable any probe</strong> with an env var (<code class="font-mono">CHA_PROBE_NAME=off</code>) or Helm flag (<code class="font-mono">probes.name.enabled: false</code>). Each probe is independently togglable.
+        </p>
+      </div>
+    </div>
+
+    <div>
+      <h2 class="text-xl font-semibold text-zinc-900 dark:text-zinc-50">Probe reference</h2>
+      <div class="mt-1 h-0.5 w-8 rounded-full bg-accent-500"></div>
+      <div class="mt-6 overflow-x-auto">
+        <table class="w-full border-collapse text-sm">
+          <thead>
+            <tr class="border-b border-zinc-200 dark:border-zinc-800">
+              <th class="py-2 pr-6 text-left font-medium text-zinc-500 dark:text-zinc-400">Probe</th>
+              <th class="py-2 pr-6 text-left font-medium text-zinc-500 dark:text-zinc-400">What it checks</th>
+              <th class="py-2 pr-6 text-left font-medium text-zinc-500 dark:text-zinc-400">Fires when</th>
+              <th class="py-2 text-left font-medium text-zinc-500 dark:text-zinc-400">Disable env var</th>
+            </tr>
+          </thead>
+          <tbody>
+            {probes.map((p) => (
+              <tr class="border-b border-zinc-100 dark:border-zinc-800/60">
+                <td class="py-3 pr-6 font-mono text-xs font-semibold text-zinc-900 dark:text-zinc-100">{p.name}</td>
+                <td class="py-3 pr-6 text-zinc-600 dark:text-zinc-400">{p.checks}</td>
+                <td class="py-3 pr-6 text-zinc-600 dark:text-zinc-400">{p.fires}</td>
+                <td class="py-3 font-mono text-xs text-zinc-400 dark:text-zinc-500">{p.disable}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div>
+      <h2 class="text-xl font-semibold text-zinc-900 dark:text-zinc-50">LogPatternMatcher analyzer</h2>
+      <div class="mt-1 h-0.5 w-8 rounded-full bg-accent-500"></div>
+      <p class="mt-4 text-sm leading-relaxed text-zinc-600 dark:text-zinc-400">
+        Ships alongside the M3 probes. Scans pod logs for recurring patterns — <code class="font-mono">ImagePullBackOff</code>, <code class="font-mono">OOMKilled</code>, probe-failed, volume-attach-failed, RBAC Forbidden — and deduplicates by <code class="font-mono">(object, pattern)</code> before emitting a finding. Reported as a Warning; does not auto-fix.
+      </p>
+    </div>
+
+    <div>
+      <h2 class="text-xl font-semibold text-zinc-900 dark:text-zinc-50">Trigger classes</h2>
+      <div class="mt-1 h-0.5 w-8 rounded-full bg-accent-500"></div>
+      <p class="mt-4 text-sm leading-relaxed text-zinc-600 dark:text-zinc-400">
+        Probes run on three trigger classes: <strong>A</strong> (Kubernetes informers — react within ~10s of any resource event), <strong>C</strong> (Alertmanager polling — catches slow-drift signals like disk fill or cert expiry), and <strong>E</strong> (external HMAC-authenticated webhook — immediate cycle on external signal). CronJob resync runs on the schedule in Helm values as a safety net.
+      </p>
+    </div>
+
+  </section>
+</DocsLayout>
