@@ -1,0 +1,129 @@
+---
+import DocsLayout from '../../layouts/DocsLayout.astro';
+import PageHero from '../../components/PageHero.astro';
+---
+
+<DocsLayout
+  title="CHA &mdash; Quick Start"
+  description="Install and run Cluster Health Autopilot in under 30 seconds using the zero-trust offline mode, or deploy in-cluster via Helm."
+  topic="Quick Start"
+>
+  <PageHero
+    eyebrow="Docs"
+    title="Quick Start"
+    subtitle="Zero-trust offline diagnostics in 30 seconds. In-cluster Helm install when you're ready."
+  />
+
+  <section class="mx-auto max-w-5xl space-y-16 px-6 py-16">
+
+    <!-- Prerequisites -->
+    <div>
+      <h2 class="text-xl font-semibold text-zinc-900 dark:text-zinc-50">Prerequisites</h2>
+      <div class="mt-1 h-0.5 w-8 rounded-full bg-accent-500"></div>
+      <div class="mt-6 overflow-x-auto">
+        <table class="w-full border-collapse text-sm">
+          <thead>
+            <tr class="border-b border-zinc-200 dark:border-zinc-800">
+              <th class="py-2 pr-6 text-left font-medium text-zinc-500 dark:text-zinc-400">Requirement</th>
+              <th class="py-2 pr-6 text-left font-medium text-zinc-500 dark:text-zinc-400">Minimum</th>
+              <th class="py-2 text-left font-medium text-zinc-500 dark:text-zinc-400">Notes</th>
+            </tr>
+          </thead>
+          <tbody>
+            {[
+              { req: 'Kubernetes', min: '1.27', note: 'Any distro — EKS, GKE, AKS, k3s, RKE2, OpenShift' },
+              { req: 'kubectl', min: 'any', note: 'In PATH; kubeconfig pointing at target cluster' },
+              { req: 'helm', min: '3.x', note: 'For in-cluster install only' },
+              { req: 'Container pull access', min: '—', note: 'Cluster must reach docker.io' },
+            ].map((r) => (
+              <tr class="border-b border-zinc-100 dark:border-zinc-800/60">
+                <td class="py-3 pr-6 font-medium text-zinc-900 dark:text-zinc-100">{r.req}</td>
+                <td class="py-3 pr-6 font-mono text-xs text-zinc-500 dark:text-zinc-400">{r.min}</td>
+                <td class="py-3 text-zinc-600 dark:text-zinc-400">{r.note}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      <div class="mt-4 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 dark:border-amber-900/50 dark:bg-amber-950/30">
+        <p class="text-sm text-amber-800 dark:text-amber-300">
+          <strong>Zero-trust offline mode requires none of the above</strong> — just the <code class="font-mono">cha</code> binary and a <code class="font-mono">kubectl get -o json</code> snapshot.
+        </p>
+      </div>
+    </div>
+
+    <!-- Download binary -->
+    <div>
+      <h2 class="text-xl font-semibold text-zinc-900 dark:text-zinc-50">1. Download the binary</h2>
+      <div class="mt-1 h-0.5 w-8 rounded-full bg-accent-500"></div>
+      <p class="mt-4 text-sm leading-relaxed text-zinc-600 dark:text-zinc-400">
+        Pre-built binaries for <code class="font-mono">linux/amd64</code>, <code class="font-mono">linux/arm64</code>, <code class="font-mono">darwin/amd64</code>, <code class="font-mono">darwin/arm64</code>.
+      </p>
+      <pre class="mt-4 overflow-x-auto rounded-lg bg-zinc-900 px-5 py-4 text-sm text-zinc-100 dark:bg-zinc-950"><code>{`# Linux amd64
+curl -sSL https://github.com/Bionic-AI-Solutions/cluster-health-autopilot/releases/latest/download/cluster-health-autopilot_Linux_x86_64.tar.gz \\
+  | tar xz && sudo mv cha /usr/local/bin/
+
+# macOS arm64
+curl -sSL https://github.com/Bionic-AI-Solutions/cluster-health-autopilot/releases/latest/download/cluster-health-autopilot_Darwin_arm64.tar.gz \\
+  | tar xz && sudo mv cha /usr/local/bin/
+
+# Verify
+cha version`}</code></pre>
+    </div>
+
+    <!-- Zero-trust offline mode -->
+    <div>
+      <h2 class="text-xl font-semibold text-zinc-900 dark:text-zinc-50">2. Zero-trust offline mode (no install needed)</h2>
+      <div class="mt-1 h-0.5 w-8 rounded-full bg-accent-500"></div>
+      <p class="mt-4 text-sm leading-relaxed text-zinc-600 dark:text-zinc-400">
+        Run diagnostics against a captured snapshot — no cluster RBAC, no write permissions, no Helm chart. Useful for evaluating CHA before any install.
+      </p>
+      <pre class="mt-4 overflow-x-auto rounded-lg bg-zinc-900 px-5 py-4 text-sm text-zinc-100 dark:bg-zinc-950"><code>{`# Clone the repo to get sample fixtures
+git clone https://github.com/Bionic-AI-Solutions/cluster-health-autopilot.git
+cd cluster-health-autopilot
+
+# Run against the bundled sample cluster
+cha diagnose --snapshot examples/sample-cluster`}</code></pre>
+      <p class="mt-4 text-sm leading-relaxed text-zinc-600 dark:text-zinc-400">
+        Against a live cluster:
+      </p>
+      <pre class="mt-4 overflow-x-auto rounded-lg bg-zinc-900 px-5 py-4 text-sm text-zinc-100 dark:bg-zinc-950"><code>{`# Capture a snapshot (read-only — never modifies cluster state)
+cha snapshot capture --out ./my-cluster
+
+# Diagnose offline
+cha diagnose --snapshot ./my-cluster
+
+# Or diagnose live directly
+cha diagnose --live`}</code></pre>
+    </div>
+
+    <!-- In-cluster Helm install -->
+    <div>
+      <h2 class="text-xl font-semibold text-zinc-900 dark:text-zinc-50">3. In-cluster install via Helm</h2>
+      <div class="mt-1 h-0.5 w-8 rounded-full bg-accent-500"></div>
+      <p class="mt-4 text-sm leading-relaxed text-zinc-600 dark:text-zinc-400">
+        Installs a watcher Deployment and diagnose/remediate CronJobs. Watches Kubernetes events with a ~10s debounce.
+      </p>
+      <pre class="mt-4 overflow-x-auto rounded-lg bg-zinc-900 px-5 py-4 text-sm text-zinc-100 dark:bg-zinc-950"><code>{`helm repo add cha https://bionic-ai-solutions.github.io/cluster-health-autopilot
+helm repo update
+helm install cha cha/cluster-health-autopilot \\
+  --namespace cluster-health-autopilot --create-namespace \\
+  --set watcher.enabled=true`}</code></pre>
+    </div>
+
+    <!-- Verify -->
+    <div>
+      <h2 class="text-xl font-semibold text-zinc-900 dark:text-zinc-50">4. Verify</h2>
+      <div class="mt-1 h-0.5 w-8 rounded-full bg-accent-500"></div>
+      <pre class="mt-4 overflow-x-auto rounded-lg bg-zinc-900 px-5 py-4 text-sm text-zinc-100 dark:bg-zinc-950"><code>{`kubectl get driftreports -A
+# NAMESPACE   NAME                   AGE
+# kube-system driftreport-stuck-...  12s
+
+kubectl get pods -n cluster-health-autopilot`}</code></pre>
+      <p class="mt-4 text-sm leading-relaxed text-zinc-600 dark:text-zinc-400">
+        See the <a href="/docs/driftreport/" class="text-accent-600 hover:text-accent-700 dark:text-accent-400 dark:hover:text-accent-300">DriftReport CRD docs</a> for the full schema and kubectl query patterns.
+      </p>
+    </div>
+
+  </section>
+</DocsLayout>
