@@ -1,0 +1,119 @@
+---
+import DocsLayout from '../../layouts/DocsLayout.astro';
+import PageHero from '../../components/PageHero.astro';
+---
+
+<DocsLayout
+  title="CHA &mdash; Integrations"
+  description="Slack 3-channel routing, Alertmanager, OpenProject, Jira, ServiceNow, Prometheus metrics, and webhook triggers."
+  topic="Integrations"
+>
+  <PageHero
+    eyebrow="Docs"
+    title="Integrations"
+    subtitle="Route findings to Slack, Alertmanager, and ticketing systems. Trigger cycles from Prometheus alerts or external webhooks."
+  />
+
+  <section class="mx-auto max-w-5xl space-y-16 px-6 py-16">
+
+    <!-- Slack -->
+    <div>
+      <h2 class="text-xl font-semibold text-zinc-900 dark:text-zinc-50">Slack</h2>
+      <div class="mt-1 h-0.5 w-8 rounded-full bg-accent-500"></div>
+      <p class="mt-4 text-sm leading-relaxed text-zinc-600 dark:text-zinc-400">
+        CHA routes to three Slack channels — critical, warning, and info — using separate Kubernetes Secrets. Create the Secrets before installing (or provision via ESO):
+      </p>
+      <pre class="mt-4 overflow-x-auto rounded-lg bg-zinc-900 px-5 py-4 text-sm text-zinc-100 dark:bg-zinc-950"><code>{`kubectl create secret generic cha-slack-critical \\
+  --from-literal=webhookUrl=https://hooks.slack.com/... \\
+  -n cluster-health-autopilot
+
+kubectl create secret generic cha-slack-warning \\
+  --from-literal=webhookUrl=https://hooks.slack.com/... \\
+  -n cluster-health-autopilot
+
+kubectl create secret generic cha-slack-info \\
+  --from-literal=webhookUrl=https://hooks.slack.com/... \\
+  -n cluster-health-autopilot`}</code></pre>
+      <p class="mt-4 text-sm leading-relaxed text-zinc-600 dark:text-zinc-400">
+        Then set the secret names in Helm values:
+      </p>
+      <pre class="mt-4 overflow-x-auto rounded-lg bg-zinc-900 px-5 py-4 text-sm text-zinc-100 dark:bg-zinc-950"><code>{`--set slackCriticalSecretName=cha-slack-critical \\
+--set slackWarningSecretName=cha-slack-warning \\
+--set slackInfoSecretName=cha-slack-info`}</code></pre>
+      <p class="mt-4 text-sm leading-relaxed text-zinc-600 dark:text-zinc-400">
+        Repeated alerts are deduplicated — configure the repeat interval per severity with <code class="font-mono">watcher.slackCriticalRepeatInterval</code> (seconds, default 3600).
+      </p>
+    </div>
+
+    <!-- Alertmanager -->
+    <div>
+      <h2 class="text-xl font-semibold text-zinc-900 dark:text-zinc-50">Alertmanager</h2>
+      <div class="mt-1 h-0.5 w-8 rounded-full bg-accent-500"></div>
+      <p class="mt-4 text-sm leading-relaxed text-zinc-600 dark:text-zinc-400">
+        CHA can post findings as Alertmanager alerts and poll Alertmanager for firing alerts to trigger probe cycles (trigger class C).
+      </p>
+      <pre class="mt-4 overflow-x-auto rounded-lg bg-zinc-900 px-5 py-4 text-sm text-zinc-100 dark:bg-zinc-950"><code>{`# Enable Alertmanager sink
+--set alertmanager.enabled=true \\
+--set alertmanager.url=http://kube-prometheus-stack-alertmanager:9093
+
+# Enable polling (trigger class C) — fires a diagnose cycle on new alerts
+--set triggers.alertmanager.enabled=true`}</code></pre>
+      <p class="mt-4 text-sm leading-relaxed text-zinc-600 dark:text-zinc-400">
+        Each fired alert carries <code class="font-mono">cha_severity</code>, <code class="font-mono">cha_analyzer</code>, and <code class="font-mono">cha_subject</code> labels for routing in Alertmanager rules.
+      </p>
+    </div>
+
+    <!-- Ticketing -->
+    <div>
+      <h2 class="text-xl font-semibold text-zinc-900 dark:text-zinc-50">Ticketing</h2>
+      <div class="mt-1 h-0.5 w-8 rounded-full bg-accent-500"></div>
+      <div class="mt-4 space-y-4">
+        <div class="rounded-2xl border border-zinc-200/80 bg-white p-5 shadow-sm dark:border-zinc-800/80 dark:bg-zinc-900/60">
+          <div class="flex items-center justify-between">
+            <h3 class="text-base font-semibold text-zinc-900 dark:text-zinc-50">OpenProject</h3>
+            <span class="rounded-full border border-emerald-200 bg-emerald-50 px-2 py-0.5 text-[10px] font-medium uppercase tracking-wider text-emerald-700 dark:border-emerald-900/40 dark:bg-emerald-950/40 dark:text-emerald-300">OSS</span>
+          </div>
+          <p class="mt-2 text-sm leading-relaxed text-zinc-600 dark:text-zinc-400">
+            MCP-based ticketing sink. CHA upserts one ticket per open DriftReport — re-detecting the same issue updates the existing ticket rather than creating a duplicate. Enable with <code class="font-mono">ticketing.openproject.enabled=true</code> and provide the OpenProject API credentials via a K8s Secret.
+          </p>
+        </div>
+        <div class="rounded-2xl border border-zinc-200/80 bg-white p-5 shadow-sm dark:border-zinc-800/80 dark:bg-zinc-900/60">
+          <div class="flex items-center justify-between">
+            <h3 class="text-base font-semibold text-zinc-900 dark:text-zinc-50">Jira &amp; ServiceNow</h3>
+            <span class="rounded-full border border-accent-200 bg-accent-50 px-2 py-0.5 text-[10px] font-medium uppercase tracking-wider text-accent-700 dark:border-accent-900/40 dark:bg-accent-950/40 dark:text-accent-300">Paid</span>
+          </div>
+          <p class="mt-2 text-sm leading-relaxed text-zinc-600 dark:text-zinc-400">
+            Jira and ServiceNow ticketing sinks are available in the paid Enterprise tier. Contact <a href="/pricing/" class="text-accent-600 hover:text-accent-700 dark:text-accent-400 dark:hover:text-accent-300">sales</a> for access.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Prometheus -->
+    <div>
+      <h2 class="text-xl font-semibold text-zinc-900 dark:text-zinc-50">Prometheus metrics</h2>
+      <div class="mt-1 h-0.5 w-8 rounded-full bg-accent-500"></div>
+      <p class="mt-4 text-sm leading-relaxed text-zinc-600 dark:text-zinc-400">
+        The paid <code class="font-mono">cha-com</code> aiwatch Deployment exposes <code class="font-mono">cha_*</code> metric families on <code class="font-mono">/metrics:9090</code>. The Helm chart renders a ServiceMonitor and PrometheusRule when <code class="font-mono">ai.metrics.enabled=true</code>. Key metrics: <code class="font-mono">cha_findings_total</code>, <code class="font-mono">cha_fixes_total</code>, <code class="font-mono">cha_breaker_open</code>, <code class="font-mono">cha_autonomy_rejections_total</code>.
+      </p>
+    </div>
+
+    <!-- Webhook triggers -->
+    <div>
+      <h2 class="text-xl font-semibold text-zinc-900 dark:text-zinc-50">Webhook triggers (class E)</h2>
+      <div class="mt-1 h-0.5 w-8 rounded-full bg-accent-500"></div>
+      <p class="mt-4 text-sm leading-relaxed text-zinc-600 dark:text-zinc-400">
+        External services can trigger an immediate diagnose cycle by posting an HMAC-SHA256-authenticated request. Useful for integrating with Vault, ArgoCD, cert-manager, or Cloudflare change events.
+      </p>
+      <pre class="mt-4 overflow-x-auto rounded-lg bg-zinc-900 px-5 py-4 text-sm text-zinc-100 dark:bg-zinc-950"><code>{`# Example: trigger on a Vault seal event
+curl -X POST https://cha-watcher.cluster/webhook/vault \\
+  -H "X-CHA-Signature: $(cha sign --secret $HMAC_SECRET --body '{}')" \\
+  -H "Content-Type: application/json" \\
+  -d '{}'`}</code></pre>
+      <p class="mt-4 text-sm leading-relaxed text-zinc-600 dark:text-zinc-400">
+        Enable webhook triggers with <code class="font-mono">triggers.webhook.enabled=true</code>. The HMAC secret is provisioned via a K8s Secret and referenced by <code class="font-mono">triggers.webhook.secretName</code>.
+      </p>
+    </div>
+
+  </section>
+</DocsLayout>
