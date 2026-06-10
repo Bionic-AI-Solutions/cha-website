@@ -1,19 +1,115 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import PageHero from '../../components/PageHero.astro';
-import StubBody from '../../components/StubBody.astro';
+
+const topics = [
+  {
+    href: '/docs/quick-start/',
+    title: 'Quick Start',
+    summary:
+      'Binary download, Helm install, zero-trust offline mode. Running diagnostics in 30 seconds.',
+    badge: 'OSS',
+  },
+  {
+    href: '/docs/k8s-probes/',
+    title: 'K8s Probes',
+    summary:
+      '14 probes: Ceph, CNPG, Nodes, PVCs, Endpoints, NodePressure, DaemonSets, PendingPods, CrashLoopBackOff, ETCD, FailedMounts, KongRoutes, GPUNodes, LogPatternMatcher.',
+    badge: 'OSS',
+  },
+  {
+    href: '/docs/cloud-probes/',
+    title: 'Cloud Probes',
+    summary:
+      '10 AWS · 7 GCP · 8 Azure probe families. Workload-identity auth only. Enable per-provider; off by default.',
+    badge: 'OSS',
+  },
+  {
+    href: '/docs/analyzers/',
+    title: 'Analyzers',
+    summary:
+      '19 analyzers run after every probe cycle. Covers secrets, certs, ESO, image pulls, drift, log patterns, OOM recurrence, orphan PVs, and stuck CronJobs.',
+    badge: 'OSS',
+  },
+  {
+    href: '/docs/fixers/',
+    title: 'Fixers',
+    summary:
+      '5 policy-bounded auto-fixers. Each is opt-in, safety-gated, and re-verified after every run.',
+    badge: 'OSS',
+  },
+  {
+    href: '/docs/ai-tiers/',
+    title: 'AI Tiers',
+    summary:
+      'T0 narration · T1 fix proposals · T2 multi-step planning · T3 Vault runbooks. All approval-gated. Bring your own LLM.',
+    badge: 'Paid',
+  },
+  {
+    href: '/docs/helm-reference/',
+    title: 'Helm Reference',
+    summary:
+      'Key values.yaml options grouped by feature area — watcher, cloud probes, analyzers, fixers, ticketing, AI tiers, RBAC.',
+    badge: 'OSS',
+  },
+  {
+    href: '/docs/driftreport/',
+    title: 'DriftReport CRD',
+    summary:
+      'kubectl-queryable drift state. Schema, status values, kubectl examples, and using DriftReports in GitOps workflows.',
+    badge: 'OSS',
+  },
+  {
+    href: '/docs/integrations/',
+    title: 'Integrations',
+    summary:
+      'Slack 3-channel routing · Alertmanager · OpenProject · Jira · ServiceNow · Prometheus metrics · Webhook triggers.',
+    badge: 'OSS / Paid',
+  },
+];
+
+const badgeStyles: Record<string, string> = {
+  OSS: 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-900/40',
+  Paid: 'bg-accent-50 text-accent-700 border-accent-200 dark:bg-accent-950/40 dark:text-accent-300 dark:border-accent-900/40',
+  'OSS / Paid':
+    'bg-amber-50 text-amber-800 border-amber-200 dark:bg-amber-950/40 dark:text-amber-300 dark:border-amber-900/40',
+};
 ---
 
 <BaseLayout
   title="CHA &mdash; Docs"
-  description="Documentation for installation, configuration, probes, fixers, AI tiers, and the safety envelope."
+  description="Documentation for Cluster Health Autopilot — installation, K8s and cloud probes, analyzers, fixers, AI tiers, Helm reference, and integrations."
 >
   <PageHero
     eyebrow="Docs"
     title="Documentation"
-    subtitle="The full docs site is in progress. Until it lands, the README in the repository is the source of truth."
+    subtitle="Everything you need to install, configure, and operate Cluster Health Autopilot."
   />
-  <StubBody
-    claim="The dedicated docs site is being built. For now, see the project README and the docs/ folder in the cluster-health-autopilot GitHub repo for installation, Helm values, probe reference, and the safety envelope writeup."
-  />
+
+  <section class="mx-auto max-w-7xl px-6 py-20">
+    <div class="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
+      {topics.map((t) => (
+        <a
+          href={t.href}
+          class="group rounded-2xl border border-zinc-200/80 bg-white p-6 shadow-sm transition hover:border-zinc-300 hover:shadow-md dark:border-zinc-800/80 dark:bg-zinc-900/60 dark:hover:border-zinc-700"
+        >
+          <div class="flex items-center justify-between">
+            <h3 class="text-lg font-semibold text-zinc-900 dark:text-zinc-50">{t.title}</h3>
+            <span
+              class:list={[
+                'inline-flex items-center rounded-full border px-2 py-0.5 text-[10px] font-medium uppercase tracking-wider',
+                badgeStyles[t.badge],
+              ]}
+            >
+              {t.badge}
+            </span>
+          </div>
+          <p class="mt-3 text-sm leading-relaxed text-zinc-600 dark:text-zinc-400">{t.summary}</p>
+          <p class="mt-4 text-sm font-medium text-accent-600 group-hover:text-accent-700 dark:text-accent-400 dark:group-hover:text-accent-300">
+            Read more &rarr;
+          </p>
+        </a>
+      ))}
+    </div>
+  </section>
 </BaseLayout>
