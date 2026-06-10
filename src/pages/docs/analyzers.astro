@@ -1,0 +1,163 @@
+---
+import DocsLayout from '../../layouts/DocsLayout.astro';
+import PageHero from '../../components/PageHero.astro';
+
+const diagnostic = [
+  { name: 'SecretKeyMissing', detects: 'Pod in CreateContainerConfigError — names the missing key, consuming Deployment, and owning ExternalSecret', severity: 'Critical' },
+  { name: 'FailingExternalSecrets', detects: 'ExternalSecret with Ready=False — surfaces the controller error message including the specific missing Vault property', severity: 'Warning' },
+  { name: 'ProactiveSecretKeyCheck', detects: 'Workload env references to Secret keys that don\'t exist yet — fires before the pod crashes', severity: 'Warning' },
+  { name: 'UnprovisionedSecret', detects: 'Workload references a Secret with no ExternalSecret provisioning it', severity: 'Warning' },
+  { name: 'ImagePullAuth', detects: 'Pod in ImagePullBackOff with kubelet auth-failure signals (401, denied, unauthorized)', severity: 'Critical' },
+  { name: 'CertExpiry', detects: 'cert-manager Certificate not Ready, expiring within 14 days, or already expired', severity: 'Critical / Warning' },
+  { name: 'TLSSecretMismatch', detects: 'Ingress points at an expired Secret while cert-manager renews into a different Secret (two-Secret naming drift)', severity: 'Warning' },
+  { name: 'VaultPathMissing', detects: 'Queries Vault directly to catch drift before ESO\'s next refresh. Apache-2.0; you provide the Vault client. Paid tier auto-wires from your Vault config.', severity: 'Warning' },
+  { name: 'DNSChainDrift', detects: 'Cloudflare DNS → cluster ingress LB → Ingress host → Service → ready Endpoints. Emits the highest broken layer per host', severity: 'Warning' },
+];
+
+const drift = [
+  { name: 'GitOpsDrift', detects: 'Resources that have drifted from their GitOps-managed desired state' },
+  { name: 'WorkloadStateDrift', detects: 'Deployment/StatefulSet replica count vs desired' },
+  { name: 'RBACDrift', detects: 'ClusterRoleBinding/RoleBinding changes not reflected in expected state' },
+  { name: 'ConfigDrift', detects: 'ConfigMap or Secret content changed outside GitOps' },
+  { name: 'CapacityDrift', detects: 'Resource request/limit ratios that have drifted from baseline' },
+  { name: 'SecurityDrift', detects: 'Pod SecurityContext changes — privilege escalation, host network, host PID' },
+];
+
+const workload = [
+  { name: 'DisruptionDrift', detects: 'PDB blocks all evictions / stuck Indexed-Job failed indexes / ResourceQuota at 100% past 1h' },
+  { name: 'OOMKillRecurrence', detects: 'Pod with ≥3 OOMKilled restarts in 24h — signals a persistent memory sizing issue' },
+  { name: 'PVOrphan', detects: 'PersistentVolume Released >7 days — still billing on the underlying cloud disk' },
+  { name: 'CronJobStuck', detects: 'Warning: >24h since last success. Critical: never succeeded or suspended unexpectedly' },
+];
+
+const paid = [
+  { name: 'VaultPathDriftPro', detects: 'Extended Vault path analysis with auto-wired client and cross-namespace drift' },
+  { name: 'CertificateChainAnomaly', detects: 'Full cert chain validation including intermediate CAs and trust anchors' },
+  { name: 'MultiClusterDrift', detects: 'Cross-cluster state divergence across federated or ArgoCD-managed clusters' },
+  { name: 'StatefulSetReplicaPressure', detects: 'StatefulSet rolling-update stalls and replica pressure patterns' },
+];
+---
+
+<DocsLayout
+  title="CHA &mdash; Analyzers"
+  description="19 OSS analyzers run after every probe cycle — diagnostic, drift-class, log/workload. 4 additional analyzers in the paid tier."
+  topic="Analyzers"
+>
+  <PageHero
+    eyebrow="Docs"
+    title="Analyzers"
+    subtitle="Analyzers run after every probe cycle. All are read-only. Findings attach to DriftReport CRs and route to Slack, Alertmanager, and ticketing sinks."
+  />
+
+  <section class="mx-auto max-w-5xl space-y-16 px-6 py-16">
+
+    <div>
+      <p class="text-base leading-relaxed text-zinc-600 dark:text-zinc-400">
+        Analyzers inspect the raw Kubernetes API state — they don't call external services unless an integration is configured. Each analyzer emits a finding with a severity, a human-readable summary, and actionable remediation hints.
+      </p>
+      <div class="mt-4 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 dark:border-amber-900/50 dark:bg-amber-950/30">
+        <p class="text-sm text-amber-800 dark:text-amber-300">
+          <strong>Disable any analyzer</strong> with <code class="font-mono">CHA_ANALYZER_NAME=off</code> or the per-analyzer Helm toggle (<code class="font-mono">analyzers.name.enabled: false</code>).
+        </p>
+      </div>
+    </div>
+
+    <div>
+      <h2 class="text-xl font-semibold text-zinc-900 dark:text-zinc-50">Diagnostic analyzers (9)</h2>
+      <div class="mt-1 h-0.5 w-8 rounded-full bg-accent-500"></div>
+      <div class="mt-6 overflow-x-auto">
+        <table class="w-full border-collapse text-sm">
+          <thead>
+            <tr class="border-b border-zinc-200 dark:border-zinc-800">
+              <th class="py-2 pr-6 text-left font-medium text-zinc-500 dark:text-zinc-400">Analyzer</th>
+              <th class="py-2 pr-6 text-left font-medium text-zinc-500 dark:text-zinc-400">What it detects</th>
+              <th class="py-2 text-left font-medium text-zinc-500 dark:text-zinc-400">Severity</th>
+            </tr>
+          </thead>
+          <tbody>
+            {diagnostic.map((r) => (
+              <tr class="border-b border-zinc-100 dark:border-zinc-800/60">
+                <td class="py-3 pr-6 font-mono text-xs font-semibold text-zinc-900 dark:text-zinc-100">{r.name}</td>
+                <td class="py-3 pr-6 text-zinc-600 dark:text-zinc-400">{r.detects}</td>
+                <td class="py-3 font-mono text-xs text-zinc-500 dark:text-zinc-400">{r.severity}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div>
+      <h2 class="text-xl font-semibold text-zinc-900 dark:text-zinc-50">Drift-class analyzers (6)</h2>
+      <div class="mt-1 h-0.5 w-8 rounded-full bg-accent-500"></div>
+      <div class="mt-6 overflow-x-auto">
+        <table class="w-full border-collapse text-sm">
+          <thead>
+            <tr class="border-b border-zinc-200 dark:border-zinc-800">
+              <th class="py-2 pr-6 text-left font-medium text-zinc-500 dark:text-zinc-400">Analyzer</th>
+              <th class="py-2 text-left font-medium text-zinc-500 dark:text-zinc-400">What it detects</th>
+            </tr>
+          </thead>
+          <tbody>
+            {drift.map((r) => (
+              <tr class="border-b border-zinc-100 dark:border-zinc-800/60">
+                <td class="py-3 pr-6 font-mono text-xs font-semibold text-zinc-900 dark:text-zinc-100">{r.name}</td>
+                <td class="py-3 text-zinc-600 dark:text-zinc-400">{r.detects}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div>
+      <h2 class="text-xl font-semibold text-zinc-900 dark:text-zinc-50">Log / workload analyzers (4)</h2>
+      <div class="mt-1 h-0.5 w-8 rounded-full bg-accent-500"></div>
+      <div class="mt-6 overflow-x-auto">
+        <table class="w-full border-collapse text-sm">
+          <thead>
+            <tr class="border-b border-zinc-200 dark:border-zinc-800">
+              <th class="py-2 pr-6 text-left font-medium text-zinc-500 dark:text-zinc-400">Analyzer</th>
+              <th class="py-2 text-left font-medium text-zinc-500 dark:text-zinc-400">What it detects</th>
+            </tr>
+          </thead>
+          <tbody>
+            {workload.map((r) => (
+              <tr class="border-b border-zinc-100 dark:border-zinc-800/60">
+                <td class="py-3 pr-6 font-mono text-xs font-semibold text-zinc-900 dark:text-zinc-100">{r.name}</td>
+                <td class="py-3 text-zinc-600 dark:text-zinc-400">{r.detects}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div>
+      <h2 class="text-xl font-semibold text-zinc-900 dark:text-zinc-50">Paid-tier analyzers (4)</h2>
+      <div class="mt-1 h-0.5 w-8 rounded-full bg-accent-500"></div>
+      <p class="mt-4 text-sm leading-relaxed text-zinc-600 dark:text-zinc-400">
+        The <code class="font-mono">cha-com</code> paid binary adds four additional analyzers. They use the same <code class="font-mono">pkg/registry</code> interface as OSS analyzers and respect the same per-analyzer Helm toggles.
+      </p>
+      <div class="mt-6 overflow-x-auto">
+        <table class="w-full border-collapse text-sm">
+          <thead>
+            <tr class="border-b border-zinc-200 dark:border-zinc-800">
+              <th class="py-2 pr-6 text-left font-medium text-zinc-500 dark:text-zinc-400">Analyzer</th>
+              <th class="py-2 text-left font-medium text-zinc-500 dark:text-zinc-400">What it detects</th>
+            </tr>
+          </thead>
+          <tbody>
+            {paid.map((r) => (
+              <tr class="border-b border-zinc-100 dark:border-zinc-800/60">
+                <td class="py-3 pr-6 font-mono text-xs font-semibold text-zinc-900 dark:text-zinc-100">{r.name}</td>
+                <td class="py-3 text-zinc-600 dark:text-zinc-400">{r.detects}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </section>
+</DocsLayout>
