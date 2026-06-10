@@ -1,0 +1,124 @@
+---
+import DocsLayout from '../../layouts/DocsLayout.astro';
+import PageHero from '../../components/PageHero.astro';
+
+const fixers = [
+  {
+    name: 'StaleErrorPods',
+    fixes: 'Error/Failed pods owned by a Job or unowned (debug leftovers)',
+    optIn: false,
+    helm: 'fixers.staleErrorPods.enabled',
+  },
+  {
+    name: 'StuckJobsWithBadSecretRef',
+    fixes: 'Frozen Jobs whose pod template references a renamed Secret key — deletes the Job so the CronJob respawns clean',
+    optIn: false,
+    helm: 'fixers.stuckJobs.enabled',
+  },
+  {
+    name: 'StuckRSPods',
+    fixes: 'ReplicaSet pods stuck on a stale revision when the Deployment has rolled forward (rollout restart)',
+    optIn: false,
+    helm: 'fixers.stuckRS.enabled',
+  },
+  {
+    name: 'StuckCertificateRequests',
+    fixes: 'cert-manager CRs in terminal Ready=False/Failed — deletion lets cert-manager re-issue',
+    optIn: false,
+    helm: 'fixers.stuckCertReqs.enabled',
+  },
+  {
+    name: 'TLSSecretMismatch',
+    fixes: 'Repoints Ingress.spec.tls[].secretName to the cert-manager-managed Secret. Skips GitOps-managed Ingresses.',
+    optIn: true,
+    helm: 'fixers.tlsSecretMismatch.enabled',
+  },
+];
+---
+
+<DocsLayout
+  title="CHA &mdash; Fixers"
+  description="5 policy-bounded auto-fixers. Each is opt-in, safety-gated, idempotent, and re-verified after every run."
+  topic="Fixers"
+>
+  <PageHero
+    eyebrow="Docs"
+    title="Fixers"
+    subtitle="5 policy-bounded auto-fixers. All are opt-in, safety-gated, and re-verified after every run. Nothing mutates silently."
+  />
+
+  <section class="mx-auto max-w-5xl space-y-16 px-6 py-16">
+
+    <div>
+      <p class="text-base leading-relaxed text-zinc-600 dark:text-zinc-400">
+        Fixers are the remediation layer. Each fixer targets exactly one named failure class, runs only when its corresponding analyzer fires, and re-runs the analyzer afterward to confirm resolution. Fixers never edit Secrets, ConfigMaps, or generic CRDs — those changes require a human and a git commit.
+      </p>
+      <div class="mt-4 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 dark:border-amber-900/50 dark:bg-amber-950/30">
+        <p class="text-sm text-amber-800 dark:text-amber-300">
+          <strong>Remediation is off by default.</strong> Enable it in Helm values with <code class="font-mono">remediation.enabled: true</code>, then enable each fixer individually.
+        </p>
+      </div>
+    </div>
+
+    <div>
+      <h2 class="text-xl font-semibold text-zinc-900 dark:text-zinc-50">Fixer reference</h2>
+      <div class="mt-1 h-0.5 w-8 rounded-full bg-accent-500"></div>
+      <div class="mt-6 overflow-x-auto">
+        <table class="w-full border-collapse text-sm">
+          <thead>
+            <tr class="border-b border-zinc-200 dark:border-zinc-800">
+              <th class="py-2 pr-6 text-left font-medium text-zinc-500 dark:text-zinc-400">Fixer</th>
+              <th class="py-2 pr-6 text-left font-medium text-zinc-500 dark:text-zinc-400">What it fixes</th>
+              <th class="py-2 pr-6 text-left font-medium text-zinc-500 dark:text-zinc-400">Helm flag</th>
+              <th class="py-2 text-left font-medium text-zinc-500 dark:text-zinc-400">Opt-in</th>
+            </tr>
+          </thead>
+          <tbody>
+            {fixers.map((f) => (
+              <tr class="border-b border-zinc-100 dark:border-zinc-800/60">
+                <td class="py-3 pr-6 font-mono text-xs font-semibold text-zinc-900 dark:text-zinc-100">{f.name}</td>
+                <td class="py-3 pr-6 text-zinc-600 dark:text-zinc-400">{f.fixes}</td>
+                <td class="py-3 pr-6 font-mono text-xs text-zinc-500 dark:text-zinc-400">{f.helm}</td>
+                <td class="py-3 text-zinc-600 dark:text-zinc-400">{f.optIn ? 'Yes (off by default)' : 'No (on when remediation.enabled)'}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div>
+      <h2 class="text-xl font-semibold text-zinc-900 dark:text-zinc-50">Safety gates</h2>
+      <div class="mt-1 h-0.5 w-8 rounded-full bg-accent-500"></div>
+      <p class="mt-4 text-sm leading-relaxed text-zinc-600 dark:text-zinc-400">Every fixer checks these gates before running. If any gate blocks, the finding is reported but no mutation occurs.</p>
+      <ul class="mt-4 space-y-2 text-sm text-zinc-600 dark:text-zinc-400">
+        <li class="flex gap-2"><span class="text-accent-500">→</span><span><strong>GitOps guard</strong> — skips resources managed by ArgoCD, Flux, or Helm (detected via standard labels). A fixer won't fight a reconciler.</span></li>
+        <li class="flex gap-2"><span class="text-accent-500">→</span><span><strong>Paused/suspended guard</strong> — skips Deployments with <code class="font-mono">spec.paused: true</code> and CronJobs with <code class="font-mono">spec.suspend: true</code>.</span></li>
+        <li class="flex gap-2"><span class="text-accent-500">→</span><span><strong>cert-manager health guard</strong> — StuckCertificateRequests fixer checks that the parent Certificate is healthy before deleting the failed CR.</span></li>
+        <li class="flex gap-2"><span class="text-accent-500">→</span><span><strong>Protected namespace list</strong> — never mutates resources in protected namespaces (default: kube-system, kube-public, cert-manager). Configurable via <code class="font-mono">protectedNamespaces</code>.</span></li>
+      </ul>
+    </div>
+
+    <div>
+      <h2 class="text-xl font-semibold text-zinc-900 dark:text-zinc-50">Dry-run mode</h2>
+      <div class="mt-1 h-0.5 w-8 rounded-full bg-accent-500"></div>
+      <p class="mt-4 text-sm leading-relaxed text-zinc-600 dark:text-zinc-400">
+        Pass <code class="font-mono">--dry-run</code> (or <code class="font-mono">watcher.dryRun: true</code> in Helm values) to log every fix CHA would apply without applying it. The fix log is identical to production mode minus the actual mutation. Use this in your eval cycle before enabling fixers.
+      </p>
+    </div>
+
+    <div>
+      <h2 class="text-xl font-semibold text-zinc-900 dark:text-zinc-50">Re-verify loop</h2>
+      <div class="mt-1 h-0.5 w-8 rounded-full bg-accent-500"></div>
+      <p class="mt-4 text-sm leading-relaxed text-zinc-600 dark:text-zinc-400">
+        After every fix, CHA re-runs the analyzer for the fixed subject. If the finding persists, the action is recorded as <code class="font-mono">unresolved</code> in the DriftReport — not silently closed. The loop is: <code class="font-mono">diagnose → fix → re-diagnose → resolve</code>.
+      </p>
+      <pre class="mt-4 overflow-x-auto rounded-lg bg-zinc-900 px-5 py-4 text-sm text-zinc-100 dark:bg-zinc-950"><code>{`DriftReport  StaleErrorPod    — fixer ran        OK
+DriftReport  StuckJob         — fixer ran        OK
+DriftReport  TLSSecretMismatch — fixer ran       OK
+Re-verify in 60s ...
+→ All cleared`}</code></pre>
+    </div>
+
+  </section>
+</DocsLayout>
