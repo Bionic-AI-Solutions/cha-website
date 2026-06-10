@@ -75,7 +75,7 @@ const probes = [
       <h2 class="text-xl font-semibold text-zinc-900 dark:text-zinc-50">LogPatternMatcher analyzer</h2>
       <div class="mt-1 h-0.5 w-8 rounded-full bg-accent-500"></div>
       <p class="mt-4 text-sm leading-relaxed text-zinc-600 dark:text-zinc-400">
-        Ships alongside the M3 probes. Scans pod logs for recurring patterns — <code class="font-mono">ImagePullBackOff</code>, <code class="font-mono">OOMKilled</code>, probe-failed, volume-attach-failed, RBAC Forbidden — and deduplicates by <code class="font-mono">(object, pattern)</code> before emitting a finding. Reported as a Warning; does not auto-fix.
+        Ships alongside the K8s probe set. Scans pod logs for recurring patterns — <code class="font-mono">ImagePullBackOff</code>, <code class="font-mono">OOMKilled</code>, probe-failed, volume-attach-failed, RBAC Forbidden — and deduplicates by <code class="font-mono">(object, pattern)</code> before emitting a finding. Reported as a Warning; does not auto-fix.
       </p>
     </div>
 

@@ -35,6 +35,28 @@ const groups = [
     ],
   },
   {
+    title: 'Analyzer toggles',
+    rows: [
+      { key: 'analyzers.secretKeyMissing.enabled', default: 'true', desc: 'SecretKeyMissing analyzer' },
+      { key: 'analyzers.failingExternalSecrets.enabled', default: 'true', desc: 'FailingExternalSecrets analyzer' },
+      { key: 'analyzers.certExpiry.enabled', default: 'true', desc: 'CertExpiry analyzer' },
+      { key: 'analyzers.tlsSecretMismatch.enabled', default: 'true', desc: 'TLSSecretMismatch analyzer' },
+      { key: 'analyzers.imagePullAuth.enabled', default: 'true', desc: 'ImagePullAuth analyzer' },
+      { key: 'analyzers.dnsChainDrift.enabled', default: 'true', desc: 'DNSChainDrift analyzer' },
+      { key: 'analyzers.gitOpsDrift.enabled', default: 'true', desc: 'GitOpsDrift analyzer' },
+    ],
+  },
+  {
+    title: 'RBAC and namespaces',
+    rows: [
+      { key: 'rbac.create', default: 'true', desc: 'Create ClusterRole + ClusterRoleBinding for the watcher ServiceAccount' },
+      { key: 'serviceAccount.create', default: 'true', desc: 'Create a dedicated ServiceAccount for CHA workloads' },
+      { key: 'serviceAccount.name', default: '""', desc: 'Override the ServiceAccount name (auto-generated if blank)' },
+      { key: 'watchNamespaces', default: '[]', desc: 'Restrict watcher to these namespaces (empty = cluster-wide)' },
+      { key: 'protectedNamespaces', default: '[kube-system, kube-public, cert-manager]', desc: 'Namespaces fixers will never mutate' },
+    ],
+  },
+  {
     title: 'Fixers',
     rows: [
       { key: 'fixers.staleErrorPods.enabled', default: 'true', desc: 'Delete Error/Failed pods (requires remediation.enabled)' },
@@ -52,6 +74,7 @@ const groups = [
       { key: 'alertmanager.url', default: '""', desc: 'Alertmanager URL (e.g. http://alertmanager:9093)' },
       { key: 'ticketing.openproject.enabled', default: 'false', desc: 'Enable OpenProject MCP ticketing sink (OSS)' },
       { key: 'ticketing.jira.enabled', default: 'false', desc: 'Enable Jira ticketing sink (paid)' },
+      { key: 'ticketing.servicenow.enabled', default: 'false', desc: 'Enable ServiceNow ticketing sink (paid)' },
     ],
   },
   {
@@ -64,6 +87,7 @@ const groups = [
       { key: 'ai.apiKey.secretName', default: '""', desc: 'K8s Secret containing the LLM API key' },
       { key: 'ai.allowSaas', default: 'false', desc: 'Allow external (non-cluster) LLM endpoints' },
       { key: 'approval.enabled', default: 'false', desc: 'Enable approval-server (required for T1+)' },
+      { key: 'ai.metrics.enabled', default: 'false', desc: 'Expose /metrics:9090 + render ServiceMonitor and PrometheusRule (paid aiwatch)' },
     ],
   },
 ];
@@ -89,7 +113,7 @@ const groups = [
           href="https://github.com/Bionic-AI-Solutions/cluster-health-autopilot/blob/main/charts/cluster-health-autopilot/values.yaml"
           class="text-accent-600 hover:text-accent-700 dark:text-accent-400 dark:hover:text-accent-300"
           target="_blank"
-          rel="noopener"
+          rel="noopener noreferrer"
         >
           charts/cluster-health-autopilot/values.yaml
         </a>.

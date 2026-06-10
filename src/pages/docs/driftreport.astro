@@ -96,8 +96,8 @@ kubectl get driftreports -A
 # Wide output with kind and status
 kubectl get driftreports -A -o wide
 
-# Filter by status
-kubectl get driftreports -A --field-selector status.state=open
+# Filter by status (jq — field selectors require CRD selectableFields registration)
+kubectl get driftreports -A -o json | jq '.items[] | select(.status.state == "open")'
 
 # Describe a specific finding
 kubectl describe driftreport drift-tls-secret-1 -n default
