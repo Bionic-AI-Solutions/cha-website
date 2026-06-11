@@ -65,9 +65,9 @@ if (azure.length !== CLOUD_PROBES_AZURE) {
 }
 
 const cloudRows = [
-  { provider: 'AWS', count: String(CLOUD_PROBES_AWS), enable: 'cloudProbes.aws.enabled: true', auth: 'IRSA (no long-lived keys)' },
-  { provider: 'GCP', count: String(CLOUD_PROBES_GCP), enable: 'cloudProbes.gcp.enabled: true', auth: 'GCP Workload Identity' },
-  { provider: 'Azure', count: String(CLOUD_PROBES_AZURE), enable: 'cloudProbes.azure.enabled: true', auth: 'AAD Workload Identity' },
+  { provider: 'AWS', count: String(CLOUD_PROBES_AWS), enable: 'cloud.aws.enabled: true', auth: 'IRSA (no long-lived keys)' },
+  { provider: 'GCP', count: String(CLOUD_PROBES_GCP), enable: 'cloud.gcp.enabled: true', auth: 'GCP Workload Identity' },
+  { provider: 'Azure', count: String(CLOUD_PROBES_AZURE), enable: 'cloud.azure.enabled: true', auth: 'AAD Workload Identity' },
 ];
 
 const sections = [
@@ -120,7 +120,7 @@ const sections = [
 
       <div class="mt-4 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 dark:border-amber-900/50 dark:bg-amber-950/30">
         <p class="text-sm text-amber-800 dark:text-amber-300">
-          Cloud probes are <strong>off by default</strong>. Enable with <code class="font-mono">--set cloudProbes.aws.enabled=true</code> (or equivalent for GCP/Azure). The K8s-only value is unchanged if you never enable cloud probes.
+          Cloud probes are <strong>off by default</strong>. Enable with <code class="font-mono">--set cloud.enabled=true --set cloud.aws.enabled=true</code> (or equivalent for GCP/Azure) — <code class="font-mono">cloud.enabled</code> is the master switch; each provider is toggled independently underneath it. The K8s-only value is unchanged if you never enable cloud probes.
         </p>
       </div>
     </div>

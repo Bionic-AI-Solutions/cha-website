@@ -1,134 +1,50 @@
 ---
 import DocsLayout from '../../layouts/DocsLayout.astro';
 import PageHero from '../../components/PageHero.astro';
-import {
-  CLOUD_PROBES_AWS,
-  CLOUD_PROBES_GCP,
-  CLOUD_PROBES_AZURE,
-} from '../../data/product-facts';
+import { loadHelmSnapshot } from '../../data/helm-values';
 
-const groups = [
-  {
-    title: 'Core workloads',
-    rows: [
-      { key: 'watcher.enabled', default: 'true', desc: 'Enable the event-driven watcher Deployment' },
-      { key: 'watcher.interval', default: '300', desc: 'Seconds between CronJob resync cycles' },
-      { key: 'watcher.dryRun', default: 'false', desc: 'Log fixes without applying them' },
-      { key: 'remediation.enabled', default: 'false', desc: 'Master switch — must be true for any fixer to run' },
-      { key: 'protectedNamespaces', default: '[kube-system, kube-public, cert-manager]', desc: 'Namespaces fixers will never mutate' },
-    ],
-  },
-  {
-    title: 'Cloud probes',
-    rows: [
-      { key: 'cloudProbes.aws.enabled', default: 'false', desc: `Enable all ${CLOUD_PROBES_AWS} AWS probes (IRSA auth)` },
-      { key: 'cloudProbes.gcp.enabled', default: 'false', desc: `Enable all ${CLOUD_PROBES_GCP} GCP probes (Workload Identity)` },
-      { key: 'cloudProbes.azure.enabled', default: 'false', desc: `Enable all ${CLOUD_PROBES_AZURE} Azure probes (AAD Workload Identity)` },
-    ],
-  },
-  {
-    title: 'Individual probe toggles',
-    rows: [
-      { key: 'probes.ceph.enabled', default: 'true', desc: 'Ceph storage probe' },
-      { key: 'probes.postgres.enabled', default: 'true', desc: 'PostgreSQL probe' },
-      { key: 'probes.nodes.enabled', default: 'true', desc: 'Cluster Nodes probe' },
-      { key: 'probes.pvcs.enabled', default: 'true', desc: 'PVC binding probe' },
-      { key: 'probes.endpoints.enabled', default: 'true', desc: 'External endpoints probe' },
-      { key: 'probes.crashLoop.enabled', default: 'true', desc: 'CrashLoopBackOff probe' },
-      { key: 'probes.kongRoutes.enabled', default: 'true', desc: 'Kong route health probe (auto-skips if Kong CRDs absent)' },
-      { key: 'probes.gpuNodes.enabled', default: 'true', desc: 'GPU node allocatability probe (auto-skips if no GPU nodes)' },
-    ],
-  },
-  {
-    title: 'Analyzer toggles',
-    rows: [
-      { key: 'analyzers.secretKeyMissing.enabled', default: 'true', desc: 'SecretKeyMissing analyzer' },
-      { key: 'analyzers.failingExternalSecrets.enabled', default: 'true', desc: 'FailingExternalSecrets analyzer' },
-      { key: 'analyzers.certExpiry.enabled', default: 'true', desc: 'CertExpiry analyzer' },
-      { key: 'analyzers.tlsSecretMismatch.enabled', default: 'true', desc: 'TLSSecretMismatch analyzer' },
-      { key: 'analyzers.imagePullAuth.enabled', default: 'true', desc: 'ImagePullAuth analyzer' },
-      { key: 'analyzers.dnsChainDrift.enabled', default: 'true', desc: 'DNSChainDrift analyzer' },
-      { key: 'analyzers.gitOpsDrift.enabled', default: 'true', desc: 'GitOpsDrift analyzer' },
-    ],
-  },
-  {
-    title: 'RBAC and namespaces',
-    rows: [
-      { key: 'rbac.create', default: 'true', desc: 'Create ClusterRole + ClusterRoleBinding for the watcher ServiceAccount' },
-      { key: 'serviceAccount.create', default: 'true', desc: 'Create a dedicated ServiceAccount for CHA workloads' },
-      { key: 'serviceAccount.name', default: '""', desc: 'Override the ServiceAccount name (auto-generated if blank)' },
-      { key: 'watchNamespaces', default: '[]', desc: 'Restrict watcher to these namespaces (empty = cluster-wide)' },
-      { key: 'protectedNamespaces', default: '[kube-system, kube-public, cert-manager]', desc: 'Namespaces fixers will never mutate' },
-    ],
-  },
-  {
-    title: 'Fixers',
-    rows: [
-      { key: 'fixers.staleErrorPods.enabled', default: 'true', desc: 'Delete Error/Failed pods (requires remediation.enabled)' },
-      { key: 'fixers.stuckJobs.enabled', default: 'true', desc: 'Restart frozen Jobs with bad SecretRef' },
-      { key: 'fixers.stuckRS.enabled', default: 'true', desc: 'Rollout-restart stale ReplicaSet pods' },
-      { key: 'fixers.stuckCertReqs.enabled', default: 'true', desc: 'Delete terminal cert-manager CertificateRequests' },
-      { key: 'fixers.tlsSecretMismatch.enabled', default: 'false', desc: 'Repoint Ingress to correct TLS Secret (opt-in)' },
-    ],
-  },
-  {
-    title: 'Alerting and ticketing',
-    rows: [
-      { key: 'slackWebhookSecretName', default: '""', desc: 'K8s Secret name containing Slack webhook URL(s)' },
-      { key: 'alertmanager.enabled', default: 'false', desc: 'Enable Alertmanager alert sink' },
-      { key: 'alertmanager.url', default: '""', desc: 'Alertmanager URL (e.g. http://alertmanager:9093)' },
-      { key: 'ticketing.openproject.enabled', default: 'false', desc: 'Enable OpenProject MCP ticketing sink (OSS)' },
-      { key: 'ticketing.jira.enabled', default: 'false', desc: 'Enable Jira ticketing sink (paid)' },
-      { key: 'ticketing.servicenow.enabled', default: 'false', desc: 'Enable ServiceNow ticketing sink (paid)' },
-    ],
-  },
-  {
-    title: 'AI tiers (paid)',
-    rows: [
-      { key: 'ai.enabled', default: 'false', desc: 'Enable the cha-com aiwatch Deployment' },
-      { key: 'ai.tier', default: 't0', desc: 'AI tier: t0 | t1 | t2 | t3' },
-      { key: 'ai.endpoint', default: '""', desc: 'OpenAI-compatible LLM base URL (e.g. https://host/v1)' },
-      { key: 'ai.model', default: '""', desc: 'Model name to use (passed as model in API requests)' },
-      { key: 'ai.apiKey.secretName', default: '""', desc: 'K8s Secret containing the LLM API key' },
-      { key: 'ai.allowSaas', default: 'false', desc: 'Allow external (non-cluster) LLM endpoints' },
-      { key: 'approval.enabled', default: 'false', desc: 'Enable approval-server (required for T1+)' },
-      { key: 'ai.metrics.enabled', default: 'false', desc: 'Expose /metrics:9090 + render ServiceMonitor and PrometheusRule (paid aiwatch)' },
-    ],
-  },
-];
+// Generated from the vendored chart snapshot (src/data/helm-values.snapshot.yaml,
+// created by scripts/sync-helm-values.sh). Every key below exists in the real
+// chart's values.yaml — loadHelmSnapshot() throws at build time if the
+// snapshot is missing, empty, or unparsable.
+const { chartVersion, syncedDate, groups } = loadHelmSnapshot();
 ---
 
 <DocsLayout
   title="CHA &mdash; Helm Reference"
-  description="Key Helm values.yaml options for Cluster Health Autopilot, grouped by feature area."
+  description="Every Helm values.yaml option for Cluster Health Autopilot, generated from the chart's own values file."
   topic="Helm Reference"
 >
   <PageHero
     eyebrow="Docs"
     title="Helm Reference"
-    subtitle="Key values.yaml options grouped by feature area. Full chart source at charts/cluster-health-autopilot/ in the GitHub repo."
+    subtitle={`Every values.yaml option, generated from chart v${chartVersion} (synced ${syncedDate}). Full chart source at charts/cluster-health-autopilot/ in the GitHub repo.`}
   />
 
   <section class="mx-auto max-w-5xl space-y-14 px-6 py-16">
 
     <div>
       <p class="text-base leading-relaxed text-zinc-600 dark:text-zinc-400">
-        Install with defaults first — most options have safe defaults. Add cloud probes, ticketing, and AI tiers incrementally as you need them. The full values file is at{' '}
+        Install with defaults first — most options have safe defaults. Add cloud probes, ticketing, and AI tiers incrementally as you need them. This reference is generated directly from the chart's{' '}
         <a
           href="https://github.com/Bionic-AI-Solutions/cluster-health-autopilot/blob/main/charts/cluster-health-autopilot/values.yaml"
           class="text-accent-600 hover:text-accent-700 dark:text-accent-400 dark:hover:text-accent-300"
           target="_blank"
           rel="noopener noreferrer"
         >
-          charts/cluster-health-autopilot/values.yaml
-        </a>.
+          values.yaml
+        </a>{' '}
+        (chart v{chartVersion}), so every key listed here exists in the chart.
       </p>
     </div>
 
     {groups.map((g) => (
       <div>
-        <h2 class="text-xl font-semibold text-zinc-900 dark:text-zinc-50">{g.title}</h2>
+        <h2 class="font-mono text-xl font-semibold text-zinc-900 dark:text-zinc-50">{g.name}</h2>
         <div class="mt-1 h-0.5 w-8 rounded-full bg-accent-500"></div>
+        {g.desc && (
+          <p class="mt-3 text-sm leading-relaxed text-zinc-600 dark:text-zinc-400">{g.desc}</p>
+        )}
         <div class="mt-6 overflow-x-auto">
           <table class="w-full border-collapse text-sm">
             <thead>
