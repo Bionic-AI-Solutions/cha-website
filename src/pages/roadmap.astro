@@ -1,189 +1,149 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
 import PageHero from '../components/PageHero.astro';
-import {
-  CLOUD_PROBES_AWS,
-  CLOUD_PROBES_TOTAL,
-} from '../data/product-facts';
+import { loadChangelog } from '../data/changelog';
+import { OSS_VERSION, PAID_VERSION } from '../data/product-facts';
 
-const milestones = [
-  {
-    label: 'v1.23.1 (OSS) + v1.20.1 (paid)',
-    status: 'Shipped — 2026-06-10',
-    state: 'shipped',
-    items: [
-      'Adversarial-review fix pass after v1.23.0 + v1.19.0 shipped — caught 8 gaps where shipped packages were unreachable on the live cluster',
-      'OSS v1.23.1: M5 Prometheus trigger CLI flags (--prom-trigger-{url,interval,alert-filter}), M6 webhook HTTP server actually started in watcher.Run() (was compiled-but-never-loaded in v1.23.0), Helm watcher.triggers.{prom,webhook}.* values knobs + watcher-webhook-service.yaml template, discovery.k8s.io/endpointslices RBAC for KongRoutes (was silently falling back to legacy v1.Endpoints), 2 untracked plan docs committed (consolidated roadmap + Phase 3 master)',
-      'CHA-com v1.20.0: audit-bundle accepts --since 30d (parseSinceDuration with day suffix), registers --rag-store-url + the cluster-knowledge flag family, goreleaser workflow adds pre-checkout disk cleanup (~25 GiB freed) — restored multi-arch binary distribution after 4 consecutive single-arch fallbacks (v1.16.0–v1.19.0)',
-      'CHA-com v1.20.1: HOTFIX — v1.20.0 introduced "panic: audit-bundle flag redefined: cluster-name" which crashed every aiwatch pod into CrashLoopBackOff; rolled back to v1.19.0 + fixed by removing the subcommand-local --cluster-name (collision with ck.register). Caught during live verification, not in CI',
-      '11 of 11 prior-review gaps closed + 1 regression caught and hotfixed',
-    ],
-  },
-  {
-    label: 'v1.23.0 (OSS) + v1.19.0 (paid)',
-    status: 'Shipped — 2026-06-09',
-    state: 'shipped',
-    items: [
-      'Trigger-expansion roadmap M1–M7 bundled: closes the docs/design/2026-05-trigger-expansion-roadmap plan that v1.6.0 opened M1 against',
-      'M1 — watcher inform-loop expanded with Ingress + HPA + ArgoCD Application (DaemonSet was already in)',
-      'M2 — KongRoutes probe: for each Kong-managed Ingress, verifies the backend Service has ≥1 ready Endpoint + KongPlugin/Consumer annotation refs resolve',
-      'M3 — GPUNodes probe (NotReady / cordoned / zero-allocatable signals on nvidia.com/gpu + amd.com/gpu nodes) + LogPatternMatcher analyzer (ImagePullBackOff, OOMKilled, probe failed, volume attach failed, RBAC Forbidden — deduped per (object, pattern))',
-      'M4 — Endpoints probe Layer-7 mode: cha.bionicaisolutions.com/probe-l7-{path,expect,status} annotations on an Ingress assert response status AND body content (substring or regex:). Closes the "Kong returns 200 but body is wrong" failure class',
-      'M5 — Prometheus class-C trigger: internal/trigger/prom polls Alertmanager /api/v2/alerts and pushes a debounced signal to the watcher on every new firing-alert fingerprint. Closes the slow-drift gap (disk fill, cert expiry creep, error-budget burn, GPU ECC accumulation) that classes A and B miss entirely',
-      'M6 — external webhook receiver (class E): HMAC-SHA256-authenticated POST to /webhook/<source> triggers an immediate diagnose cycle. Sign() helper exported for external integrators (Vault, Argo CD, cert-manager, Cloudflare)',
-      'M7 — pkg/probe.GVRWatcher foundation interface: probes declare which Kubernetes resource kinds they consume; sets up phase 2 (per-probe dispatch) and phase 3 (full controller-runtime) without changing today\'s semantics',
-      'Phase 3.B production wiring (paid): the v1.17.0 release shipped the AutoMergeGate interface + tests but never instantiated the gate at runtime. v1.19.0 closes the loop — shared CircuitBreaker between auto-apply and auto-merge, ClassSuccessConfidence exported, --digest-pin-min-success-rate flag (default 0.95), construct-gate-on-startup wiring with actionable errors on half-config',
-    ],
-  },
-  {
-    label: 'v1.22.x (OSS) + v1.18.0 (paid)',
-    status: 'Shipped — 2026-06-09',
-    state: 'shipped',
-    items: [
-      'Phase 3.C — investigator-level RAG grounding: the enricher prepends a <target_history> prompt block on repeat findings. "This exact target has been touched 14 times — 11 cleared, 2 still-present, 1 reverted. Most recent (4h ago) cleared with ApplyManifest." Reuses Phase 2.A outcome memory; nil retriever = legacy (no block). Expected ~90% reduction in investigator wall-clock + token cost on recurring findings',
-      'Phase 3.F — cha-com audit-bundle subcommand: produces a SOC2-friendly tar.gz with manifest.json (versions, timestamps, SHA-256 of each file), audit.jsonl (verbatim copy of the audit log), and outcomes.jsonl (every RAG outcome within --since, default 30d). Local-only — no network egress',
-      'Phase 3.E — 3 new workload-tier analyzers: OOMKillRecurrence (pod with ≥3 OOMKilled restarts in 24h), PVOrphan (PersistentVolume Released >7d — still billing on the underlying cloud disk), CronJobStuck (warning/critical for >24h-since-success / never-succeeded / suspended)',
-      'Phase 3.D — operator schema parity: spec.ai.metrics + spec.ai.llmProposer typed CR fields with operator reconciler. ArgoCD/Flux/kubectl-apply installs no longer need extraArgs escape hatches for these surfaces',
-      'CronJobStuck firing live on dev cluster on bionic-diagnose + bionic-remediate (never-succeeded) + pg/pg-password-* (suspended) + kube-system/namespace-cleanup* (never-succeeded)',
-      'PVOrphan firing on dev cluster\'s 117 Released PVs once v1.22.2 added the persistentvolumes RBAC verb',
-    ],
-  },
-  {
-    label: 'v1.21.x (OSS) + v1.16.0–v1.17.0 (paid)',
-    status: 'Shipped — 2026-06-07/08',
-    state: 'shipped',
-    items: [
-      'Phase 2 paid-tier closure across 8 sub-deliverables (PR #45). All locally tested and live-verified on the dev cluster as cha-com:1.16.0-dev1 before canonical tagging',
-      'Phase 2.A — RAG memory READ path + revert detection + per-cycle observability log line (outcomes: cycle=N applied=A reverted=R)',
-      'Phase 2.B — "Approve+remember class" workflow end-to-end: PolicyEntry + PolicyStore (RAG-backed) + autonomy engine bypass on matching approve-policy + 3 scoped click routes (/approve-class /deny-class /silence-class) + 4-button Slack render row + per-cycle "policies: active=A muted=M" log + per-message MessagePattern matching (not just wildcards)',
-      'Phase 2.C — Wilson-bound class-success-rate confidence merged into DecideAutonomy via max() with similarity confidence. Rescues high-volume well-tested classes (50/50 ≈ 0.93 confidence) without over-claiming on small samples',
-      'Phase 2.D — LLM-driven proposer for diagnostics outside FixProposer\'s keyword set. Closed-enum gate enforces ActionKind validity. Memory-grounded prompts include per-(source, action_kind) success stats',
-      'Phase 2.E — DisruptionDrift analyzer (PDB blocks all evictions / stuck Indexed-Job failed indexes / ResourceQuota at 100% past 1h)',
-      'Phase 2.F — lease-based leader election: HA aiwatch with --leader-election*. coordination.k8s.io/v1.Lease named <release>-aiwatch-leader; failover ~20s on lease loss',
-      'Phase 2.G — Prometheus instrumentation: 8 cha_* metric families on /metrics:9090 + chart-rendered ServiceMonitor / PrometheusRule (ChaWatcherStuck, ChaBreakerOpen, ChaAutonomyRejectionSpike) / Grafana dashboard ConfigMap',
-      'Phase 2.H — cosign-style attestation on DigestPin PRs: Ed25519 over canonical (action_id, repo, ref, file_path, before_digest, after_digest, observed_at) + embedded public-key PEM. Reviewers verify with openssl before approving — prevents a stolen GitHub PAT from opening look-alike PRs',
-      'Phase 3.B — auto-merge gate impl + 5-gate guard (feature flag + attestation configured + closed breaker + matching approve-class policy + Wilson rate ≥ threshold). Production wiring landed in v1.19.0',
-    ],
-  },
-  {
-    label: 'v1.8.x — v1.20.x (OSS) + v1.6.0 — v1.15.x (paid)',
-    status: 'Shipped earlier — 2026-05',
-    state: 'shipped',
-    items: [
-      'Operator port (Phase 1c): ClusterHealthAutopilot CRD + cha-operator manager reconciling the full AI stack end-to-end — aiwatch Deployment + Qdrant StatefulSet + approval-server + Ingress + Ed25519 signing key Secret + RBAC chain. 5 status conditions; 112 unit tests + bundle-smoke gate',
-      'DNSChainDrift analyzer: Cloudflare DNS record → cluster ingress LB → Ingress host → Service → ready Endpoints. Emits the highest broken layer per host (one ticket per root cause, not three)',
-      'M1 of the original M1–M5 K8s-probe slice (Kong / HPA / ArgoCD / Velero / CapacityDrift PVC expansion) — M1 was opened in v1.6.0 and partially expanded in v1.23.0 (this release)',
-      `${CLOUD_PROBES_TOTAL} cloud probes — ${CLOUD_PROBES_AWS} each AWS / GCP / Azure — with live SDK wrappers (IRSA / GCP Workload Identity / AAD WI). Honest "not measured" where the cloud Monitoring API is required`,
-      'ConfigDrift, CapacityDrift, SecurityDrift, GitOpsDrift, WorkloadStateDrift, RBACDrift analyzers (per-class Helm toggles + per-analyzer CHA_ANALYZER_<NAME> env opt-out)',
-      'CHA-com paid tier: T0 narration, T1 fix proposer, T2 multi-step planner, T3 vault break-glass runbook with dual approval, JWT-signed click-to-fix URLs, JSONL audit log, hash-chained audit',
-      'Lease-based leader election for HA watcher deployments; per-severity Slack repeat intervals; OpenProject MCP ticketing; pkg/ai/redact for K8s Event message scrubbing',
-    ],
-  },
-  {
-    label: 'Pending / roadmap',
-    status: 'Next',
-    state: 'next',
-    items: [
-      'Phase 3.A — cross-cluster RAG federation (paid). Substrate ready (pkg/rag.Entry.ClusterID already partitions outcomes); federation hook is one wider-list call. ICP-gated until first paying customer runs >1 cluster (~half-day when triggered)',
-      'M7 phase 2 — per-probe dispatch: watcher gates each probe on its declared GVRs() (today every probe runs on every trigger). v1.23.0 ships the GVRWatcher interface; phase 2 flips the dispatcher',
-      'M7 phase 3 — full controller-runtime/kubebuilder reconciler per probe (~10 days, separate design doc)',
-      'Operator CRD field for spec.ai.metrics.serviceMonitor + spec.ai.metrics.prometheusRule (currently chart-only; CR-driven installs need helm-rendered output to layer them on)',
-      'Multi-tenant CHA-com — one binary serving N customer clusters (cloud SaaS path, not yet planned)',
-      'Public "incidents resolved without paging a human" benchmark page (GTM milestone)',
-      'Anonymized run-log opt-in collection (day 14-90 of the GTM brief)',
-      'Paid landing page + signup (day 60 of the GTM brief)',
-    ],
-  },
+// "Shipped" is GENERATED from the vendored CHANGELOG snapshots
+// (scripts/sync-changelogs.sh) — this page can never list a release that
+// does not exist in the real CHANGELOGs.
+const oss = loadChangelog('oss');
+const paid = loadChangelog('paid');
+const asOf = oss.syncedDate;
+
+// "Shipped" means TAGGED. The CHANGELOGs sometimes carry an entry for an
+// untagged HEAD (e.g. CHA-com v1.22.0 while v1.21.0 is the latest tag), so
+// drop anything newer than the latest tag recorded in product-facts. If the
+// tag isn't in the snapshot at all, the snapshot (or product-facts) is stale
+// — fail the build instead of shipping a roadmap that contradicts the site.
+function shippedOnly(releases: typeof oss.releases, latestTag: string, repo: string) {
+  const idx = releases.findIndex((r) => `v${r.version}` === latestTag);
+  if (idx === -1) {
+    throw new Error(
+      `roadmap: ${repo} snapshot has no entry for ${latestTag} (product-facts latest tag). Run ./scripts/sync-changelogs.sh (or update product-facts.ts).`
+    );
+  }
+  return releases.slice(idx);
+}
+
+const tracks = [
+  { name: 'Open source — cluster-health-autopilot', tag: 'OSS', releases: shippedOnly(oss.releases, OSS_VERSION, 'OSS') },
+  { name: 'Enterprise — CHA-com', tag: 'Paid', releases: shippedOnly(paid.releases, PAID_VERSION, 'paid') },
 ];
 
+// Hand-curated open items — each verified against repo state on the sync
+// date (grep before listing; nothing here has already shipped). P6.x refs
+// point at the in-flight claims-fulfillment plan
+// (CHA-com docs/plans/2026-06-11-adversarial-review-remediation.md).
 const openItems = [
-  { label: 'Phase 3.A cross-cluster RAG federation', why: 'ICP-gated; substrate verified (rag_qdrant.go applies cluster_id filter on reads)', when: 'On first paying customer with >1 cluster' },
-  { label: 'M7 phase 2 — per-probe dispatch', why: 'GVRWatcher foundation shipped; dispatcher rewrite next', when: 'Q3 2026' },
-  { label: 'M7 phase 3 — controller-runtime reconciler per probe', why: '10-day effort + separate design doc', when: 'Q4 2026' },
-  { label: 'KEDA ScaledObject in watchedGVRs (M1 expansion)', why: 'Known production signal source not yet watched; HPA covers raw K8s autoscaling but not KEDA scaledobjects', when: 'v1.24.0' },
-  { label: 'Operator CR fields for watcher.triggers.{prom,webhook}', why: 'Chart-only today; ArgoCD/Flux installs can\'t activate M5/M6 from a pure CR-driven config', when: 'v1.24.0' },
-  { label: 'M5/M6 end-to-end live smoke (helm upgrade with values + curl webhook)', why: 'helm-template smoke proved templates render correctly but the full chart→running-pod→open-port path has not been integration-tested', when: 'Operator activation' },
-  { label: 'audit-bundle live content inspection (sidecar Pod with tar)', why: 'cha-com audit-bundle returns exit 0 on cluster but distroless container blocks in-place tarball extraction; no proof manifest+audit+outcomes have valid content yet', when: 'Operator activation' },
-  { label: 'Phase 3.B + 3.C startup log lines', why: 'Auto-merge gate construction and target-history block fires are not observably logged today — wired but no visibility into whether they actually fire in production', when: 'v1.21.0 CHA-com' },
-  { label: 'Anonymized run-log collection', why: 'GTM day 14–90 milestone (no engineering blocker)', when: 'Product/marketing track' },
-  { label: 'Paid landing page + signup', why: 'GTM day 60 milestone', when: 'Product/marketing track' },
-  { label: 'Multi-tenant SaaS variant', why: 'Not yet designed; needs RFC', when: 'Post first 3 paying customers' },
+  { label: 'Loki / OTLP audit sinks', why: 'ai/audit ships the hash-chained JSONL trail today; the Loki and OTLP sinks for compliance pipelines are doc-stubs, not code', when: 'P6.1 — in flight' },
+  { label: 'SBOM (CycloneDX) + cosign-signed images', why: 'Release workflow already reserves the Sigstore id-token permission but does not sign or attach SBOMs yet', when: 'P6.2 — in flight' },
+  { label: 'Jira ticketing sink', why: 'OpenProject MCP ticketing shipped; the Jira sink behind the Enterprise ticketing claim is not started', when: 'P6.3 — in flight' },
+  { label: 'ServiceNow ticketing sink + multi-sink routing', why: 'Same Enterprise ticketing surface as Jira; includes routing one finding to N sinks', when: 'P6.4 — in flight' },
+  { label: 'Hosted dashboard MVP', why: 'Read-only web view of current findings, pending approvals, and remediation history; reuses approval-server rendering conventions', when: 'P6.6 — in flight' },
+  { label: 'Multi-cluster federation MVP', why: 'Hub-spoke read-only aggregation. Substrate is ready (RAG entries already carry ClusterID) but federation is explicitly out of scope in today’s store', when: 'P6.7 — in flight' },
+  { label: 'Hosted playground', why: 'The "Try it now" path currently lands on quick-start; the live playground route is a coming-soon stub', when: 'P6.8 — in flight' },
+  { label: 'OLM / OperatorHub publish', why: 'Operator bundle manifests + bundle-smoke CI gate exist; the bundle has not been published to OperatorHub', when: 'Next operator milestone' },
+  { label: 'M7 phase 2 — per-probe dispatch', why: 'GVRWatcher interface shipped in v1.23.0, but the watcher still runs every probe on every trigger (static watchedGVRs loop)', when: 'Q3 2026' },
+  { label: 'M7 phase 3 — controller-runtime reconciler per probe', why: '~10-day effort + separate design doc', when: 'Q4 2026' },
+  { label: 'Anonymized run-log opt-in collection', why: 'GTM day 14–90 milestone (no engineering blocker)', when: 'Product/marketing track' },
+  { label: 'Multi-tenant SaaS variant', why: 'One binary serving N customer clusters; not yet designed, needs an RFC', when: 'Post first 3 paying customers' },
 ];
 ---
 
 <BaseLayout
   title="CHA — Roadmap"
-  description="What's shipped and what's next on Cluster Health Autopilot. As of 2026-06-09: Phase 2 (paid-tier closure across 8 sub-deliverables), Phase 3 (auto-merge + investigator RAG + audit bundle + 3 workload analyzers), and the M1-M7 trigger-expansion roadmap are all shipped + live on the production cluster."
+  description={`What's shipped and what's next on Cluster Health Autopilot. As of ${asOf}: OSS ${OSS_VERSION} and Enterprise ${PAID_VERSION} are live; the shipped list below is generated from the repos' CHANGELOGs, and the open-items list is hand-verified against repo state.`}
 >
   <PageHero
     eyebrow="Roadmap"
-    title="What's shipped, what's running, what's next."
-    subtitle="As of 2026-06-09, the v1.23.0 OSS + v1.19.0 paid binaries close two major arcs back-to-back: Phase 2 (the test→learn→next-cycle-detect loop with HA aiwatch + Prometheus + attestation), and Phase 3 (auto-merge at very-high confidence + investigator-level RAG grounding + SOC2 audit bundle + 3 new analyzers). The trigger-expansion roadmap M1-M7 lands in the same release: Ingress/HPA/ArgoCD watch + KongRoutes + GPUNodes + LogPatternMatcher + L7 body assertion + Prometheus class-C trigger + webhook class-E receiver + GVRWatcher foundation. The remaining open items are listed below."
+    title="What's shipped, what's next."
+    subtitle={`Shipped releases below are generated straight from the two repos' CHANGELOGs (last synced ${asOf}) — OSS is at ${OSS_VERSION}, the Enterprise CHA-com binary at ${PAID_VERSION}. The open-items list is hand-curated and verified against repo state on the same date.`}
   />
 
-  <section class="mx-auto max-w-5xl px-6 py-16">
-    <div class="space-y-8">
-      {milestones.map((m) => (
-        <article class="rounded-2xl border border-white/10 bg-white/5 p-7">
-          <header class="mb-4 flex flex-wrap items-baseline justify-between gap-3">
-            <h3 class="text-2xl font-semibold text-white">{m.label}</h3>
-            <span class={`rounded px-2 py-1 text-xs font-mono ${
-              m.state === 'shipped'
-                ? 'bg-emerald-900/40 text-emerald-300'
-                : m.state === 'next'
-                ? 'bg-cyan-900/40 text-cyan-300'
-                : 'bg-slate-800 text-slate-400'
-            }`}>{m.status}</span>
-          </header>
-          <ul class="space-y-2 text-sm leading-relaxed text-slate-300">
-            {m.items.map((i) => (
-              <li class="pl-4 -indent-4 before:content-['—'] before:mr-2 before:text-slate-500">
-                {i}
-              </li>
+  <section class="mx-auto max-w-6xl px-6 py-16">
+
+    <!-- Shipped (generated) -->
+    <h2 class="text-xl font-semibold text-zinc-900 dark:text-zinc-50">Shipped</h2>
+    <div class="mt-1 h-0.5 w-8 rounded-full bg-accent-500"></div>
+    <p class="mt-4 max-w-3xl text-sm leading-relaxed text-zinc-600 dark:text-zinc-400">
+      The most recent tagged releases per track (up to 10), newest first. Every entry is parsed from
+      the repo CHANGELOG at build time — nothing here is hand-copied.
+    </p>
+
+    <div class="mt-8 grid gap-8 lg:grid-cols-2">
+      {tracks.map((track) => (
+        <div>
+          <div class="mb-4 flex items-baseline gap-3">
+            <h3 class="text-base font-semibold text-zinc-900 dark:text-zinc-100">{track.name}</h3>
+            <span class="rounded-full bg-accent-600/10 px-2 py-0.5 font-mono text-xs text-accent-700 dark:text-accent-400">{track.tag}</span>
+          </div>
+          <div class="space-y-4">
+            {track.releases.map((r) => (
+              <article class="rounded-2xl border border-zinc-200/80 bg-white p-5 shadow-sm dark:border-zinc-800/80 dark:bg-zinc-900/60">
+                <header class="flex flex-wrap items-baseline justify-between gap-2">
+                  <h4 class="font-mono text-sm font-semibold text-zinc-900 dark:text-zinc-50">v{r.version}</h4>
+                  <div class="flex items-center gap-2">
+                    {r.note && (
+                      <span class="rounded bg-amber-100 px-1.5 py-0.5 text-[11px] font-medium text-amber-800 dark:bg-amber-950/50 dark:text-amber-300">{r.note}</span>
+                    )}
+                    <time class="font-mono text-xs text-zinc-500 dark:text-zinc-400" datetime={r.date}>{r.date}</time>
+                  </div>
+                </header>
+                {r.highlights.length > 0 && (
+                  <ul class="mt-3 space-y-1.5 text-sm leading-relaxed text-zinc-600 dark:text-zinc-400">
+                    {r.highlights.map((h) => (
+                      <li class="flex gap-2">
+                        <span aria-hidden="true" class="mt-0.5 select-none text-accent-500">›</span>
+                        <span>{h}</span>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </article>
             ))}
-          </ul>
-        </article>
+          </div>
+        </div>
       ))}
     </div>
 
-    <h2 class="mt-16 mb-4 text-xl font-semibold text-white">Visible open-items list</h2>
-    <p class="mb-6 text-sm text-slate-400">
-      Living list of pending work. Each item shows the gating reason and the
-      target window. Engineering items below the "GTM track" line are
-      product/marketing work, not engineering — they don't block shipped
-      capability.
+    <!-- Open items (hand-curated, verified) -->
+    <h2 class="mt-20 text-xl font-semibold text-zinc-900 dark:text-zinc-50">Open items</h2>
+    <div class="mt-1 h-0.5 w-8 rounded-full bg-accent-500"></div>
+    <p class="mt-4 max-w-3xl text-sm leading-relaxed text-zinc-600 dark:text-zinc-400">
+      Living list of pending work as of {asOf}, each verified against repo state before listing.
+      Engineering items reference the in-flight claims-fulfillment plan (P6.x); items on the
+      product/marketing track don't block shipped capability.
     </p>
-    <div class="overflow-x-auto rounded-2xl border border-white/10 bg-white/5">
+    <div class="mt-6 overflow-x-auto rounded-2xl border border-zinc-200/80 bg-white shadow-sm dark:border-zinc-800/80 dark:bg-zinc-900/60">
       <table class="w-full text-left text-sm">
-        <thead class="bg-white/5 text-slate-400">
+        <thead class="border-b border-zinc-200 text-zinc-500 dark:border-zinc-800 dark:text-zinc-400">
           <tr>
             <th class="px-5 py-3 font-medium">Item</th>
-            <th class="px-5 py-3 font-medium">Why pending</th>
+            <th class="px-5 py-3 font-medium">Why it's still open</th>
             <th class="px-5 py-3 font-medium">When</th>
           </tr>
         </thead>
-        <tbody class="divide-y divide-white/5 text-slate-300">
+        <tbody class="divide-y divide-zinc-100 text-zinc-600 dark:divide-zinc-800/60 dark:text-zinc-400">
           {openItems.map((i) => (
             <tr>
-              <td class="px-5 py-3 font-medium text-white">{i.label}</td>
+              <td class="px-5 py-3 font-medium text-zinc-900 dark:text-zinc-100">{i.label}</td>
               <td class="px-5 py-3">{i.why}</td>
-              <td class="px-5 py-3 font-mono text-xs text-cyan-300">{i.when}</td>
+              <td class="px-5 py-3 whitespace-nowrap font-mono text-xs text-accent-700 dark:text-accent-400">{i.when}</td>
             </tr>
           ))}
         </tbody>
       </table>
     </div>
 
-    <div class="mt-10 rounded-2xl border border-white/10 bg-white/5 p-6 text-sm text-slate-300">
+    <div class="mt-10 rounded-2xl border border-zinc-200/80 bg-zinc-50 p-6 text-sm leading-relaxed text-zinc-600 shadow-sm dark:border-zinc-800/80 dark:bg-zinc-900/40 dark:text-zinc-400">
       <p>
-        Full design docs and the adversarial-review punch list live in the
-        OSS repo at
+        Full design docs live in the OSS repo at
         <a href="https://github.com/Bionic-AI-Solutions/cluster-health-autopilot/tree/main/docs/design"
-           class="text-cyan-400 hover:text-cyan-300">docs/design/</a>.
-        The consolidated 2026-06-09 plan that supersedes the per-phase docs
-        for forward planning is at
+           class="text-accent-600 hover:text-accent-700 dark:text-accent-400 dark:hover:text-accent-300">docs/design/</a>.
+        The consolidated forward-planning doc is at
         <a href="https://github.com/Bionic-AI-Solutions/cluster-health-autopilot/blob/main/docs/superpowers/plans/2026-06-09-cha-consolidated-roadmap.md"
-           class="text-cyan-400 hover:text-cyan-300">docs/superpowers/plans/2026-06-09-cha-consolidated-roadmap.md</a>.
+           class="text-accent-600 hover:text-accent-700 dark:text-accent-400 dark:hover:text-accent-300">docs/superpowers/plans/2026-06-09-cha-consolidated-roadmap.md</a>.
       </p>
     </div>
   </section>

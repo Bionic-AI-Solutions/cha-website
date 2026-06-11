@@ -36,6 +36,11 @@ export const CLOUD_PROBES_TOTAL =
   CLOUD_PROBES_AWS + CLOUD_PROBES_GCP + CLOUD_PROBES_AZURE;
 
 export const OSS_VERSION = 'v1.25.1';
+// Newest release with goreleaser binary assets. chart-releaser owns
+// `releases/latest` (chart tags carry no binaries), so ALWAYS pin download
+// URLs to this tag — never link releases/latest/download/.
+// Verified 2026-06-11: all four _<os>_<arch>.tar.gz assets return HTTP 200.
+export const BINARY_RELEASE = 'v1.24.1';
 // Latest CHA-com git TAG (v1.22.0 is untagged HEAD); bump when v1.22.0 tags.
 // Exported for the roadmap page (a later task will consume it).
 export const PAID_VERSION = 'v1.21.0';
