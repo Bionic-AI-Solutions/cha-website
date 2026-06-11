@@ -47,7 +47,9 @@ const MAX_HIGHLIGHTS = 6;
 
 // "## [1.25.0] — 2026-06-11 — 2026-06-11" / "## [1.9.1] — 2026-05-30 (UNPUBLISHED — …)"
 // First date wins; anything after it (doubled dates, parenthetical notes) goes to `rest`.
-const RELEASE_RE = /^## \[(\d+\.\d+\.\d+)\]\s*[—–-]+\s*(\d{4}-\d{2}-\d{2})(.*)$/;
+// Pre-release suffixes (1.2.3-rc1) are accepted; a heading with NO date is
+// still skipped (KNOWN GAP — such an entry silently drops off the page).
+const RELEASE_RE = /^## \[(\d+\.\d+\.\d+(?:-[\w.]+)?)\]\s*[—–-]+\s*(\d{4}-\d{2}-\d{2})(.*)$/;
 
 /** Strip inline markdown (bold, code ticks, links) and collapse whitespace. */
 function cleanInline(raw: string): string {
@@ -84,7 +86,7 @@ function parseHighlights(bodyLines: string[]): string[] {
     const h3 = line.match(/^### (.+)$/);
     if (h3) {
       const heading = cleanInline(h3[1]);
-      const split = heading.split(/\s+[—–]\s+/); // "Added — Title"
+      const split = heading.split(/\s+[—–-]\s+/); // "Added — Title" (em/en dash or spaced hyphen)
       if (/^Tests?$/i.test(split[0])) {
         // Test-count bookkeeping sections are changelog hygiene, not
         // roadmap-page material.

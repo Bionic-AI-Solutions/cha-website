@@ -35,7 +35,7 @@ sync_one() {
     echo "<!-- truncated to newest $max_releases release sections; the public roadmap renders these only -->"
     echo
     awk -v max="$max_releases" '
-      /^## \[/ { count++ }
+      /^## \[[0-9]/ { count++ }   # versioned releases only — [Unreleased] is excluded
       count > max { exit }
       count >= 1 { print }
     ' "$src"

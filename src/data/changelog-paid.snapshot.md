@@ -4,8 +4,6 @@
 <!-- re-sync: ./scripts/sync-changelogs.sh && npm run build -->
 <!-- truncated to newest 12 release sections; the public roadmap renders these only -->
 
-## [Unreleased]
-
 ## [1.22.0] — 2026-06-11
 
 ### Added — `--digest-pin-third-party-policy=enrich-only` (observability for third-party images)
@@ -526,4 +524,95 @@ Wired into `cmd/cha-com/watch_cmd.go::tick()` after autonomy.Consider.
 10 unit tests; verified live 2026-06-05 on dev3: 50 NetworkPolicy
 missing-network-policy items posted as 3 chunks to ceph-critical
 with Approve/Deny URLs operators can click directly.
+
+## [1.11.4] — 2026-06-05
+
+### Fixed — Paginated Qdrant scroll (PR #34)
+
+- `ai/memory/rag_qdrant.go::scroll` previously hard-coded `limit: 100` with no `next_page_offset` loop. `RAG.Get` walks the result set linearly for an exact key match, so any entry whose Qdrant point ID sorted past position 100 was silently invisible.
+- Diagnosed live 2026-06-04: DigestPinProposer silently skipped workloads (livekit-server, media-services/scenes-worker, voice-studio-backend, ...) whose alphabetical position landed after page 1. RAG had valid entries with image digests + RepoMap matched, but `RAG.Get` couldn't see them.
+- Fix paginates with `next_page_offset` (pageSize=1000); caller's `Limit` parameter respected as a global cap.
+- New regression test `TestQdrantRAG_ScrollPaginatesPastFirstPage`: fake Qdrant with 50-per-page; upsert 200 entries; verify `List()` returns all 200 and `Get()` reaches the last entry.
+
+### Added — Per-forge read cache (PR #36)
+
+- `GitHubForge` now has `ReadCacheTTL` (default 5m via `NewGitHubForge`; 0 disables). `GetFileContent` + `ListRepoFiles` check cache first; memoise body + error.
+- Diagnosed 2026-06-04: with the OSS Detect fallthrough (v1.18.3), every digest-pin candidate's `releasesrc.Detect` walked ~600 yaml files per candidate. With ~14 candidates × ~630 files = ~9000 API calls/cycle = GitHub secondary rate-limit territory. 2-min-per-finding processing observed.
+- Cache collapses repeats: 14 candidates against same repo = ~630 calls instead of ~9000. ~14× reduction.
+- `UpdateFile` calls `InvalidateRepoReadCache(owner, repo)` on success so reads after a write see the new SHA (fixes 409 sha-mismatch loop for multi-replica workloads).
+- New tests: `TestGitHubForge_ReadCacheCollapsesRepeatedReads` + `TestGitHubForge_ReadCacheTTLZeroDisablesCaching`.
+
+### Fixed — DigestPinProposer branch-name colon-in-ref (v1.11.3)
+
+- **Root cause for "no Slack Approve/Deny button after v1.11.2 was deployed"**: the proposer built `branchName = "cha/digest-pin/<repo>/<digest[:12]>"`. With `digest = "sha256:18814d01..."`, `digest[:12]` evaluated to `"sha256:18814"` — the `:` is invalid in git ref names. GitHub returned HTTP 422 on `CreateRef`; the error bubbled up through `digestPin.Propose()` and was silently swallowed by `proposeFixes` (which the observability change in this same release surfaces). Net effect on v1.11.0–v1.11.2: every digest-pin candidate that reached the forge stage failed identically, with no log signal.
+- New helper `shortDigestHex(digest)` in `ai/proposer/digest_pin.go`: strips any `<algo>:` prefix before slicing 12 hex chars. Output never contains `:` (asserted in tests). Used by both `branchName` and `ActionID` so action IDs also become git-ref-safe.
+- New test `TestDigestPin_ShortDigestHex` covers sha256, sha512, no-colon, exact-12-char, empty string; explicit colon-absence assertion.
+- **Verified live** against `Bionic-AI-Solutions/storethesoup-k8s` (raw-YAML repo): PR opened with branch `cha/digest-pin/docker4zerocool-storethesoup-wordpress/18814d01b7e1` and correct one-line diff replacing `:6.7-php8.2-wpcli-redis` with `@sha256:18814d01...`.
+
+### Added — Stderr observability for DigestPinProposer outcomes (v1.11.3)
+
+- **Fixes the zero-feedback problem**: prior versions called `digestPin.Propose()` and silently discarded the error (`_ = perr`) plus emitted nothing on the legitimate `(nil, nil)` skip path. Operators rolling out the digest-pin pipeline had no way to tell whether the proposer was skipping because (a) the workload feeder hadn't observed the pod yet, (b) the image wasn't in `--digest-pin-repo-map`, (c) the chart layout didn't match `releasesrc.Detect`, or (d) the forge call errored — all four collapsed to "no Slack button" with no log line.
+- **`cmd/cha-com/ai_wiring.go::proposeFixes`** now emits to stderr:
+  - On transport error: `digest-pin-proposer: subject=%q error=%v` (PAT / forge / RAG / detect failure visible).
+  - On silent skip when the diagnostic IS a `SecurityDrift` digest-pin warning: `digest-pin-proposer: subject=%q skipped (no RAG entry / no RepoMap / no Detect match)`. Distinguishes "wiring is on but matched" from "wiring is on but no PR was opened" from "wiring is off entirely".
+- No log spam: only fires on `out[i].Action == nil && digestPin != nil` — the same guard that already gates the proposer call.
+
+### Changed — DigestPinProposer uses OSS `releasesrc.Detect` (v1.11.2)
+
+- **Fixes the silent-skip on docker4zerocool/storethesoup-wordpress and similar repos** that ship raw K8s YAML instead of Helm charts. v1.11.1's proposer called only `DetectInHelmValues`, which returned `ErrNotFound` for non-Helm layouts → proposer silently skipped → no PR.
+- Now calls OSS v1.18.2's new `releasesrc.Detect(ctx, files, chartName, repository)` which tries the Helm probe first then falls through to `DetectInRawManifests` (scans `*.yaml`/`*.yml` for inline `image: <repo>:<tag>` lines). Transport errors from the Helm probe still propagate (no silent paper-over).
+- **One-line change** in `ai/proposer/digest_pin.go`; existing tests + the 15 DigestPinProposer test cases all still pass.
+
+---
+
+
+### Added — Workload feeder wired into `cha-com watch` (Phase 2d-γ-3 final wiring)
+
+- **`cmd/cha-com/cluster_knowledge_wiring.go`** — extends `clusterKnowledgeFlags` with `--workload-feeder` + `--workload-feeder-interval` flags + `buildWorkloadFeeder()` + `startWorkloadFeederBackground()`.
+- **Critical fix**: without this, the v1.11.0 `DigestPinProposer`'s RAG lookup (`RAGReader.Get(KindWorkload, ...)`) would always miss because nothing writes `kind=workload` entries — meaning **no Approve/Deny buttons would appear on digest-pin findings even after a v1.11.0 cluster roll**. Now the cha-com aiwatch spawns a background goroutine that bootstraps + sweeps every 5 min, walking Deployments / StatefulSets / DaemonSets via the live snapshot Source and upserting workload entries (image + image_digest + owner_chart) into RAG.
+- **Depends on OSS v1.18.1** which promoted `internal/feeder` → `pkg/feeder` so cha-com can import it. OSS dep pinned to v1.18.1-pre via pseudo-version; final pin at the v1.18.1 tag.
+- **3 new tests** cover disabled-skip, nil-source-or-writer skip, happy-path construction.
+
+---
+
+
+### Added — DigestPinProposer + Forge wiring into `cha-com watch` (Phase 2d-γ-3 slice 3b-wiring)
+
+- **`cmd/cha-com/digest_pin_wiring.go`** — new `digestPinFlags` flag set + 3 build helpers. Registers the v1.11.0+ `DigestPinProposer` into the running `cha-com watch` process so a `SecurityDrift` digest-pin warning actually opens a PR + emits the `ActionProposePullRequest` proposal. Until this slice, the proposer was code-only.
+- **New flags on `cha-com watch`** —
+  - `--digest-pin-proposer` (default off) — enable the proposer.
+  - `--forge-provider` (default `github`) — `github` today; future `gitlab`/`gitea`.
+  - `--forge-token-env` (default `GITHUB_PAT`) — env holding the forge PAT.
+  - `--digest-pin-repo-map` (repeatable, format `<image-repo>=<owner>/<repo>[:<ref>]`) — operator-supplied map from image-repo to release-source repo. Example: `--digest-pin-repo-map=docker4zerocool/voice-studio-frontend=Bionic-AI-Solutions/voice-studio-frontend:main`.
+- **`cmd/cha-com/ai_wiring.go::proposeFixes`** — extended with a `digestPin *chaproposer.DigestPinProposer` parameter. Runs AFTER the v1.10.0 ManifestBridge fallback: when no FixProposer action and no ProposedPolicyYAML covers the diagnostic, the digest-pin proposer fires (silent skip on RAG miss / no RepoMap entry / no chart layout match; transport errors bubble up to operator log). Mints approve/deny URLs via the existing `minter` so the PR-proposal lands as a clickable button in Slack.
+- **`watch_cmd.go` RunE** — constructs the forge client + DigestPinProposer + threads them into `watchLoop`. The `diagnose` subcommand passes `nil` (one-shot CLI doesn't need forge/RAG context).
+- **`cluster_knowledge_wiring.go::buildRAGStore`** — new method returning the concrete `*memory.QdrantRAG` (satisfies both `rag.Reader` + `rag.Writer`); old `buildRAGWriter` becomes a back-compat shim that explicitly returns a nil interface when the store is nil (avoids the typed-nil interface gotcha).
+- **Fail-open everywhere** — `--digest-pin-proposer=false` (default) → byte-identical to v1.10.x. Explicit error only on half-config: proposer ON + token empty / proposer ON + no RAG / proposer ON + empty repo-map (would silently skip every digest-pin diagnostic).
+- **Self-hosted forge** — `--forge-provider=github` today; the validator accepts any HTTPS URL so future GitLab/Gitea backends will just need a new switch case.
+- **11 test cases** (`digest_pin_wiring_test.go`): `buildForge` disabled / no-token / unsupported-provider / happy-path; `buildDigestPinProposer` disabled / nil-forge / no-RAG / happy-path / empty-RepoMap; `parseRepoMap` happy-path with 3 entries / empty-entries-skipped / 6 malformed-entry shapes; `register` flag-surface smoke.
+- **OSS dep bump** `cluster-health-autopilot v1.16.0 → v1.17.0` (final pin; carries pkg/releasesrc + ActionProposePullRequest + workload feeder, all of which this slice depends on).
+
+
+### Added — DigestPinProposer + Forge→RepoFiles adapter (Phase 2d-γ-3 slice 3b-core)
+
+- **`ai/proposer/digest_pin.go`** — new `DigestPinProposer` (deterministic, non-LLM) that turns a `SecurityDrift` digest-pin warning into a signed `ActionProposePullRequest` by matching the diagnostic class → RAG workload lookup → image-repo → forge mapping → `pkg/releasesrc.DetectInHelmValues` → subchart-safe tag patch → `CreateBranch` + `UpdateFile` + `CreatePullRequest` → emit the proposal.
+- **`ai/forge/repo_files.go`** — new `RepoFilesAdapter` that wraps a `Forge` into the OSS `pkg/releasesrc.RepoFiles` interface for a single `(owner, repo, ref)` tuple.
+- **Subchart-safe `patchTagToDigest`** scopes the tag-line rewrite to the few lines AFTER a matching `repository:` line.
+- **Idempotent forge interaction** — `CreateBranch` `ErrBranchExists` falls through to `UpdateFile` + `CreatePullRequest`.
+- **Fail-open at every precondition** — all skips return `(nil, nil)`. Forge transport errors propagate.
+- **15 test cases** — happy path; `Name()`; nil-receiver; wrong-class skips; RAG miss; no digest; unmapped image; no chart layout; `ErrBranchExists` fall-through; transport-error; Validate round-trip; `stripPodReplicaSuffix`; `splitImageTag`; `patchTagToDigest` variants + subchart isolation.
+
+### Added — Importance scoring from outcome history (Phase 2d-α-3, #28)
+
+- **`ai/memory/rag_qdrant.go::AppendSignal`** now adjusts `Importance` per signal Action (`approved` +0.05 / `denied` −0.05 / `silenced` −0.10 / etc). Clamped to [0.0, 1.0]. 13 tests.
+
+### Added — `ActionProposePullRequest` executor handler (Phase 2d-γ-3 slice 3c, #27)
+
+- **`ai/approval/executor.go`** — `MutatorExecutor.Execute` handles the new `ai.ActionProposePullRequest` ActionKind. Approve = no-op success (audit + RAG carry the signoff signal). No cluster mutation. 5 tests cover happy path + every rejection class.
+
+### Added — Cluster-knowledge RAG writer + Cloudflare feeder wiring (Phase 2d-α-2, runtime activation, #26)
+
+- **`cmd/cha-com/cluster_knowledge_wiring.go`** — wires the v1.10.0 CF feeder library into running `cha-com watch`. New flags: `--rag-store-url`, `--rag-collection`, `--cluster-name`, `--cloudflare-feeder`, `--cloudflare-token-env`, `--cloudflare-feeder-interval`. Backward compatible, fail-open, 10 tests.
+
+---
 
