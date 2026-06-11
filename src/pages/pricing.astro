@@ -1,6 +1,12 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
 import PageHero from '../components/PageHero.astro';
+import {
+  K8S_PROBES,
+  CLOUD_PROBES_AWS,
+  CLOUD_PROBES_GCP,
+  CLOUD_PROBES_AZURE,
+} from '../data/product-facts';
 
 const tiers = [
   {
@@ -11,10 +17,10 @@ const tiers = [
     cta: { label: 'Helm install', href: 'https://github.com/Bionic-AI-Solutions/cluster-health-autopilot' },
     highlight: false,
     features: [
-      'All 12 K8s probes — Ceph, Postgres, Nodes, PVCs, Critical services, Endpoints, NodePressure, DaemonSets, PendingPods, CrashLoopBackOff, ETCD, FailedMounts',
-      '10 AWS cloud probes (off-by-default, opt-in via cloud.enabled) — RDS, EBS, EKS, IAM, ALB, ACM, KMS, S3, VPC + IRSA',
-      '7 GCP cloud probes — Cloud SQL (live Cloud Monitoring disk utilization), GKE, IAM SA, Subnet, LB+Cert, GCS+KMS, Persistent Disk. Workload-Identity auth.',
-      '8 Azure cloud probes — SQL DB (live storage_percent), AKS, Identity, Subnet (live IP-pool count), AppGW (live BackendHealth LRO), Key Vault, Storage, Disk. AAD Workload Identity native.',
+      `All ${K8S_PROBES} K8s probes — Ceph, Postgres, Nodes, PVCs, Critical services, Endpoints, NodePressure, DaemonSets, PendingPods, CrashLoopBackOff, ETCD, FailedMounts, Kong, KongRoutes, GPUNodes, HPA, ArgoCD, Velero, Traefik routes, k3s local-path + datastore`,
+      `${CLOUD_PROBES_AWS} AWS cloud probes (off-by-default, opt-in via cloud.enabled) — RDS, EBS, EKS control-plane + node groups, IAM, ALB, ACM, KMS, S3, VPC + IRSA`,
+      `${CLOUD_PROBES_GCP} GCP cloud probes — Cloud SQL (live Cloud Monitoring disk utilization), Persistent Disk, GKE control-plane + node pools, IAM SA, Subnet, LB backends, Managed certs, GCS public-access, KMS. Workload-Identity auth.`,
+      `${CLOUD_PROBES_AZURE} Azure cloud probes — SQL DB (live storage_percent), Disk, AKS control-plane + node pools, Identity, Subnet (live IP-pool count), AppGW (live BackendHealth LRO), Certificates, Storage public-access, Key Vault. AAD Workload Identity native.`,
       'All 5 policy-bounded fixers + GitOps / paused / suspended safety gates',
       'Lease-based leader election (HA-ready watcher)',
       'OpenProject MCP ticketing',
@@ -50,6 +56,11 @@ const tiers = [
       'Everything in Team',
       'T2 multi-step planner',
       'T3 Vault runbook proposer',
+      'Confidence-gated auto-merge — Wilson lower bound ≥ 0.95 on class success-rate, Ed25519 attestation verified, circuit breaker closed. Off by default',
+      'RAG outcome memory (Qdrant) — every fix outcome grounds the next proposal',
+      'Ed25519-signed approvals + cosign-style PR attestation',
+      'Audit-bundle export — SOC2-friendly evidence pack (manifest + audit.jsonl + outcomes.jsonl), local-only',
+      'Approve-class policies — approve / deny / silence a whole finding class, not just one DriftReport',
       'Cloud-aware AI (cross-resource RCA)',
       'Jira / ServiceNow ticketing',
       'Multi-cluster federation',

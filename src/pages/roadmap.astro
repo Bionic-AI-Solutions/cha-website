@@ -1,6 +1,10 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
 import PageHero from '../components/PageHero.astro';
+import {
+  CLOUD_PROBES_AWS,
+  CLOUD_PROBES_TOTAL,
+} from '../data/product-facts';
 
 const milestones = [
   {
@@ -69,7 +73,7 @@ const milestones = [
       'Operator port (Phase 1c): ClusterHealthAutopilot CRD + cha-operator manager reconciling the full AI stack end-to-end — aiwatch Deployment + Qdrant StatefulSet + approval-server + Ingress + Ed25519 signing key Secret + RBAC chain. 5 status conditions; 112 unit tests + bundle-smoke gate',
       'DNSChainDrift analyzer: Cloudflare DNS record → cluster ingress LB → Ingress host → Service → ready Endpoints. Emits the highest broken layer per host (one ticket per root cause, not three)',
       'M1 of the original M1–M5 K8s-probe slice (Kong / HPA / ArgoCD / Velero / CapacityDrift PVC expansion) — M1 was opened in v1.6.0 and partially expanded in v1.23.0 (this release)',
-      '30 cloud probes — 10 each AWS / GCP / Azure — with live SDK wrappers (IRSA / GCP Workload Identity / AAD WI). Honest "not measured" where the cloud Monitoring API is required',
+      `${CLOUD_PROBES_TOTAL} cloud probes — ${CLOUD_PROBES_AWS} each AWS / GCP / Azure — with live SDK wrappers (IRSA / GCP Workload Identity / AAD WI). Honest "not measured" where the cloud Monitoring API is required`,
       'ConfigDrift, CapacityDrift, SecurityDrift, GitOpsDrift, WorkloadStateDrift, RBACDrift analyzers (per-class Helm toggles + per-analyzer CHA_ANALYZER_<NAME> env opt-out)',
       'CHA-com paid tier: T0 narration, T1 fix proposer, T2 multi-step planner, T3 vault break-glass runbook with dual approval, JWT-signed click-to-fix URLs, JSONL audit log, hash-chained audit',
       'Lease-based leader election for HA watcher deployments; per-severity Slack repeat intervals; OpenProject MCP ticketing; pkg/ai/redact for K8s Event message scrubbing',

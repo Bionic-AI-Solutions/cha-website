@@ -1,5 +1,12 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
+import {
+  K8S_PROBES,
+  OSS_ANALYZERS,
+  CLOUD_PROBES_AWS,
+  CLOUD_PROBES_GCP,
+  CLOUD_PROBES_AZURE,
+} from '../data/product-facts';
 
 const flowSteps = [
   {
@@ -17,8 +24,8 @@ kube-system  driftreport-stuck-certreq-xz4q9       12s`,
     n: '02',
     title: 'Detect',
     claim:
-      '14 K8s probes (incl. KongRoutes + GPUNodes) + 10 AWS + 7 GCP + 8 Azure probe families. 13 drift / log / workload analyzers (LogPatternMatcher, OOMKillRecurrence, PVOrphan, CronJobStuck, DisruptionDrift on top of GitOps/Workload/RBAC/Capacity/Security/Config). Three trigger classes (resource events, Prometheus alerts via Alertmanager, external HMAC-authed webhooks).',
-    code: `Probes 14 K8s     10 AWS   7 GCP    8 Azure
+      `${K8S_PROBES} K8s probes (incl. KongRoutes + GPUNodes) + ${CLOUD_PROBES_AWS} AWS + ${CLOUD_PROBES_GCP} GCP + ${CLOUD_PROBES_AZURE} Azure probe families. ${OSS_ANALYZERS} drift / log / workload analyzers (LogPatternMatcher, OOMKillRecurrence, PVOrphan, CronJobStuck, DisruptionDrift on top of GitOps/Workload/RBAC/Capacity/Security/Config). Three trigger classes (resource events, Prometheus alerts via Alertmanager, external HMAC-authed webhooks).`,
+    code: `Probes ${K8S_PROBES} K8s     ${CLOUD_PROBES_AWS} AWS   ${CLOUD_PROBES_GCP} GCP   ${CLOUD_PROBES_AZURE} Azure
        Ceph        RDS      CloudSQL SQL DB
        Nodes       EBS      GKE      AKS
        Postgres    EKS      PD       Disk
@@ -115,7 +122,7 @@ const wedges = [
   {
     title: 'Open core, audit-anchored',
     body:
-      'OSS engine is Apache-2.0 — 14 K8s probes, 10 AWS + 7 GCP + 8 Azure cloud probe families, 13 drift / log / workload analyzers, 5 policy-bounded fixers. CHA-com paid tier adds the LLM Investigator agent + the T0–T3 AI SRE flow + Phase 2 closure (HA aiwatch via leader-election, Prometheus instrumentation, cosign-style PR attestation) + Phase 3 (auto-merge gate, target-history RAG grounding, SOC2 audit-bundle exporter). Every AI action is JWT-signed, hash-chained, replayable.',
+      `OSS engine is Apache-2.0 — ${K8S_PROBES} K8s probes, ${CLOUD_PROBES_AWS} AWS + ${CLOUD_PROBES_GCP} GCP + ${CLOUD_PROBES_AZURE} Azure cloud probe families, ${OSS_ANALYZERS} drift / log / workload analyzers, 5 policy-bounded fixers. CHA-com paid tier adds the LLM Investigator agent + the T0–T3 AI SRE flow + Phase 2 closure (HA aiwatch via leader-election, Prometheus instrumentation, cosign-style PR attestation) + Phase 3 (auto-merge gate, target-history RAG grounding, SOC2 audit-bundle exporter). Every AI action is JWT-signed, hash-chained, replayable.`,
   },
   {
     title: 'Compliance-ready audit bundle',

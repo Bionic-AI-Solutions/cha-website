@@ -1,34 +1,41 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import PageHero from '../../components/PageHero.astro';
+import {
+  K8S_PROBES,
+  OSS_ANALYZERS,
+  CLOUD_PROBES_AWS,
+  CLOUD_PROBES_GCP,
+  CLOUD_PROBES_AZURE,
+} from '../../data/product-facts';
 
 const features = [
   {
     href: '/features/k8s-probes/',
     title: 'K8s probes',
     summary:
-      '12 native probes + 8 analyzers across 14 GVRs. Includes v1.6 additions: NodePressure, system DaemonSets, PendingPods, CrashLoopBackOff, ETCD, FailedMounts. Vault/ESO/CNPG/Ceph/cert-manager depth no SaaS tool matches.',
+      `${K8S_PROBES} native probes + ${OSS_ANALYZERS} analyzers. Includes v1.6 additions: NodePressure, system DaemonSets, PendingPods, CrashLoopBackOff, ETCD, FailedMounts. Vault/ESO/CNPG/Ceph/cert-manager depth no SaaS tool matches.`,
     status: 'shipped',
   },
   {
     href: '/features/aws/',
     title: 'AWS probes',
     summary:
-      '10 probes covering RDS, EBS, EKS, IAM, ALB, ACM, KMS, S3, VPC. IRSA-first auth — no long-lived keys.',
+      `${CLOUD_PROBES_AWS} probes covering RDS, EBS, EKS, IAM, ALB, ACM, KMS, S3, VPC. IRSA-first auth — no long-lived keys.`,
     status: 'shipped',
   },
   {
     href: '/features/gcp/',
     title: 'GCP probes',
     summary:
-      '7 probe families: Cloud SQL, GKE, IAM SA, Subnet, LB + Cert, GCS + KMS, Persistent Disk. Live SDK wrapper + Cloud Monitoring API (disk-utilization on Cloud SQL). Workload-Identity auth.',
+      `${CLOUD_PROBES_GCP} probes: Cloud SQL, Persistent Disk, GKE control-plane + node pools, IAM SA, Subnet, LB backends, Managed certs, GCS public-access, KMS. Live SDK wrapper + Cloud Monitoring API (disk-utilization on Cloud SQL). Workload-Identity auth.`,
     status: 'shipped',
   },
   {
     href: '/features/azure/',
     title: 'Azure probes',
     summary:
-      '8 probe families: SQL DB (live storage_percent), AKS, Identity, Subnet (live IP-pool count), AppGW (live BackendHealth LRO), Key Vault, Storage, Disk. AAD Workload Identity native.',
+      `${CLOUD_PROBES_AZURE} probes: SQL DB (live storage_percent), Disk, AKS control-plane + node pools, Identity, Subnet (live IP-pool count), AppGW (live BackendHealth LRO), Certificates, Storage public-access, Key Vault. AAD Workload Identity native.`,
     status: 'shipped',
   },
   {
@@ -75,12 +82,12 @@ const statusStyles: Record<string, string> = {
 
 <BaseLayout
   title="CHA &mdash; Features"
-  description="Capability deep-dives — 12 K8s probes, 10 AWS + 7 GCP + 8 Azure probe families, 4 default + 1 opt-in fixer with GitOps safety gates, 4 AI tiers, and the safety envelope holding it all together."
+  description={`Capability deep-dives — ${K8S_PROBES} K8s probes, ${CLOUD_PROBES_AWS} AWS + ${CLOUD_PROBES_GCP} GCP + ${CLOUD_PROBES_AZURE} Azure cloud probes, 4 default + 1 opt-in fixer with GitOps safety gates, 4 AI tiers, and the safety envelope holding it all together.`}
 >
   <PageHero
     eyebrow="Features"
     title="One operator. Every cloud. Every stack you already run."
-    subtitle="Twelve K8s probes (Sprint 2: NodePressure, DaemonSets, PendingPods, CrashLoopBackOff, ETCD, FailedMounts), ten AWS + seven GCP + eight Azure probe families (live SDK + Cloud Monitoring / Azure Monitor wiring), four default fixers + one opt-in (all GitOps-aware), four AI tiers, and the safety envelope holding it all together."
+    subtitle={`${K8S_PROBES} K8s probes (Sprint 2: NodePressure, DaemonSets, PendingPods, CrashLoopBackOff, ETCD, FailedMounts), ${CLOUD_PROBES_AWS} AWS + ${CLOUD_PROBES_GCP} GCP + ${CLOUD_PROBES_AZURE} Azure cloud probes (live SDK + Cloud Monitoring / Azure Monitor wiring), four default fixers + one opt-in (all GitOps-aware), four AI tiers, and the safety envelope holding it all together.`}
   />
 
   <section class="mx-auto max-w-7xl px-6 py-20">

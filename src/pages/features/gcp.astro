@@ -2,11 +2,12 @@
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import PageHero from '../../components/PageHero.astro';
 import StubBody from '../../components/StubBody.astro';
+import { CLOUD_PROBES_GCP } from '../../data/product-facts';
 ---
 
 <BaseLayout
   title="CHA &mdash; GCP probes (shipped v1.8)"
-  description="10 GCP probes covering Cloud SQL, GKE control-plane + node pools, IAM service accounts, Subnets, Load Balancer backends, managed certs, GCS public-access, KMS. Workload Identity native, read-only."
+  description={`${CLOUD_PROBES_GCP} GCP probes covering Cloud SQL, GKE control-plane + node pools, IAM service accounts, Subnets, Load Balancer backends, managed certs, GCS public-access, KMS. Workload Identity native, read-only.`}
 >
   <PageHero
     eyebrow="Features &middot; GCP"

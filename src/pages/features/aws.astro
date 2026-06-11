@@ -2,11 +2,12 @@
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import PageHero from '../../components/PageHero.astro';
 import StubBody from '../../components/StubBody.astro';
+import { CLOUD_PROBES_AWS } from '../../data/product-facts';
 ---
 
 <BaseLayout
   title="CHA &mdash; AWS probes"
-  description="10 AWS probes covering RDS, EBS, EKS, IAM, ALB, ACM, KMS, S3, VPC. IRSA-first auth — no long-lived keys in CHA."
+  description={`${CLOUD_PROBES_AWS} AWS probes covering RDS, EBS, EKS, IAM, ALB, ACM, KMS, S3, VPC. IRSA-first auth — no long-lived keys in CHA.`}
 >
   <PageHero
     eyebrow="Features &middot; AWS"

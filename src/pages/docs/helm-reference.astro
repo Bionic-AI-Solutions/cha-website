@@ -1,6 +1,11 @@
 ---
 import DocsLayout from '../../layouts/DocsLayout.astro';
 import PageHero from '../../components/PageHero.astro';
+import {
+  CLOUD_PROBES_AWS,
+  CLOUD_PROBES_GCP,
+  CLOUD_PROBES_AZURE,
+} from '../../data/product-facts';
 
 const groups = [
   {
@@ -16,9 +21,9 @@ const groups = [
   {
     title: 'Cloud probes',
     rows: [
-      { key: 'cloudProbes.aws.enabled', default: 'false', desc: 'Enable all 10 AWS probes (IRSA auth)' },
-      { key: 'cloudProbes.gcp.enabled', default: 'false', desc: 'Enable all 7 GCP probes (Workload Identity)' },
-      { key: 'cloudProbes.azure.enabled', default: 'false', desc: 'Enable all 8 Azure probes (AAD Workload Identity)' },
+      { key: 'cloudProbes.aws.enabled', default: 'false', desc: `Enable all ${CLOUD_PROBES_AWS} AWS probes (IRSA auth)` },
+      { key: 'cloudProbes.gcp.enabled', default: 'false', desc: `Enable all ${CLOUD_PROBES_GCP} GCP probes (Workload Identity)` },
+      { key: 'cloudProbes.azure.enabled', default: 'false', desc: `Enable all ${CLOUD_PROBES_AZURE} Azure probes (AAD Workload Identity)` },
     ],
   },
   {
