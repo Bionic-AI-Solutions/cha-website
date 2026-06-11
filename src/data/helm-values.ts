@@ -47,7 +47,8 @@ function cleanComment(raw: string | null | undefined, maxLen = 280): string {
     .replace(/\s+/g, ' ')
     .trim();
   if (text.length <= maxLen) return text;
-  return `${text.slice(0, maxLen - 1).trimEnd()}…`;
+  const cut = text.lastIndexOf(' ', maxLen - 1);
+  return `${text.slice(0, cut > 0 ? cut : maxLen - 1).trimEnd()}…`;
 }
 
 /** Render a scalar / empty-collection default the way you'd pass it to --set. */
@@ -82,7 +83,11 @@ function walk(map: YAMLMap, prefix: string, rows: HelmRow[]): void {
       return;
     }
 
-    // Leaf: scalar, sequence, or empty map.
+    // Leaf: scalar, sequence, or empty map. Anything else (e.g. a YAML
+    // anchor/alias) would silently vanish from the docs — fail the build instead.
+    if (!isScalar(value) && !isSeq(value) && !isMap(value) && value !== null) {
+      throw new Error(`helm-values: unsupported YAML node type at "${fullKey}" — extend renderDefault/walk to handle it`);
+    }
     const inline = isScalar(value) || isSeq(value) || isMap(value) ? (value as { comment?: string | null }).comment : null;
     const desc = cleanComment(inline) || cleanComment(before);
     rows.push({ key: fullKey, default: renderDefault(value), desc });
