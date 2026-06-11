@@ -66,7 +66,7 @@ const paid = [
     </div>
 
     <div>
-      <h2 class="text-xl font-semibold text-zinc-900 dark:text-zinc-50">Diagnostic analyzers (10)</h2>
+      <h2 class="text-xl font-semibold text-zinc-900 dark:text-zinc-50">Diagnostic analyzers ({diagnostic.length})</h2>
       <div class="mt-1 h-0.5 w-8 rounded-full bg-accent-500"></div>
       <div class="mt-6 overflow-x-auto">
         <table class="w-full border-collapse text-sm">
@@ -91,7 +91,7 @@ const paid = [
     </div>
 
     <div>
-      <h2 class="text-xl font-semibold text-zinc-900 dark:text-zinc-50">Drift-class analyzers (6)</h2>
+      <h2 class="text-xl font-semibold text-zinc-900 dark:text-zinc-50">Drift-class analyzers ({drift.length})</h2>
       <div class="mt-1 h-0.5 w-8 rounded-full bg-accent-500"></div>
       <div class="mt-6 overflow-x-auto">
         <table class="w-full border-collapse text-sm">
@@ -114,7 +114,7 @@ const paid = [
     </div>
 
     <div>
-      <h2 class="text-xl font-semibold text-zinc-900 dark:text-zinc-50">Log / workload analyzers (5)</h2>
+      <h2 class="text-xl font-semibold text-zinc-900 dark:text-zinc-50">Log / workload analyzers ({workload.length})</h2>
       <div class="mt-1 h-0.5 w-8 rounded-full bg-accent-500"></div>
       <div class="mt-6 overflow-x-auto">
         <table class="w-full border-collapse text-sm">
@@ -137,7 +137,7 @@ const paid = [
     </div>
 
     <div>
-      <h2 class="text-xl font-semibold text-zinc-900 dark:text-zinc-50">Paid-tier analyzers (4)</h2>
+      <h2 class="text-xl font-semibold text-zinc-900 dark:text-zinc-50">Paid-tier analyzers ({paid.length})</h2>
       <div class="mt-1 h-0.5 w-8 rounded-full bg-accent-500"></div>
       <p class="mt-4 text-sm leading-relaxed text-zinc-600 dark:text-zinc-400">
         The <code class="font-mono">cha-com</code> paid binary adds four additional analyzers. They use the same <code class="font-mono">pkg/registry</code> interface as OSS analyzers and respect the same per-analyzer Helm toggles.

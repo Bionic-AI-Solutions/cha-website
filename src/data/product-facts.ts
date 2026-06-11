@@ -12,6 +12,10 @@
 //   - CLOUD_PROBES_*:
 //       cluster-health-autopilot/catalog/cloud.go (RegisterCloudOSS)
 //       10 AWS + 10 GCP + 10 Azure = 30.
+//   - WATCHED_GVRS:
+//       cluster-health-autopilot/internal/watcher/watcher.go (watchedGVRs)
+//       19 entries: 15 base (Pod..Certificate) + Ingress, HPA,
+//       ArgoCD Application, KEDA ScaledObject.
 //   - Versions: latest release tags of the two repos
 //       (OSS: cluster-health-autopilot, paid: CHA-com).
 //
@@ -20,6 +24,7 @@
 
 export const K8S_PROBES = 21;
 export const OSS_ANALYZERS = 20;
+export const WATCHED_GVRS = 19;
 
 export const CLOUD_PROBES_AWS = 10;
 export const CLOUD_PROBES_GCP = 10;
@@ -28,4 +33,5 @@ export const CLOUD_PROBES_TOTAL =
   CLOUD_PROBES_AWS + CLOUD_PROBES_GCP + CLOUD_PROBES_AZURE;
 
 export const OSS_VERSION = 'v1.25.1';
-export const PAID_VERSION = 'v1.22.0';
+// Latest CHA-com git TAG (v1.22.0 is untagged HEAD); bump when v1.22.0 tags.
+export const PAID_VERSION = 'v1.21.0';
