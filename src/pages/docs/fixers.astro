@@ -7,38 +7,38 @@ const fixers = [
     name: 'StaleErrorPods',
     fixes: 'Error/Failed pods owned by a Job or unowned (debug leftovers)',
     optIn: false,
-    helm: 'fixers.staleErrorPods.enabled',
+    helm: '— (built in; runs whenever remediation is enabled)',
   },
   {
     name: 'StuckJobsWithBadSecretRef',
     fixes: 'Frozen Jobs whose pod template references a renamed Secret key — deletes the Job so the CronJob respawns clean',
     optIn: false,
-    helm: 'fixers.stuckJobs.enabled',
+    helm: '— (built in; runs whenever remediation is enabled)',
   },
   {
     name: 'StuckRSPods',
     fixes: 'ReplicaSet pods stuck on a stale revision when the Deployment has rolled forward (rollout restart)',
     optIn: false,
-    helm: 'fixers.stuckRS.enabled',
+    helm: '— (built in; runs whenever remediation is enabled)',
   },
   {
     name: 'StuckCertificateRequests',
     fixes: 'cert-manager CRs in terminal Ready=False/Failed — deletion lets cert-manager re-issue',
     optIn: false,
-    helm: 'fixers.stuckCertReqs.enabled',
+    helm: '— (built in; runs whenever remediation is enabled)',
   },
   {
     name: 'TLSSecretMismatch',
     fixes: 'Repoints Ingress.spec.tls[].secretName to the cert-manager-managed Secret. Skips GitOps-managed Ingresses.',
     optIn: true,
-    helm: 'fixers.tlsSecretMismatch.enabled',
+    helm: 'fixers.tlsSecretMismatch.enabled=true',
   },
 ];
 ---
 
 <DocsLayout
   title="CHA &mdash; Fixers"
-  description="5 policy-bounded auto-fixers. Remediation is off by default; once enabled, fixers activate individually. All are safety-gated, idempotent, and re-verified after every run."
+  description="5 policy-bounded auto-fixers. Remediation is off by default; once enabled, the four built-in fixers run automatically and TLSSecretMismatch is a separate opt-in. All are safety-gated, idempotent, and re-verified after every run."
   topic="Fixers"
 >
   <PageHero
@@ -55,7 +55,7 @@ const fixers = [
       </p>
       <div class="mt-4 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 dark:border-amber-900/50 dark:bg-amber-950/30">
         <p class="text-sm text-amber-800 dark:text-amber-300">
-          <strong>Remediation is off by default.</strong> Enable it in Helm values with <code class="font-mono">remediation.enabled: true</code>, then enable each fixer individually.
+          <strong>Remediation is off by default.</strong> Enable it with <code class="font-mono">remediation.enabled: true</code> (remediate CronJob) or <code class="font-mono">watcher.remedy.enabled: true</code> (event-driven watcher). The four built-in fixers are always registered in the binary and run as soon as remediation is on — there are no per-fixer Helm toggles for them. <code class="font-mono">TLSSecretMismatch</code> is the one opt-in fixer: setting <code class="font-mono">fixers.tlsSecretMismatch.enabled=true</code> makes the chart set the <code class="font-mono">CHA_FIXER_TLS_SECRET_MISMATCH</code> env var (which gates its registration) and add the extra RBAC verbs it needs.
         </p>
       </div>
     </div>
@@ -95,7 +95,7 @@ const fixers = [
         <li class="flex gap-2"><span class="text-accent-500">→</span><span><strong>GitOps guard</strong> — skips resources managed by ArgoCD, Flux, or Helm (detected via standard labels). A fixer won't fight a reconciler.</span></li>
         <li class="flex gap-2"><span class="text-accent-500">→</span><span><strong>Paused/suspended guard</strong> — skips Deployments with <code class="font-mono">spec.paused: true</code> and CronJobs with <code class="font-mono">spec.suspend: true</code>.</span></li>
         <li class="flex gap-2"><span class="text-accent-500">→</span><span><strong>cert-manager health guard</strong> — StuckCertificateRequests fixer checks that the parent Certificate is healthy before deleting the failed CR.</span></li>
-        <li class="flex gap-2"><span class="text-accent-500">→</span><span><strong>Protected namespace list</strong> — never mutates resources in protected namespaces (default: kube-system, kube-public, cert-manager). Configurable via <code class="font-mono">protectedNamespaces</code>.</span></li>
+        <li class="flex gap-2"><span class="text-accent-500">→</span><span><strong>Protected namespace list</strong> — fixers never mutate resources in kube-system, kube-public, kube-node-lease, rook-ceph, vault, external-secrets, or cnpg-system. This list is compiled into the binary, not Helm-configurable. (Diagnose still reports findings in those namespaces — only the act-side is gated.)</span></li>
       </ul>
     </div>
 
@@ -103,7 +103,7 @@ const fixers = [
       <h2 class="text-xl font-semibold text-zinc-900 dark:text-zinc-50">Dry-run mode</h2>
       <div class="mt-1 h-0.5 w-8 rounded-full bg-accent-500"></div>
       <p class="mt-4 text-sm leading-relaxed text-zinc-600 dark:text-zinc-400">
-        Pass <code class="font-mono">--dry-run</code> (or <code class="font-mono">watcher.dryRun: true</code> in Helm values) to log every fix CHA would apply without applying it. The fix log is identical to production mode minus the actual mutation. Use this in your eval cycle before enabling fixers.
+        Pass <code class="font-mono">--dry-run</code> (in Helm values: <code class="font-mono">remediation.dryRun: true</code> for the remediate CronJob, <code class="font-mono">watcher.remedy.dryRun: true</code> for the watcher) to log every fix CHA would apply without applying it. The fix log is identical to production mode minus the actual mutation. Use this in your eval cycle before enabling fixers.
       </p>
     </div>
 

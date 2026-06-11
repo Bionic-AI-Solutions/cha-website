@@ -1,6 +1,12 @@
 ---
 import DocsLayout from '../../layouts/DocsLayout.astro';
 import PageHero from '../../components/PageHero.astro';
+import {
+  CLOUD_PROBES_AWS,
+  CLOUD_PROBES_GCP,
+  CLOUD_PROBES_AZURE,
+  CLOUD_PROBES_TOTAL,
+} from '../../data/product-facts';
 
 const aws = [
   { name: 'RDS', checks: 'Instance/cluster status, storage %, multi-AZ, backup retention drift' },
@@ -17,47 +23,69 @@ const aws = [
 
 const gcp = [
   { name: 'CloudSQL', checks: 'Instance status, storage utilization via Cloud Monitoring API' },
-  { name: 'GKE', checks: 'Node pool version drift, cluster status' },
+  { name: 'PersistentDisks', checks: 'Disk health and attachment status' },
+  { name: 'GKEControlPlane', checks: 'Cluster status, control-plane version' },
+  { name: 'GKENodePools', checks: 'Node pool status, version drift vs control plane' },
   { name: 'IAMServiceAccounts', checks: 'Workload Identity binding drift' },
   { name: 'Subnets', checks: 'IP utilization' },
-  { name: 'LoadBalancer', checks: 'Backend health, cert expiry' },
-  { name: 'GCSAndKMS', checks: 'Bucket/key policy drift' },
-  { name: 'PersistentDisk', checks: 'Disk health and attachment status' },
+  { name: 'LoadBalancerBackends', checks: 'Backend health' },
+  { name: 'ManagedCertificates', checks: 'Managed-cert provisioning status and expiry' },
+  { name: 'GCSPublicAccess', checks: 'Public-access drift on buckets referenced by the cluster' },
+  { name: 'KMSKeys', checks: 'Key state/policy drift on keys referenced by cluster resources' },
 ];
 
 const azure = [
-  { name: 'SQLDatabase', checks: 'Instance status, storage_percent (live Azure Monitor)' },
-  { name: 'AKS', checks: 'Node pool status, version drift' },
-  { name: 'Identity', checks: 'AAD Workload Identity binding drift' },
-  { name: 'Subnet', checks: 'Live IP-pool count' },
-  { name: 'AppGateway', checks: 'Live BackendHealth LRO' },
-  { name: 'KeyVault', checks: 'Key/secret expiry' },
-  { name: 'Storage', checks: 'Access policy drift' },
-  { name: 'Disk', checks: 'Disk health and attachment' },
+  { name: 'SQLDatabases', checks: 'Instance status, storage_percent (live Azure Monitor)' },
+  { name: 'Disks', checks: 'Disk health and attachment' },
+  { name: 'AKSControlPlane', checks: 'Cluster status, control-plane version' },
+  { name: 'AKSNodePools', checks: 'Node pool status, version drift' },
+  { name: 'ManagedIdentities', checks: 'AAD Workload Identity binding drift' },
+  { name: 'Subnets', checks: 'Live IP-pool count' },
+  { name: 'AppGatewayBackends', checks: 'Live BackendHealth LRO' },
+  { name: 'Certificates', checks: 'Cert expiry' },
+  { name: 'StoragePublicAccess', checks: 'Public-access policy drift' },
+  { name: 'KeyVaults', checks: 'Key/secret expiry' },
 ];
 
+// Build-time drift assertions: each provider table must match the canonical counts.
+if (aws.length !== CLOUD_PROBES_AWS) {
+  throw new Error(
+    `count drift: docs/cloud-probes.astro lists ${aws.length} AWS probes but product-facts CLOUD_PROBES_AWS=${CLOUD_PROBES_AWS}`
+  );
+}
+if (gcp.length !== CLOUD_PROBES_GCP) {
+  throw new Error(
+    `count drift: docs/cloud-probes.astro lists ${gcp.length} GCP probes but product-facts CLOUD_PROBES_GCP=${CLOUD_PROBES_GCP}`
+  );
+}
+if (azure.length !== CLOUD_PROBES_AZURE) {
+  throw new Error(
+    `count drift: docs/cloud-probes.astro lists ${azure.length} Azure probes but product-facts CLOUD_PROBES_AZURE=${CLOUD_PROBES_AZURE}`
+  );
+}
+
 const cloudRows = [
-  { provider: 'AWS', count: '10', enable: 'cloudProbes.aws.enabled: true', auth: 'IRSA (no long-lived keys)' },
-  { provider: 'GCP', count: '7', enable: 'cloudProbes.gcp.enabled: true', auth: 'GCP Workload Identity' },
-  { provider: 'Azure', count: '8', enable: 'cloudProbes.azure.enabled: true', auth: 'AAD Workload Identity' },
+  { provider: 'AWS', count: String(CLOUD_PROBES_AWS), enable: 'cloud.aws.enabled: true', auth: 'IRSA (no long-lived keys)' },
+  { provider: 'GCP', count: String(CLOUD_PROBES_GCP), enable: 'cloud.gcp.enabled: true', auth: 'GCP Workload Identity' },
+  { provider: 'Azure', count: String(CLOUD_PROBES_AZURE), enable: 'cloud.azure.enabled: true', auth: 'AAD Workload Identity' },
 ];
 
 const sections = [
-  { title: 'AWS probes (10)', probes: aws },
-  { title: 'GCP probes (7)', probes: gcp },
-  { title: 'Azure probes (8)', probes: azure },
+  { title: `AWS probes (${CLOUD_PROBES_AWS})`, probes: aws },
+  { title: `GCP probes (${CLOUD_PROBES_GCP})`, probes: gcp },
+  { title: `Azure probes (${CLOUD_PROBES_AZURE})`, probes: azure },
 ];
 ---
 
 <DocsLayout
   title="CHA &mdash; Cloud Probes"
-  description="25 cloud probe families across AWS, GCP, and Azure. Workload-identity auth only. Enable per-provider in Helm values."
+  description={`${CLOUD_PROBES_TOTAL} cloud probes across AWS, GCP, and Azure. Workload-identity auth only. Enable per-provider in Helm values.`}
   topic="Cloud Probes"
 >
   <PageHero
     eyebrow="Docs"
     title="Cloud Probes"
-    subtitle="25 probe families across AWS, GCP, and Azure. Workload-identity auth only — no long-lived credentials. All off by default; enable per-provider."
+    subtitle={`${CLOUD_PROBES_TOTAL} probes across AWS, GCP, and Azure. Workload-identity auth only — no long-lived credentials. All off by default; enable per-provider.`}
   />
 
   <section class="mx-auto max-w-5xl space-y-16 px-6 py-16">
@@ -92,7 +120,7 @@ const sections = [
 
       <div class="mt-4 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 dark:border-amber-900/50 dark:bg-amber-950/30">
         <p class="text-sm text-amber-800 dark:text-amber-300">
-          Cloud probes are <strong>off by default</strong>. Enable with <code class="font-mono">--set cloudProbes.aws.enabled=true</code> (or equivalent for GCP/Azure). The K8s-only value is unchanged if you never enable cloud probes.
+          Cloud probes are <strong>off by default</strong>. Enable with <code class="font-mono">--set cloud.enabled=true --set cloud.aws.enabled=true</code> (or equivalent for GCP/Azure) — <code class="font-mono">cloud.enabled</code> is the master switch; each provider is toggled independently underneath it. The K8s-only value is unchanged if you never enable cloud probes.
         </p>
       </div>
     </div>

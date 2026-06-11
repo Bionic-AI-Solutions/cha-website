@@ -2,19 +2,20 @@
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import PageHero from '../../components/PageHero.astro';
 import StubBody from '../../components/StubBody.astro';
+import { CLOUD_PROBES_AZURE } from '../../data/product-facts';
 ---
 
 <BaseLayout
   title="CHA &mdash; Azure probes (shipped v1.8)"
-  description="10 Azure probes covering Azure SQL, AKS control-plane + node pools, Managed Identity, Subnets, App Gateway, certs, Storage public-access, Key Vault. AAD Workload Identity native, read-only."
+  description={`${CLOUD_PROBES_AZURE} Azure probes covering Azure SQL, AKS control-plane + node pools, Managed Identity, Subnets, App Gateway, certs, Storage public-access, Key Vault. AAD Workload Identity native, read-only.`}
 >
   <PageHero
     eyebrow="Features &middot; Azure"
     title="Azure probes — shipped (v1.8)."
-    subtitle="10 probes via a live azure-sdk-for-go wrapper: Azure SQL, AKS control-plane + node pools, Managed Identities, Subnets, Application Gateway backends, App Service certs, Storage public-access, Key Vaults. AAD Workload Identity — zero long-lived credentials. Read-only by design."
+    subtitle={`${CLOUD_PROBES_AZURE} probes via a live azure-sdk-for-go wrapper: Azure SQL, AKS control-plane + node pools, Managed Identities, Subnets, Application Gateway backends, App Service certs, Storage public-access, Key Vaults. AAD Workload Identity — zero long-lived credentials. Read-only by design.`}
   />
   <StubBody
-    claim="10 Azure cloud probes shipped in v1.8, modelled on the AWS set, using a live azure-sdk-for-go wrapper and AAD Workload Identity (off by default; cloud.azure.enabled=true). A few signals that the Azure REST surface doesn't expose directly — subnet IP-utilization, SQL storage-%, and App Gateway backend health — honestly report 'not measured' pending Azure Monitor metrics wiring (v1.9) rather than silently passing. Everything else (Azure SQL state/backup/tier, AKS control-plane + node pools, Managed Identity role-assignments, cert expiry, Storage public-access, Key Vault) is fetched live. Read-only by design."
+    claim={`${CLOUD_PROBES_AZURE} Azure cloud probes shipped in v1.8, modelled on the AWS set, using a live azure-sdk-for-go wrapper and AAD Workload Identity (off by default; cloud.azure.enabled=true). A few signals that the Azure REST surface doesn't expose directly — subnet IP-utilization, SQL storage-%, and App Gateway backend health — honestly report 'not measured' pending Azure Monitor metrics wiring (v1.9) rather than silently passing. Everything else (Azure SQL state/backup/tier, AKS control-plane + node pools, Managed Identity role-assignments, cert expiry, Storage public-access, Key Vault) is fetched live. Read-only by design.`}
     backHref="/features/"
     backLabel="← All features"
   />

@@ -26,7 +26,7 @@ const safetyPillars = [
   {
     title: 'Signed-JWT click-to-fix URLs (paid tiers)',
     body:
-      'AI-tier fix proposals require human approval via signed-JWT URLs delivered to Slack or ticket. The approval-server enforces signature, expiry, and one-time-use. Without the click, nothing mutates.',
+      'AI-tier fix proposals require human approval via signed-JWT URLs delivered to Slack or ticket. The approval-server enforces signature, expiry, and one-time-use. Without the click, nothing mutates — unless you explicitly enable confidence-gated auto-merge (off by default; Wilson lower bound ≥0.95; every safety gate must pass).',
   },
   {
     title: 'Dry-run mode',
@@ -103,7 +103,7 @@ const compliance = [
       Found something? Tell us.
     </h2>
     <p class="mt-3 text-zinc-600 dark:text-zinc-400">
-      Security issues should go to <a class="font-medium text-accent-600 hover:text-accent-700 dark:text-accent-400" href="mailto:security@bionicaisolutions.com">security@bionicaisolutions.com</a>.
+      Security issues should go to <a class="font-medium text-accent-600 hover:text-accent-700 dark:text-accent-400" href="mailto:cha-security@baisoln.com">cha-security@baisoln.com</a>.
       We acknowledge within one business day.
     </p>
   </section>

@@ -1,6 +1,12 @@
 ---
 import DocsLayout from '../../layouts/DocsLayout.astro';
 import PageHero from '../../components/PageHero.astro';
+import { BINARY_RELEASE } from '../../data/product-facts';
+
+// Pinned download base: `releases/latest` resolves to a chart-releaser
+// release with NO binary assets, so we always pin to the newest tag that
+// carries goreleaser binaries (see BINARY_RELEASE in product-facts.ts).
+const DL = `https://github.com/Bionic-AI-Solutions/cluster-health-autopilot/releases/download/${BINARY_RELEASE}`;
 ---
 
 <DocsLayout
@@ -63,18 +69,23 @@ import PageHero from '../../components/PageHero.astro';
       <h2 class="text-xl font-semibold text-zinc-900 dark:text-zinc-50">1. Download the binary</h2>
       <div class="mt-1 h-0.5 w-8 rounded-full bg-accent-500"></div>
       <p class="mt-4 text-sm leading-relaxed text-zinc-600 dark:text-zinc-400">
-        Pre-built binaries for <code class="font-mono">linux/amd64</code>, <code class="font-mono">linux/arm64</code>, <code class="font-mono">darwin/amd64</code>, <code class="font-mono">darwin/arm64</code>.
+        Pre-built binaries (release <code class="font-mono">{BINARY_RELEASE}</code>) for <code class="font-mono">linux/amd64</code>, <code class="font-mono">linux/arm64</code>, <code class="font-mono">darwin/amd64</code>, <code class="font-mono">darwin/arm64</code>.
       </p>
       <pre class="mt-4 overflow-x-auto rounded-lg bg-zinc-900 px-5 py-4 text-sm text-zinc-100 dark:bg-zinc-950"><code>{`# Linux amd64
-curl -sSL https://github.com/Bionic-AI-Solutions/cluster-health-autopilot/releases/latest/download/cluster-health-autopilot_Linux_x86_64.tar.gz \\
+curl -sSL ${DL}/cluster-health-autopilot_linux_amd64.tar.gz \\
   | tar xz && sudo mv cha /usr/local/bin/
 
-# macOS arm64
-curl -sSL https://github.com/Bionic-AI-Solutions/cluster-health-autopilot/releases/latest/download/cluster-health-autopilot_Darwin_arm64.tar.gz \\
+# macOS arm64 (Apple Silicon)
+curl -sSL ${DL}/cluster-health-autopilot_darwin_arm64.tar.gz \\
   | tar xz && sudo mv cha /usr/local/bin/
+
+# Other platforms: swap the suffix — linux_arm64 / darwin_amd64
 
 # Verify
 cha version`}</code></pre>
+      <p class="mt-4 text-sm leading-relaxed text-zinc-600 dark:text-zinc-400">
+        Newer versions may be available on the <a href={`https://github.com/Bionic-AI-Solutions/cluster-health-autopilot/releases`} class="text-accent-600 hover:text-accent-700 dark:text-accent-400 dark:hover:text-accent-300">releases page</a> — pick a <code class="font-mono">vX.Y.Z</code> release that lists <code class="font-mono">.tar.gz</code> binary assets (chart-only releases don't carry binaries).
+      </p>
     </div>
 
     <!-- Zero-trust offline mode -->

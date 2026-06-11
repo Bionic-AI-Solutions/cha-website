@@ -1,5 +1,11 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
+import {
+  K8S_PROBES,
+  OSS_ANALYZERS,
+  CLOUD_PROBES_TOTAL,
+  OSS_VERSION,
+} from '../data/product-facts';
 ---
 
 <BaseLayout
@@ -93,8 +99,8 @@ import BaseLayout from '../layouts/BaseLayout.astro';
               Open core &mdash; you can read it before you install.
             </dt>
             <dd class="mt-0.5">
-              OSS engine is Apache-2.0: 12 K8s probes + 4 M2 probes,
-              30 cloud probes (AWS/GCP/Azure), 6 drift-class analyzers (v1.8),
+              OSS engine is Apache-2.0: {K8S_PROBES} K8s probes,
+              {CLOUD_PROBES_TOTAL} cloud probes (AWS/GCP/Azure), {OSS_ANALYZERS} analyzers,
               5 policy-bounded fixers, controller-runtime operator.
               CHA-com paid tier adds the LLM Investigator + T0&ndash;T3 AI SRE
               ladder.
@@ -111,7 +117,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
    ┌──────────────────────────────────────────────────────┐
    │   In-cluster watcher (leader-elected, K8s 1.27+)     │
    │                                                      │
-   │   Probes ── 12 K8s ── 10 AWS ── 3 drift-class        │
+   │   Probes ── ${K8S_PROBES} K8s ── ${CLOUD_PROBES_TOTAL} cloud ── ${OSS_ANALYZERS} analyzers       │
    │     │        Nodes    RDS     GitOps (Argo/Flux)     │
    │     │        Pods     EBS     WorkloadState (CNPG)   │
    │     │        Postgres EKS     RBAC (wildcards/SA)    │
@@ -173,11 +179,11 @@ import BaseLayout from '../layouts/BaseLayout.astro';
             https://asre.baisoln.com
           </p>
           <p>github.com/Bionic-AI-Solutions/cluster-health-autopilot</p>
-          <p>salil.kadam@gmail.com</p>
+          <p>hello@bionicaisolutions.com</p>
         </div>
       </div>
       <p class="mt-2 text-[10px] text-zinc-500 dark:text-zinc-500">
-        v1.8.2 shipped 2026-05-28 &middot; OSS Apache-2.0 &middot; T0&ndash;T3 verified live against Qwen 3.6 35B (in-cluster vLLM)
+        {OSS_VERSION} shipped 2026-06-11 &middot; OSS Apache-2.0 &middot; T0&ndash;T3 verified live against Qwen 3.6 35B (in-cluster vLLM)
       </p>
     </footer>
   </section>

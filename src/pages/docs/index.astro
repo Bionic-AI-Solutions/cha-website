@@ -1,6 +1,13 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import PageHero from '../../components/PageHero.astro';
+import {
+  K8S_PROBES,
+  OSS_ANALYZERS,
+  CLOUD_PROBES_AWS,
+  CLOUD_PROBES_GCP,
+  CLOUD_PROBES_AZURE,
+} from '../../data/product-facts';
 
 const topics = [
   {
@@ -14,28 +21,28 @@ const topics = [
     href: '/docs/k8s-probes/',
     title: 'K8s Probes',
     summary:
-      '14 probes: Ceph, CNPG, Nodes, PVCs, Endpoints, NodePressure, DaemonSets, PendingPods, CrashLoop, ETCD, FailedMounts, KongRoutes, GPUNodes, CriticalWorkloads. Each independently toggleable.',
+      `${K8S_PROBES} probes: Ceph, CNPG, Nodes, PVCs, Endpoints, NodePressure, DaemonSets, PendingPods, CrashLoop, ETCD, FailedMounts, Kong, KongRoutes, GPUNodes, HPA, ArgoCD, Velero, TraefikRoutes, k3s local-path + datastore, CriticalWorkloads. Each independently toggleable.`,
     badge: 'OSS',
   },
   {
     href: '/docs/cloud-probes/',
     title: 'Cloud Probes',
     summary:
-      '10 AWS · 7 GCP · 8 Azure probe families. Workload-identity auth only. Enable per-provider; off by default.',
+      `${CLOUD_PROBES_AWS} AWS · ${CLOUD_PROBES_GCP} GCP · ${CLOUD_PROBES_AZURE} Azure probes. Workload-identity auth only. Enable per-provider; off by default.`,
     badge: 'OSS',
   },
   {
     href: '/docs/analyzers/',
     title: 'Analyzers',
     summary:
-      '19 analyzers run after every probe cycle. Covers secrets, certs, ESO, image pulls, drift, log patterns, OOM recurrence, orphan PVs, and stuck CronJobs.',
+      `${OSS_ANALYZERS} analyzers run after every probe cycle. Covers secrets, certs, ESO, image pulls, drift, log patterns, OOM recurrence, orphan PVs, and stuck CronJobs.`,
     badge: 'OSS',
   },
   {
     href: '/docs/fixers/',
     title: 'Fixers',
     summary:
-      '5 policy-bounded auto-fixers. Each is opt-in, safety-gated, and re-verified after every run.',
+      '5 policy-bounded auto-fixers. Remediation is opt-in; every fixer is safety-gated and re-verified after every run.',
     badge: 'OSS',
   },
   {

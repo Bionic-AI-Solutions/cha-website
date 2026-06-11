@@ -14,6 +14,19 @@ const {
 } = Astro.props;
 
 const canonical = new URL(Astro.url.pathname, Astro.site ?? 'https://asre.baisoln.com').toString();
+const ogImage = new URL('/og-default.png', Astro.site ?? 'https://asre.baisoln.com').toString();
+
+// Page titles arrive with HTML entities (e.g. "CHA &mdash; Pricing") for the
+// <title> tag. Meta `content` attributes are plain text, so decode the few
+// entities we actually use — `set:html` on a void <meta> element sets
+// innerHTML (a no-op) and ships an EMPTY attribute. Never use set:html here.
+const decodeEntities = (s: string) =>
+  s
+    .replace(/&mdash;/g, '—')
+    .replace(/&ndash;/g, '–')
+    .replace(/&rarr;/g, '→')
+    .replace(/&amp;/g, '&');
+const plainTitle = decodeEntities(title);
 ---
 
 <!doctype html>
@@ -27,15 +40,23 @@ const canonical = new URL(Astro.url.pathname, Astro.site ?? 'https://asre.baisol
     <meta name="description" content={description} />
     <link rel="canonical" href={canonical} />
     <meta property="og:type" content="website" />
-    <meta property="og:title" set:html={title} />
+    <meta property="og:title" content={plainTitle} />
     <meta property="og:description" content={description} />
     <meta property="og:url" content={canonical} />
+    <meta property="og:image" content={ogImage} />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
     <meta name="twitter:card" content="summary_large_image" />
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <meta name="twitter:title" content={plainTitle} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={ogImage} />
+    <!-- Fonts are self-hosted (see public/fonts/ + @font-face in src/styles/global.css). No third-party requests. -->
     <link
-      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
-      rel="stylesheet"
+      rel="preload"
+      href="/fonts/inter-latin.woff2"
+      as="font"
+      type="font/woff2"
+      crossorigin
     />
   </head>
   <body class="flex min-h-screen flex-col">

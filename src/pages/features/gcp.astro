@@ -2,19 +2,20 @@
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import PageHero from '../../components/PageHero.astro';
 import StubBody from '../../components/StubBody.astro';
+import { CLOUD_PROBES_GCP } from '../../data/product-facts';
 ---
 
 <BaseLayout
   title="CHA &mdash; GCP probes (shipped v1.8)"
-  description="10 GCP probes covering Cloud SQL, GKE control-plane + node pools, IAM service accounts, Subnets, Load Balancer backends, managed certs, GCS public-access, KMS. Workload Identity native, read-only."
+  description={`${CLOUD_PROBES_GCP} GCP probes covering Cloud SQL, GKE control-plane + node pools, IAM service accounts, Subnets, Load Balancer backends, managed certs, GCS public-access, KMS. Workload Identity native, read-only.`}
 >
   <PageHero
     eyebrow="Features &middot; GCP"
     title="GCP probes — shipped (v1.8)."
-    subtitle="10 probes via a live google.golang.org/api wrapper: Cloud SQL, GKE control-plane + node pools, IAM service accounts, Subnets, Load Balancer backends, managed certificates, GCS public-access, KMS. GKE Workload Identity — zero long-lived credentials. Read-only by design."
+    subtitle={`${CLOUD_PROBES_GCP} probes via a live google.golang.org/api wrapper: Cloud SQL, GKE control-plane + node pools, IAM service accounts, Subnets, Load Balancer backends, managed certificates, GCS public-access, KMS. GKE Workload Identity — zero long-lived credentials. Read-only by design.`}
   />
   <StubBody
-    claim="10 GCP cloud probes shipped in v1.8, modelled on the AWS set, using a live google.golang.org/api wrapper and GKE Workload Identity (off by default; cloud.gcp.enabled=true). A couple of signals the Compute/SQL Admin list APIs don't expose directly — subnet IP-utilization and Cloud SQL storage-% — honestly report 'not measured' pending Cloud Monitoring API wiring (v1.9) rather than silently passing. Everything else (Cloud SQL state/backup, GKE control-plane + node pools, IAM service accounts, LB backend health, managed-cert status, GCS public-access, KMS) is fetched live. Read-only by design."
+    claim={`${CLOUD_PROBES_GCP} GCP cloud probes shipped in v1.8, modelled on the AWS set, using a live google.golang.org/api wrapper and GKE Workload Identity (off by default; cloud.gcp.enabled=true). A couple of signals the Compute/SQL Admin list APIs don't expose directly — subnet IP-utilization and Cloud SQL storage-% — honestly report 'not measured' pending Cloud Monitoring API wiring (v1.9) rather than silently passing. Everything else (Cloud SQL state/backup, GKE control-plane + node pools, IAM service accounts, LB backend health, managed-cert status, GCS public-access, KMS) is fetched live. Read-only by design.`}
     backHref="/features/"
     backLabel="← All features"
   />

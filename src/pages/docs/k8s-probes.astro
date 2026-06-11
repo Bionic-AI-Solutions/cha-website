@@ -1,6 +1,7 @@
 ---
 import DocsLayout from '../../layouts/DocsLayout.astro';
 import PageHero from '../../components/PageHero.astro';
+import { K8S_PROBES } from '../../data/product-facts';
 
 const probes = [
   { name: 'Ceph', checks: 'Rook-Ceph health, OSD readiness, capacity %', fires: 'HEALTH_ERR or ≥80% capacity', disable: 'CHA_PROBE_CEPH=off' },
@@ -15,20 +16,34 @@ const probes = [
   { name: 'CrashLoopBackOff', checks: 'Any namespace; protected-ns escalates immediately', fires: 'Protected-ns: always Critical; user-ns: past restart threshold (default 10)', disable: 'CHA_PROBE_CRASHLOOP=off' },
   { name: 'ETCD', checks: 'kubeadm static-pod etcd members; "blind probe" warning on managed etcd', fires: 'Member unhealthy; Warning on managed/external etcd', disable: 'CHA_PROBE_ETCD=off' },
   { name: 'FailedMounts', checks: 'Pods stuck ContainerCreating past 90s + kubelet FailedMount/FailedAttach events', fires: 'Volume mount failure confirmed by kubelet event', disable: 'CHA_PROBE_FAILED_MOUNTS=off' },
+  { name: 'Kong', checks: 'KongPlugin CRs (auto-skips when Kong CRDs absent)', fires: 'Plugin with Programmed=False — gateway serving traffic without the intended policy', disable: 'CHA_PROBE_KONG=off' },
   { name: 'KongRoutes', checks: 'For each Kong-managed Ingress: backend Service has ≥1 ready Endpoint + KongPlugin/Consumer annotation refs resolve', fires: 'No ready endpoints or dangling annotation', disable: 'CHA_PROBE_KONG_ROUTES=off' },
   { name: 'GPUNodes', checks: 'nvidia.com/gpu + amd.com/gpu node allocatability', fires: 'GPU node NotReady, cordoned, or zero allocatable GPU', disable: 'CHA_PROBE_GPU_NODES=off' },
+  { name: 'HPAScaling', checks: 'HorizontalPodAutoscaler status conditions (healthy on zero HPAs)', fires: 'ScalingActive=False or AbleToScale=False — immediate Critical, no dwell', disable: 'CHA_PROBE_HPA_SCALING=off' },
+  { name: 'ArgoCDApplication', checks: 'ArgoCD Application sync/health status (auto-skips when Argo CD CRDs absent)', fires: 'Application OutOfSync or Degraded — immediate, no grace window', disable: 'CHA_PROBE_ARGOCD_APP=off' },
+  { name: 'Velero', checks: 'Velero Backup CRs across namespaces (auto-skips when Velero CRDs absent)', fires: 'Latest backup Failed/PartiallyFailed, older than the backup SLA (default 26h), or InProgress >4h', disable: 'CHA_PROBE_VELERO=off' },
+  { name: 'TraefikRoutes', checks: 'Traefik IngressRoute CRDs (v3 traefik.io, falls back to v2; auto-skips when absent)', fires: 'Missing backend Service, unresolved Middleware ref, or TLS config with no cert provisioner', disable: 'CHA_PROBE_TRAEFIK_ROUTES=off' },
+  { name: 'K3sLocalPathStorage', checks: 'Ephemeral-storage headroom on nodes hosting local-path-provisioner PVCs (no-ops without local-path PVCs)', fires: 'Disk-pressure risk on a node backing local-path volumes', disable: 'CHA_PROBE_K3S_LOCALPATH=off' },
+  { name: 'K3sDatastore', checks: 'k3s datastore mode (embedded etcd vs SQLite) + mode-appropriate health signals', fires: 'Datastore unhealthy; avoids the spurious "no etcd pods" warning on SQLite single-node k3s', disable: 'CHA_PROBE_K3S_DATASTORE=off' },
 ];
+
+// Build-time drift assertion: the table above must match the canonical count.
+if (probes.length !== K8S_PROBES) {
+  throw new Error(
+    `count drift: docs/k8s-probes.astro lists ${probes.length} probes but product-facts K8S_PROBES=${K8S_PROBES}`
+  );
+}
 ---
 
 <DocsLayout
   title="CHA &mdash; K8s Probes"
-  description="14 Kubernetes probes covering storage, compute, networking, GPU, and workload health. Each runs on every cycle against the Kubernetes API — no metrics scraping."
+  description={`${K8S_PROBES} Kubernetes probes covering storage, compute, networking, GPU, GitOps, backup, and workload health. Each runs on every cycle against the Kubernetes API — no metrics scraping.`}
   topic="K8s Probes"
 >
   <PageHero
     eyebrow="Docs"
     title="Kubernetes Probes"
-    subtitle="14 probes run on every cycle against the Kubernetes API — read-only, no metrics scraping, no log shipping."
+    subtitle={`${K8S_PROBES} probes run on every cycle against the Kubernetes API — read-only, no metrics scraping, no log shipping.`}
   />
 
   <section class="mx-auto max-w-5xl space-y-16 px-6 py-16">

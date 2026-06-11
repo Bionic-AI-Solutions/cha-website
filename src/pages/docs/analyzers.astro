@@ -1,6 +1,7 @@
 ---
 import DocsLayout from '../../layouts/DocsLayout.astro';
 import PageHero from '../../components/PageHero.astro';
+import { OSS_ANALYZERS } from '../../data/product-facts';
 
 const diagnostic = [
   { name: 'SecretKeyMissing', detects: 'Pod in CreateContainerConfigError — names the missing key, consuming Deployment, and owning ExternalSecret', severity: 'Critical' },
@@ -10,8 +11,9 @@ const diagnostic = [
   { name: 'ImagePullAuth', detects: 'Pod in ImagePullBackOff with kubelet auth-failure signals (401, denied, unauthorized)', severity: 'Critical' },
   { name: 'CertExpiry', detects: 'cert-manager Certificate not Ready, expiring within 14 days, or already expired', severity: 'Critical / Warning' },
   { name: 'TLSSecretMismatch', detects: 'Ingress points at an expired Secret while cert-manager renews into a different Secret (two-Secret naming drift)', severity: 'Warning' },
-  { name: 'VaultPathMissing', detects: 'Queries Vault directly to catch drift before ESO\'s next refresh. Apache-2.0; you provide the Vault client. Paid tier auto-wires from your Vault config.', severity: 'Warning' },
+  { name: 'VaultPathMissing', optIn: true, detects: 'Queries Vault directly to catch drift before ESO\'s next refresh. Apache-2.0; you provide the Vault client. Paid tier auto-wires from your Vault config.', severity: 'Warning' },
   { name: 'DNSChainDrift', detects: 'Cloudflare DNS → cluster ingress LB → Ingress host → Service → ready Endpoints. Emits the highest broken layer per host', severity: 'Warning' },
+  { name: 'NetworkPolicyProposer', detects: 'User namespaces with no NetworkPolicy on CNIs that enforce NetworkPolicy — emits a ready-to-apply policy YAML per uncovered namespace. Silent on non-enforcing CNIs (e.g. k3s Flannel-only)', severity: 'Warning' },
 ];
 
 const drift = [
@@ -24,6 +26,7 @@ const drift = [
 ];
 
 const workload = [
+  { name: 'LogPatternMatcher', detects: 'Recent Events matching high-signal failure patterns (ImagePullBackOff, OOMKilled, VolumeAttachFailed, ProbeFailed, RBAC Forbidden) — dedup\'d per (object, pattern)' },
   { name: 'DisruptionDrift', detects: 'PDB blocks all evictions / stuck Indexed-Job failed indexes / ResourceQuota at 100% past 1h' },
   { name: 'OOMKillRecurrence', detects: 'Pod with ≥3 OOMKilled restarts in 24h — signals a persistent memory sizing issue' },
   { name: 'PVOrphan', detects: 'PersistentVolume Released >7 days — still billing on the underlying cloud disk' },
@@ -36,11 +39,22 @@ const paid = [
   { name: 'MultiClusterDrift', detects: 'Cross-cluster state divergence across federated or ArgoCD-managed clusters' },
   { name: 'StatefulSetReplicaPressure', detects: 'StatefulSet rolling-update stalls and replica pressure patterns' },
 ];
+
+// Build-time drift assertion: the OSS tables sum to OSS_ANALYZERS + 1 because
+// VaultPathMissing is listed (marked opt-in) but intentionally NOT counted in
+// OSS_ANALYZERS — it isn't default-registered (needs an operator-supplied
+// Vault client). See src/data/product-facts.ts.
+const ossRowCount = diagnostic.length + drift.length + workload.length;
+if (ossRowCount !== OSS_ANALYZERS + 1) {
+  throw new Error(
+    `count drift: docs/analyzers.astro lists ${ossRowCount} OSS analyzer rows but expected OSS_ANALYZERS + 1 opt-in row = ${OSS_ANALYZERS + 1}`
+  );
+}
 ---
 
 <DocsLayout
   title="CHA &mdash; Analyzers"
-  description="19 OSS analyzers run after every probe cycle — diagnostic, drift-class, log/workload. 4 additional analyzers in the paid tier."
+  description={`${OSS_ANALYZERS} OSS analyzers run after every probe cycle — diagnostic, drift-class, log/workload — plus opt-in VaultPathMissing. 4 additional analyzers in the paid tier.`}
   topic="Analyzers"
 >
   <PageHero
@@ -63,7 +77,7 @@ const paid = [
     </div>
 
     <div>
-      <h2 class="text-xl font-semibold text-zinc-900 dark:text-zinc-50">Diagnostic analyzers (9)</h2>
+      <h2 class="text-xl font-semibold text-zinc-900 dark:text-zinc-50">Diagnostic analyzers ({diagnostic.length})</h2>
       <div class="mt-1 h-0.5 w-8 rounded-full bg-accent-500"></div>
       <div class="mt-6 overflow-x-auto">
         <table class="w-full border-collapse text-sm">
@@ -77,7 +91,12 @@ const paid = [
           <tbody>
             {diagnostic.map((r) => (
               <tr class="border-b border-zinc-100 dark:border-zinc-800/60">
-                <td class="py-3 pr-6 font-mono text-xs font-semibold text-zinc-900 dark:text-zinc-100">{r.name}</td>
+                <td class="py-3 pr-6 font-mono text-xs font-semibold text-zinc-900 dark:text-zinc-100">
+                  {r.name}
+                  {r.optIn && (
+                    <span class="ml-2 inline-block rounded-full border border-amber-300 bg-amber-50 px-2 py-0.5 font-sans text-[10px] font-medium text-amber-700 dark:border-amber-800 dark:bg-amber-950/40 dark:text-amber-400">opt-in — not in the {OSS_ANALYZERS} default-on count</span>
+                  )}
+                </td>
                 <td class="py-3 pr-6 text-zinc-600 dark:text-zinc-400">{r.detects}</td>
                 <td class="py-3 font-mono text-xs text-zinc-500 dark:text-zinc-400">{r.severity}</td>
               </tr>
@@ -88,7 +107,7 @@ const paid = [
     </div>
 
     <div>
-      <h2 class="text-xl font-semibold text-zinc-900 dark:text-zinc-50">Drift-class analyzers (6)</h2>
+      <h2 class="text-xl font-semibold text-zinc-900 dark:text-zinc-50">Drift-class analyzers ({drift.length})</h2>
       <div class="mt-1 h-0.5 w-8 rounded-full bg-accent-500"></div>
       <div class="mt-6 overflow-x-auto">
         <table class="w-full border-collapse text-sm">
@@ -111,7 +130,7 @@ const paid = [
     </div>
 
     <div>
-      <h2 class="text-xl font-semibold text-zinc-900 dark:text-zinc-50">Log / workload analyzers (4)</h2>
+      <h2 class="text-xl font-semibold text-zinc-900 dark:text-zinc-50">Log / workload analyzers ({workload.length})</h2>
       <div class="mt-1 h-0.5 w-8 rounded-full bg-accent-500"></div>
       <div class="mt-6 overflow-x-auto">
         <table class="w-full border-collapse text-sm">
@@ -134,7 +153,7 @@ const paid = [
     </div>
 
     <div>
-      <h2 class="text-xl font-semibold text-zinc-900 dark:text-zinc-50">Paid-tier analyzers (4)</h2>
+      <h2 class="text-xl font-semibold text-zinc-900 dark:text-zinc-50">Paid-tier analyzers ({paid.length})</h2>
       <div class="mt-1 h-0.5 w-8 rounded-full bg-accent-500"></div>
       <p class="mt-4 text-sm leading-relaxed text-zinc-600 dark:text-zinc-400">
         The <code class="font-mono">cha-com</code> paid binary adds four additional analyzers. They use the same <code class="font-mono">pkg/registry</code> interface as OSS analyzers and respect the same per-analyzer Helm toggles.
