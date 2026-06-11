@@ -20,21 +20,30 @@ OSS_REPO="${CHA_OSS_REPO:-$SITE_ROOT/../cluster-health-autopilot}"
 PAID_REPO="${CHA_PAID_REPO:-$SITE_ROOT/../CHA-com}"
 SYNC_DATE="$(date -u +%Y-%m-%d)"
 
+# max_releases: this repo is PUBLIC. Vendor ONLY the newest N release
+# sections (exactly what the public roadmap page renders) — never the
+# full file. This matters for CHA-com, whose CHANGELOG is private and
+# confidential beyond the rendered release highlights.
 sync_one() {
-  local src="$1" dest="$2" source_label="$3"
+  local src="$1" dest="$2" source_label="$3" max_releases="$4"
   [ -f "$src" ] || { echo "ERROR: $src not found (set CHA_OSS_REPO / CHA_PAID_REPO)" >&2; exit 1; }
   {
     echo "<!-- DO NOT EDIT — vendored snapshot of $source_label -->"
     echo "<!-- source: $source_label -->"
     echo "<!-- synced: $SYNC_DATE -->"
     echo "<!-- re-sync: ./scripts/sync-changelogs.sh && npm run build -->"
+    echo "<!-- truncated to newest $max_releases release sections; the public roadmap renders these only -->"
     echo
-    cat "$src"
+    awk -v max="$max_releases" '
+      /^## \[/ { count++ }
+      count > max { exit }
+      count >= 1 { print }
+    ' "$src"
   } > "$dest"
-  echo "Synced $src -> $dest"
+  echo "Synced $src -> $dest (top $max_releases releases)"
 }
 
 sync_one "$OSS_REPO/CHANGELOG.md" "$SITE_ROOT/src/data/changelog-oss.snapshot.md" \
-  "CHANGELOG.md (Bionic-AI-Solutions/cluster-health-autopilot)"
+  "CHANGELOG.md (Bionic-AI-Solutions/cluster-health-autopilot)" 12
 sync_one "$PAID_REPO/CHANGELOG.md" "$SITE_ROOT/src/data/changelog-paid.snapshot.md" \
-  "CHANGELOG.md (Bionic-AI-Solutions/CHA-com, private)"
+  "CHANGELOG.md (Bionic-AI-Solutions/CHA-com, private)" 12
