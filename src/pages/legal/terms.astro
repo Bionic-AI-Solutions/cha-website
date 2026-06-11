@@ -1,10 +1,98 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import PageHero from '../../components/PageHero.astro';
-import StubBody from '../../components/StubBody.astro';
 ---
 
-<BaseLayout title="CHA &mdash; Terms" description="Terms of use for asre.baisoln.com.">
+<BaseLayout
+  title="CHA &mdash; Terms"
+  description="Terms of use for asre.baisoln.com: as-is content, Apache-2.0 OSS code, trademarks, acceptable use."
+>
   <PageHero eyebrow="Legal" title="Terms of use" />
-  <StubBody claim="A full terms of use document is being drafted. The CHA OSS product is Apache-2.0; the CHA-com paid tiers are governed by a separate commercial agreement." />
+
+  <section class="mx-auto max-w-3xl px-6 pb-20">
+    <div class="space-y-8 text-sm leading-relaxed text-zinc-700 dark:text-zinc-300">
+      <p class="text-xs text-zinc-500 dark:text-zinc-500">Last updated: 2026-06-11</p>
+
+      <div>
+        <h2 class="text-lg font-semibold text-zinc-900 dark:text-zinc-100">1. Acceptance</h2>
+        <p class="mt-2">
+          By using asre.baisoln.com (the &ldquo;Site&rdquo;), operated by
+          Bionic AI Solutions, you agree to these terms. If you do not agree,
+          do not use the Site.
+        </p>
+      </div>
+
+      <div>
+        <h2 class="text-lg font-semibold text-zinc-900 dark:text-zinc-100">2. Content is provided as-is</h2>
+        <p class="mt-2">
+          The Site's content is provided for general information about the
+          Cluster Health Autopilot (CHA) project, &ldquo;as is&rdquo; and
+          without warranty of any kind, express or implied — including
+          warranties of accuracy, merchantability, fitness for a particular
+          purpose, or non-infringement. Product capabilities, roadmaps, and
+          version details described here may change without notice.
+        </p>
+      </div>
+
+      <div>
+        <h2 class="text-lg font-semibold text-zinc-900 dark:text-zinc-100">3. Open-source software</h2>
+        <p class="mt-2">
+          The CHA open-source code is licensed under the
+          <a class="font-medium text-accent-600 hover:text-accent-700 dark:text-accent-400" href="https://github.com/Bionic-AI-Solutions/cluster-health-autopilot/blob/main/LICENSE">Apache License 2.0</a>;
+          your use of that code is governed solely by that license, not these
+          terms. Paid CHA tiers are governed by a separate commercial
+          agreement.
+        </p>
+      </div>
+
+      <div>
+        <h2 class="text-lg font-semibold text-zinc-900 dark:text-zinc-100">4. Trademarks</h2>
+        <p class="mt-2">
+          &ldquo;Bionic AI Solutions&rdquo;, &ldquo;Cluster Health
+          Autopilot&rdquo;, and &ldquo;CHA&rdquo; are names and marks of
+          Bionic AI Solutions. The Apache-2.0 license for the code does not
+          grant trademark rights. Third-party names on the Site (Kubernetes,
+          AWS, GCP, Azure, Slack, and others) are trademarks of their
+          respective owners and are used for identification only.
+        </p>
+      </div>
+
+      <div>
+        <h2 class="text-lg font-semibold text-zinc-900 dark:text-zinc-100">5. Acceptable use</h2>
+        <p class="mt-2">
+          Do not use the Site to attempt unauthorized access to our systems,
+          disrupt the Site's operation, or misrepresent affiliation with
+          Bionic AI Solutions. Security findings should go to
+          <a class="font-medium text-accent-600 hover:text-accent-700 dark:text-accent-400" href="mailto:cha-security@baisoln.com">cha-security@baisoln.com</a>
+          (see <a class="font-medium text-accent-600 hover:text-accent-700 dark:text-accent-400" href="/security/">Security</a>), not exploited.
+        </p>
+      </div>
+
+      <div>
+        <h2 class="text-lg font-semibold text-zinc-900 dark:text-zinc-100">6. Limitation of liability</h2>
+        <p class="mt-2">
+          To the maximum extent permitted by law, Bionic AI Solutions is not
+          liable for any indirect, incidental, or consequential damages
+          arising from your use of the Site or reliance on its content.
+        </p>
+      </div>
+
+      <div>
+        <h2 class="text-lg font-semibold text-zinc-900 dark:text-zinc-100">7. Governing law</h2>
+        <!-- TODO(owner): confirm jurisdiction before publishing externally-marketed paid tiers -->
+        <p class="mt-2">
+          These terms are governed by the laws of [India], without regard to
+          conflict-of-law rules.
+        </p>
+      </div>
+
+      <div>
+        <h2 class="text-lg font-semibold text-zinc-900 dark:text-zinc-100">8. Contact</h2>
+        <p class="mt-2">
+          Questions about these terms:
+          <a class="font-medium text-accent-600 hover:text-accent-700 dark:text-accent-400" href="mailto:hello@bionicaisolutions.com">hello@bionicaisolutions.com</a>.
+        </p>
+      </div>
+    </div>
+  </section>
 </BaseLayout>

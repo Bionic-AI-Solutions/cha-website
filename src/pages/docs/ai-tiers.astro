@@ -12,7 +12,7 @@ const tiers = [
   {
     tier: 'T1',
     name: 'Fix proposals',
-    does: 'Proposes a specific action (bounded to the operator-defined action_kind policy) and delivers a signed click-to-fix URL to Slack or the ticket. Nothing mutates until the URL is clicked.',
+    does: 'Proposes a specific action (bounded to the operator-defined action_kind policy) and delivers a signed click-to-fix URL to Slack or the ticket. Nothing mutates until the URL is clicked — unless confidence-gated auto-merge is explicitly enabled (off by default).',
     approval: 'One-click signed URL',
   },
   {
@@ -49,7 +49,7 @@ const tiers = [
       </p>
       <div class="mt-4 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 dark:border-amber-900/50 dark:bg-amber-950/30">
         <p class="text-sm text-amber-800 dark:text-amber-300">
-          <strong>Nothing mutates without a human click.</strong> T1 and above require an approval action — a signed URL delivered to Slack or your ticket. Without the click, no cluster state changes.
+          <strong>Nothing mutates without a human click</strong> — unless you explicitly enable confidence-gated auto-merge (off by default; Wilson lower bound &ge;0.95; every safety gate must pass). T1 and above require an approval action — a signed URL delivered to Slack or your ticket. Without the click (or that explicit opt-in), no cluster state changes.
         </p>
       </div>
     </div>

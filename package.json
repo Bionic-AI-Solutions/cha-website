@@ -8,7 +8,8 @@
     "start": "astro dev",
     "build": "astro build",
     "preview": "astro preview",
-    "astro": "astro"
+    "astro": "astro",
+    "og-image": "node scripts/generate-og-image.mjs"
   },
   "dependencies": {
     "@astrojs/mdx": "^4.0.0",
@@ -18,6 +19,7 @@
     "tailwindcss": "^4.0.0"
   },
   "devDependencies": {
+    "sharp": "^0.35.0",
     "yaml": "^2.9.0"
   }
 }
