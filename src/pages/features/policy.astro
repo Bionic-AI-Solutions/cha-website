@@ -30,7 +30,7 @@ const layers = [
   {
     name: 'Signed JWT click-to-fix',
     summary:
-      "Every T1+ mutation is wrapped in an Ed25519-signed JWT URL delivered to the operator via Slack or ticket. The approval-server verifies signature + expiry + JTI (one-time use). Without the click, nothing mutates.",
+      "Every T1+ mutation is wrapped in an Ed25519-signed JWT URL delivered to the operator via Slack or ticket. The approval-server verifies signature + expiry + JTI (one-time use). Without the click, nothing mutates — unless you explicitly enable confidence-gated auto-merge (off by default; Wilson lower bound ≥0.95; every safety gate must pass).",
     where: "ai/approval/{signer,verifier,replay}.go",
   },
   {
