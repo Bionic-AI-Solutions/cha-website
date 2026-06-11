@@ -26,6 +26,13 @@ const probes = [
   { name: 'K3sLocalPathStorage', checks: 'Ephemeral-storage headroom on nodes hosting local-path-provisioner PVCs (no-ops without local-path PVCs)', fires: 'Disk-pressure risk on a node backing local-path volumes', disable: 'CHA_PROBE_K3S_LOCALPATH=off' },
   { name: 'K3sDatastore', checks: 'k3s datastore mode (embedded etcd vs SQLite) + mode-appropriate health signals', fires: 'Datastore unhealthy; avoids the spurious "no etcd pods" warning on SQLite single-node k3s', disable: 'CHA_PROBE_K3S_DATASTORE=off' },
 ];
+
+// Build-time drift assertion: the table above must match the canonical count.
+if (probes.length !== K8S_PROBES) {
+  throw new Error(
+    `count drift: docs/k8s-probes.astro lists ${probes.length} probes but product-facts K8S_PROBES=${K8S_PROBES}`
+  );
+}
 ---
 
 <DocsLayout

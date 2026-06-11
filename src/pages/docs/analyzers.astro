@@ -11,7 +11,7 @@ const diagnostic = [
   { name: 'ImagePullAuth', detects: 'Pod in ImagePullBackOff with kubelet auth-failure signals (401, denied, unauthorized)', severity: 'Critical' },
   { name: 'CertExpiry', detects: 'cert-manager Certificate not Ready, expiring within 14 days, or already expired', severity: 'Critical / Warning' },
   { name: 'TLSSecretMismatch', detects: 'Ingress points at an expired Secret while cert-manager renews into a different Secret (two-Secret naming drift)', severity: 'Warning' },
-  { name: 'VaultPathMissing', detects: 'Queries Vault directly to catch drift before ESO\'s next refresh. Apache-2.0; you provide the Vault client. Paid tier auto-wires from your Vault config.', severity: 'Warning' },
+  { name: 'VaultPathMissing', optIn: true, detects: 'Queries Vault directly to catch drift before ESO\'s next refresh. Apache-2.0; you provide the Vault client. Paid tier auto-wires from your Vault config.', severity: 'Warning' },
   { name: 'DNSChainDrift', detects: 'Cloudflare DNS → cluster ingress LB → Ingress host → Service → ready Endpoints. Emits the highest broken layer per host', severity: 'Warning' },
   { name: 'NetworkPolicyProposer', detects: 'User namespaces with no NetworkPolicy on CNIs that enforce NetworkPolicy — emits a ready-to-apply policy YAML per uncovered namespace. Silent on non-enforcing CNIs (e.g. k3s Flannel-only)', severity: 'Warning' },
 ];
@@ -39,6 +39,17 @@ const paid = [
   { name: 'MultiClusterDrift', detects: 'Cross-cluster state divergence across federated or ArgoCD-managed clusters' },
   { name: 'StatefulSetReplicaPressure', detects: 'StatefulSet rolling-update stalls and replica pressure patterns' },
 ];
+
+// Build-time drift assertion: the OSS tables sum to OSS_ANALYZERS + 1 because
+// VaultPathMissing is listed (marked opt-in) but intentionally NOT counted in
+// OSS_ANALYZERS — it isn't default-registered (needs an operator-supplied
+// Vault client). See src/data/product-facts.ts.
+const ossRowCount = diagnostic.length + drift.length + workload.length;
+if (ossRowCount !== OSS_ANALYZERS + 1) {
+  throw new Error(
+    `count drift: docs/analyzers.astro lists ${ossRowCount} OSS analyzer rows but expected OSS_ANALYZERS + 1 opt-in row = ${OSS_ANALYZERS + 1}`
+  );
+}
 ---
 
 <DocsLayout
@@ -80,7 +91,12 @@ const paid = [
           <tbody>
             {diagnostic.map((r) => (
               <tr class="border-b border-zinc-100 dark:border-zinc-800/60">
-                <td class="py-3 pr-6 font-mono text-xs font-semibold text-zinc-900 dark:text-zinc-100">{r.name}</td>
+                <td class="py-3 pr-6 font-mono text-xs font-semibold text-zinc-900 dark:text-zinc-100">
+                  {r.name}
+                  {r.optIn && (
+                    <span class="ml-2 inline-block rounded-full border border-amber-300 bg-amber-50 px-2 py-0.5 font-sans text-[10px] font-medium text-amber-700 dark:border-amber-800 dark:bg-amber-950/40 dark:text-amber-400">opt-in — not in the {OSS_ANALYZERS} default-on count</span>
+                  )}
+                </td>
                 <td class="py-3 pr-6 text-zinc-600 dark:text-zinc-400">{r.detects}</td>
                 <td class="py-3 font-mono text-xs text-zinc-500 dark:text-zinc-400">{r.severity}</td>
               </tr>

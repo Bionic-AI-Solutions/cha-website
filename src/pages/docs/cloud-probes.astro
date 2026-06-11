@@ -47,6 +47,23 @@ const azure = [
   { name: 'KeyVaults', checks: 'Key/secret expiry' },
 ];
 
+// Build-time drift assertions: each provider table must match the canonical counts.
+if (aws.length !== CLOUD_PROBES_AWS) {
+  throw new Error(
+    `count drift: docs/cloud-probes.astro lists ${aws.length} AWS probes but product-facts CLOUD_PROBES_AWS=${CLOUD_PROBES_AWS}`
+  );
+}
+if (gcp.length !== CLOUD_PROBES_GCP) {
+  throw new Error(
+    `count drift: docs/cloud-probes.astro lists ${gcp.length} GCP probes but product-facts CLOUD_PROBES_GCP=${CLOUD_PROBES_GCP}`
+  );
+}
+if (azure.length !== CLOUD_PROBES_AZURE) {
+  throw new Error(
+    `count drift: docs/cloud-probes.astro lists ${azure.length} Azure probes but product-facts CLOUD_PROBES_AZURE=${CLOUD_PROBES_AZURE}`
+  );
+}
+
 const cloudRows = [
   { provider: 'AWS', count: String(CLOUD_PROBES_AWS), enable: 'cloudProbes.aws.enabled: true', auth: 'IRSA (no long-lived keys)' },
   { provider: 'GCP', count: String(CLOUD_PROBES_GCP), enable: 'cloudProbes.gcp.enabled: true', auth: 'GCP Workload Identity' },

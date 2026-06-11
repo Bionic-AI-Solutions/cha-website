@@ -21,6 +21,9 @@
 //
 // When a release adds/removes a probe or analyzer, update THIS file only;
 // every page imports from here.
+//
+// NOTE: onepager.astro and index.astro ASCII diagrams embed these numbers in
+// fixed-width art — re-check alignment when digit counts change.
 
 export const K8S_PROBES = 21;
 export const OSS_ANALYZERS = 20;
@@ -34,4 +37,5 @@ export const CLOUD_PROBES_TOTAL =
 
 export const OSS_VERSION = 'v1.25.1';
 // Latest CHA-com git TAG (v1.22.0 is untagged HEAD); bump when v1.22.0 tags.
+// Exported for the roadmap page (a later task will consume it).
 export const PAID_VERSION = 'v1.21.0';

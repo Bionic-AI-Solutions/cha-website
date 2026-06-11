@@ -1,7 +1,7 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import PageHero from '../../components/PageHero.astro';
-import { K8S_PROBES } from '../../data/product-facts';
+import { K8S_PROBES, OSS_VERSION } from '../../data/product-facts';
 
 const probes = [
   {
@@ -98,7 +98,7 @@ const probes = [
   <PageHero
     eyebrow="Features &middot; K8s probes"
     title={`${K8S_PROBES} native K8s probes.`}
-    subtitle="The infra-grade depth no SaaS tool matches because they're not in the cluster. Six probes shipped in v1.0; six more shipped in v1.6 to close the most-impactful blind spots (Node pressure, system DaemonSets, stuck Pending pods, generic CrashLoopBackOff, ETCD, failed volume mounts); nine more landed through v1.25 (Kong, KongRoutes, GPUNodes, HPA, ArgoCD, Velero, Traefik routes, k3s local-path storage + datastore) — this page deep-dives the core twelve."
+    subtitle={`The infra-grade depth no SaaS tool matches because they're not in the cluster. Six probes shipped in v1.0; six more shipped in v1.6 to close the most-impactful blind spots (Node pressure, system DaemonSets, stuck Pending pods, generic CrashLoopBackOff, ETCD, failed volume mounts); nine more landed through ${OSS_VERSION} (Kong, KongRoutes, GPUNodes, HPA, ArgoCD, Velero, Traefik routes, k3s local-path storage + datastore) — this page deep-dives the core twelve.`}
   />
 
   <section class="mx-auto max-w-5xl px-6 py-16">
