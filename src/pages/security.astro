@@ -47,8 +47,8 @@ const safetyPillars = [
 
 const compliance = [
   { name: 'Apache-2.0 OSS license', detail: 'Audit every line of the safety envelope before installing.' },
-  { name: 'SBOM (paid)', detail: 'SBOM published per release from v1.22 (CHA-com) / v1.26 (OSS) onward; earlier releases ship without one.' },
-  { name: 'Signed images (paid)', detail: 'Cosign-signed container images published per release from v1.22 (CHA-com) / v1.26 (OSS) onward; earlier releases are unsigned.' },
+  { name: 'SBOM (paid)', detail: 'SBOM pipeline ships from v1.22 (CHA-com) / v1.26 (OSS) onward; earlier releases ship without one. First published SBOM artifacts pending CI billing restoration.' },
+  { name: 'Signed images (paid)', detail: 'Cosign signing pipeline ships from v1.22 (CHA-com) / v1.26 (OSS) onward; earlier releases are unsigned. First signed artifacts pending CI billing restoration.' },
   { name: 'No telemetry by default', detail: 'OSS tier ships with zero outbound telemetry. Opt in to phone-home, never the reverse.' },
 ];
 ---
