@@ -12,7 +12,7 @@ const paid = loadChangelog('paid');
 const asOf = oss.syncedDate;
 
 // "Shipped" means TAGGED. The CHANGELOGs sometimes carry an entry for an
-// untagged HEAD (e.g. CHA-com v1.22.0 while v1.21.0 is the latest tag), so
+// untagged HEAD (e.g. CHA-com v1.22.2 while v1.21.0 is the latest tag), so
 // drop anything newer than the latest tag recorded in product-facts. If the
 // tag isn't in the snapshot at all, the snapshot (or product-facts) is stale
 // — fail the build instead of shipping a roadmap that contradicts the site.
@@ -35,13 +35,14 @@ const tracks = [
 // date (grep before listing; nothing here has already shipped). P6.x refs
 // point at the in-flight claims-fulfillment plan
 // (CHA-com docs/plans/2026-06-11-adversarial-review-remediation.md).
+// P6.1 (Loki/OTLP sinks), P6.3 (Jira), P6.4 (ServiceNow + multi-sink
+// routing), P6.6 (hosted dashboard) and P6.7 (multi-cluster federation)
+// shipped in CHA-com v1.22.2 — they now appear in the generated Shipped
+// list above and were removed from here on 2026-06-12. Cloud-aware RCA
+// also shipped across both repos (OSS v1.26.0 join keys + CHA-com v1.22.2
+// matchers).
 const openItems = [
-  { label: 'Loki / OTLP audit sinks', why: 'ai/audit ships the hash-chained JSONL trail today; the Loki and OTLP sinks for compliance pipelines are doc-stubs, not code', when: 'P6.1 — in flight' },
-  { label: 'SBOM (CycloneDX) + cosign-signed images', why: 'Release workflow already reserves the Sigstore id-token permission but does not sign or attach SBOMs yet', when: 'P6.2 — in flight' },
-  { label: 'Jira ticketing sink', why: 'OpenProject MCP ticketing shipped; the Jira sink behind the Enterprise ticketing claim is not started', when: 'P6.3 — in flight' },
-  { label: 'ServiceNow ticketing sink + multi-sink routing', why: 'Same Enterprise ticketing surface as Jira; includes routing one finding to N sinks', when: 'P6.4 — in flight' },
-  { label: 'Hosted dashboard MVP', why: 'Read-only web view of current findings, pending approvals, and remediation history; reuses approval-server rendering conventions', when: 'P6.6 — in flight' },
-  { label: 'Multi-cluster federation MVP', why: 'Hub-spoke read-only aggregation. Substrate is ready (RAG entries already carry ClusterID) but federation is explicitly out of scope in today’s store', when: 'P6.7 — in flight' },
+  { label: 'First cosign-signed artifacts on a tagged release', why: 'The SBOM (CycloneDX) + cosign signing pipeline shipped in P6.2 (v1.22.2), but the first signed artifacts are still pending CI billing restoration — no published release has been signed by it yet', when: 'P6.2 — pipeline shipped, artifacts pending' },
   { label: 'Hosted playground', why: 'The "Try it now" path currently lands on quick-start; the live playground route is a coming-soon stub', when: 'P6.8 — in flight' },
   { label: 'OLM / OperatorHub publish', why: 'Operator bundle manifests + bundle-smoke CI gate exist; the bundle has not been published to OperatorHub', when: 'Next operator milestone' },
   { label: 'M7 phase 2 — per-probe dispatch', why: 'GVRWatcher interface shipped in v1.23.0, but the watcher still runs every probe on every trigger (static watchedGVRs loop)', when: 'Q3 2026' },

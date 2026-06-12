@@ -1,7 +1,7 @@
 # DO NOT EDIT — vendored snapshot of the OSS chart's default values.
 # source: charts/cluster-health-autopilot/values.yaml (Bionic-AI-Solutions/cluster-health-autopilot)
-# chart-version: 1.25.1
-# synced: 2026-06-11
+# chart-version: 1.26.0
+# synced: 2026-06-12
 # re-sync: ./scripts/sync-helm-values.sh && npm run build
 
 # Default values for cluster-health-autopilot.
@@ -200,20 +200,17 @@ alertmanager:
 cloud:
   enabled: false
   cadence: 10m                     # min interval between cloud-probe runs
-  rateLimitPerMin: 60              # per-provider; override per-provider below
   aws:
     enabled: false
     region: ""                     # required; e.g. "us-east-1"
     auth:
-      mode: irsa                   # irsa | assumeRole | staticCredentials
-      roleArn: ""                  # for IRSA: ARN of the IAM role; auto-injected as eks.amazonaws.com/role-arn SA annotation
-      assumeRoleArn: ""            # for assumeRole: target role
-      credentialsSecret: ""        # for staticCredentials: K8s Secret name (ESO-managed)
-    # Per-probe documentation. All 10 AWS probes shipped in v1.8
-    # (M1 complete). Provider registration is gated by aws.enabled
-    # above; per-probe in-cluster gating is via CHA_PROBE_* env opt-outs
-    # on the binary (these keys are informational — flip aws.enabled to
-    # turn the whole provider on/off).
+      # Workload identity (IRSA) is the only supported auth mode.
+      roleArn: ""                  # ARN of the IAM role; auto-injected as eks.amazonaws.com/role-arn SA annotation
+    # Per-probe toggles. All 10 AWS probes shipped in v1.8 (M1
+    # complete) and default ON when aws.enabled=true. Set a key to
+    # false to emit CHA_CLOUD_PROBE_AWS_<NAME>=off and skip that
+    # probe's registration (eks gates both the control-plane and
+    # node-group probes — one asset, one key).
     probes:
       rds: true
       ebs: true
@@ -228,28 +225,65 @@ cloud:
     # GCP cloud probes shipped in v1.8 (M2): Cloud SQL, Persistent
     # Disks, GKE control-plane + node pools, IAM service accounts,
     # Subnets, LB backends, managed certs, GCS public access, KMS.
-    # NOTE: subnet IP-utilization and Cloud SQL storage-% are reported
-    # as "not measured" in live mode (need the Monitoring API; v1.9).
+    # NOTE: Cloud SQL storage-% is fetched via the Cloud Monitoring API
+    # (best-effort; "not measured" when unavailable). Subnet IP
+    # utilization is CAPACITY-ONLY in live mode — GCP exposes no cheap
+    # used-IP count (Network Analyzer insights live behind the
+    # Recommender API); the probe flags small-capacity subnets instead.
     enabled: false
     project: ""
     auth:
-      mode: workloadIdentity       # workloadIdentity | staticCredentials
-      serviceAccount: ""           # for workloadIdentity: GSA email; auto-injected as iam.gke.io/gcp-service-account SA annotation
-      credentialsSecret: ""        # for staticCredentials: K8s Secret name
+      # Workload Identity is the only supported auth mode.
+      serviceAccount: ""           # GSA email; auto-injected as iam.gke.io/gcp-service-account SA annotation
+    # Per-probe toggles (default ON when gcp.enabled=true). false emits
+    # CHA_CLOUD_PROBE_GCP_<NAME>=off (gke gates both the control-plane
+    # and node-pool probes).
+    probes:
+      cloudsql: true
+      disks: true
+      gke: true
+      iam: true
+      subnets: true
+      lb: true
+      certs: true
+      gcs: true
+      kms: true
+    # Small-prefix threshold for the capacity-only subnets probe: an
+    # unmeasured subnet whose primary CIDR is smaller than /<threshold>
+    # is flagged as a warning. 0 = the probe default (/26 → 60 usable
+    # IPs). Raise (e.g. 28) to quiet intentionally tiny subnets, lower
+    # to be stricter. Rendered as
+    # CHA_CLOUD_PROBE_GCP_SUBNETS_SMALL_PREFIX.
+    subnetsSmallPrefixThreshold: 0
   azure:
     # Azure cloud probes shipped in v1.8 (M2): SQL databases, Disks,
     # AKS control-plane + node pools, Managed Identities, Subnets, App
     # Gateway backends, certs, Storage public access, Key Vaults.
-    # NOTE: subnet IP-utilization, SQL storage-%, and App Gateway
-    # backend health are "not measured" in live mode (need Azure
-    # Monitor metrics / BackendHealth LRO; v1.9).
+    # NOTE: SQL storage-% and App Gateway backend health are fetched
+    # via Azure Monitor metrics (best-effort; "not measured" when
+    # unavailable). Subnet utilization is measured live: used IPs are
+    # counted from every subnet-attached resource (NIC IP configs, App
+    # Gateway IP configs, IP-config profiles, private endpoints), so
+    # available = total - used.
     enabled: false
     subscriptionId: ""
     resourceGroup: ""              # optional scope; empty = subscription-wide
     auth:
-      mode: workloadIdentity       # workloadIdentity | staticCredentials
-      clientId: ""                 # for workloadIdentity: AAD app client ID; auto-injected as azure.workload.identity/client-id SA annotation
-      credentialsSecret: ""        # for staticCredentials: K8s Secret name
+      # AAD Workload Identity is the only supported auth mode.
+      clientId: ""                 # AAD app client ID; auto-injected as azure.workload.identity/client-id SA annotation
+    # Per-probe toggles (default ON when azure.enabled=true). false
+    # emits CHA_CLOUD_PROBE_AZURE_<NAME>=off (aks gates both the
+    # control-plane and node-pool probes).
+    probes:
+      sql: true
+      disks: true
+      aks: true
+      identities: true
+      subnets: true
+      appgw: true
+      certs: true
+      storage: true
+      keyvaults: true
 
 # Ticketing — open issue-tracker tickets for diagnostics CHA cannot
 # auto-remediate. Runs after each watcher cycle's DriftReport reconcile;
@@ -295,6 +329,11 @@ ticketing:
     warning:  ""                         # e.g. "74" for High
     info:     ""                         # e.g. "73" for Normal
   dryRun: false                          # Log intended ops without calling the MCP server
+  # --- M2 lifecycle (resolve-on-clear + comment-on-recurrence) ---
+  resolveOnClear: true                   # Auto-close the ticket when its finding clears. Default ON (M2 shipped).
+  commentInterval: "1h"                  # Debounce for comment-on-recurrence: at most one comment per window.
+                                         # A recurring or severity-changed finding comments on the EXISTING
+                                         # ticket instead of opening a new one. "0" disables recurrence comments.
   # Optional API key when talking to the MCP server through Kong
   # (provider URL on mcp.baisoln.com). For in-cluster traffic leave
   # auth.enabled=false. When enabled, the secret is expected to be
@@ -303,6 +342,49 @@ ticketing:
     enabled: false
     secretName: cha-ticketing-mcp        # K8s Secret with the API key
     secretKey: api-key                   # Key inside the Secret
+  # --- CHA-com ticketing sinks (Jira / ServiceNow) ---
+  # These configure the PAID Jira/ServiceNow sinks read by the CHA-com
+  # aiwatch container (ai.enabled=true). The OSS chart only RENDERS the
+  # CHA_* env; the cha-com binary consumes them. All default empty so
+  # nothing changes for existing installs — an env var is emitted only
+  # when its value/secret-ref is set.
+  #
+  # Tokens/passwords flow via secret-refs ONLY (never literals): set
+  # jira.tokenSecret.{name,key} / servicenow.passwordSecret.{name,key} /
+  # servicenow.bearerSecret.{name,key}, typically ESO-synced from Vault.
+  route: ""                              # CHA_TICKETING_ROUTE — routes a finding to a sink
+                                         # (provider above selects the default sink).
+  jira:
+    url: ""                              # CHA_JIRA_URL
+    project: ""                          # CHA_JIRA_PROJECT (project key)
+    email: ""                            # CHA_JIRA_EMAIL (token-auth account email)
+    issueType: ""                        # CHA_JIRA_ISSUE_TYPE (e.g. "Bug")
+    priority:
+      critical: ""                       # CHA_JIRA_PRIORITY_CRITICAL
+      warning: ""                        # CHA_JIRA_PRIORITY_WARNING
+      info: ""                           # CHA_JIRA_PRIORITY_INFO
+    webUrlBase: ""                       # CHA_JIRA_WEB_URL_BASE (clickable ticket URLs)
+    tokenSecret:                         # CHA_JIRA_TOKEN — secretKeyRef ONLY
+      name: ""                           # K8s Secret name (ESO-synced)
+      key: ""                            # key inside the Secret
+  servicenow:
+    url: ""                              # CHA_SERVICENOW_URL
+    user: ""                             # CHA_SERVICENOW_USER (basic-auth username)
+    urgency:
+      critical: ""                       # CHA_SERVICENOW_URGENCY_CRITICAL
+      warning: ""                        # CHA_SERVICENOW_URGENCY_WARNING
+      info: ""                           # CHA_SERVICENOW_URGENCY_INFO
+    impact:
+      critical: ""                       # CHA_SERVICENOW_IMPACT_CRITICAL
+      warning: ""                        # CHA_SERVICENOW_IMPACT_WARNING
+      info: ""                           # CHA_SERVICENOW_IMPACT_INFO
+    webUrlBase: ""                       # CHA_SERVICENOW_WEB_URL_BASE (clickable ticket URLs)
+    passwordSecret:                      # CHA_SERVICENOW_PASSWORD — secretKeyRef ONLY
+      name: ""
+      key: ""
+    bearerSecret:                        # CHA_SERVICENOW_BEARER — secretKeyRef ONLY
+      name: ""
+      key: ""
   # DEPRECATED (v1.20.0+): nested per-provider sub-trees. Honored only
   # when the equivalent flat field above is unset. New installs should
   # use the flat shape exclusively. Will be removed in the next major
@@ -322,8 +404,31 @@ ticketing:
 # report the post-fix cluster state.
 watcher:
   enabled: false
+  # replicas — watcher pod count. Default 1. Raising above 1 is ONLY
+  # safe with leaderElection.enabled=true (the CHA_LEADER_ELECTION path):
+  # otherwise every replica runs the probe/fix/post cycle and they race
+  # on DriftReports + double-post Slack. The chart FAILS the render when
+  # replicas > 1 and leaderElection.enabled=false.
+  replicas: 1
+  # healthListen — listen address for the always-on health server. GET
+  # /healthz returns 200 while the process is alive (independent of the
+  # webhook receiver), and the Deployment's liveness/readiness probes
+  # target it. The port number is derived from this address.
+  healthListen: ":8081"
   debounce: 10s                    # Debounce window after a Kubernetes event.
   resyncPeriod: 10m                # Periodic full re-diagnose regardless of events.
+  # extraEnv — arbitrary additional env vars on the watcher AND diagnose
+  # containers. Escape hatch so a new binary env toggle (CHA_*) can be set
+  # without a chart fork. Standard k8s env list shape; each entry is
+  # {name, value} or {name, valueFrom: {...}}. Used for free-form config
+  # toggles that aren't a simple enabled/disabled boolean — e.g.
+  # CHA_CRITICAL_SERVICES, CHA_CRITICAL_SERVICES_REPLACE,
+  # CHA_DIGEST_PIN_UNTRUSTED_SEVERITY, CHA_K3S_SINGLE_NODE_OK.
+  extraEnv: []
+    # - name: CHA_CRITICAL_SERVICES
+    #   value: "pg/postgres,vault/vault"
+    # - name: CHA_K3S_SINGLE_NODE_OK
+    #   value: "true"
   slack:
     postOnResolved: true           # Post when a diagnostic disappears.
     repeatInterval: 4h             # Re-post still-active warning/info at this cadence (0=never).
@@ -368,9 +473,17 @@ watcher:
     webhook:
       listen: ""               # e.g. ":8090" — empty disables receiver
       # Repeatable list of "<source-name>=<env-var-with-hmac-secret>".
-      # The env var is looked up at startup; a missing/empty secret
-      # registers the source with HMAC verification DISABLED (debug-only).
-      # Production must always set a non-empty secret per source.
+      # The env var is looked up at startup. FAIL-CLOSED (v1.26+): a
+      # missing/empty env var or a malformed entry logs an error and the
+      # source is NOT registered (it 404s) — it never silently runs
+      # unauthenticated. The only opt-out is the explicit literal
+      # "<source-name>=insecure-no-hmac", which registers the source
+      # with verification disabled and logs a loud startup warning.
+      # Senders should POST with X-CHA-Timestamp=<unix-seconds> and
+      # X-CHA-Signature=sha256=hex(hmac-sha256(secret, ts+"."+body));
+      # timestamps >5m from server time are rejected (replay window).
+      # Body-only signatures (no timestamp header) remain accepted for
+      # backward compatibility.
       sources: []              # e.g. ["vault=CHA_WEBHOOK_VAULT_SECRET","cert-manager=CHA_WEBHOOK_CM_SECRET"]
       service:
         enabled: false         # render a ClusterIP Service for the receiver
@@ -609,6 +722,30 @@ approval:
     tls:
       enabled: true
       secretName: ""       # default: <release>-approval-server-tls
+  # P2.6b — NetworkPolicy restricting ingress to the approval-server
+  # pods to ONLY the gateway/oauth2-proxy namespace. Closes the
+  # X-Forwarded-User header-forgery bypass: the approval-server trusts
+  # the X-Forwarded-User header (set by oauth2-proxy at the OIDC ingress)
+  # for audit attribution, but a pod hitting the ClusterIP directly
+  # bypasses the ingress and can forge that header. The approve/deny
+  # click still needs a valid signed one-time token, so this is
+  # defense-in-depth for attribution honesty.
+  #
+  # Default OFF, and STRONGLY RECOMMENDED in production. It defaults off
+  # because a NetworkPolicy is fail-closed: enabling it with the wrong
+  # gatewayNamespaceSelector (or on a cluster whose CNI does not enforce
+  # NetworkPolicy) silently 0-routes every approval click — a worse
+  # outcome than the bug it closes. Enable it once you know your gateway
+  # namespace's labels.
+  #
+  # gatewayNamespaceSelector is REQUIRED when enabled (the template
+  # `fail`s otherwise — there is no safe default). On clusters with the
+  # NamespaceDefaultLabelName feature gate (default since k8s 1.21) the
+  # apiserver auto-stamps `kubernetes.io/metadata.name: <ns>` on every
+  # namespace, so that label is the usual choice.
+  networkPolicy:
+    enabled: false
+    gatewayNamespaceSelector: {}   # REQUIRED if enabled; e.g. {kubernetes.io/metadata.name: gateway}
   resources:               # defaults to top-level resources if unset
     limits:
       cpu: 200m
@@ -617,6 +754,86 @@ approval:
       cpu: 20m
       memory: 32Mi
   nodeSelector: {}
+
+# P6.6 — the read-only hosted dashboard. A separate Deployment + Service
+# running the `cha-com dashboard` subcommand: a server-rendered HTML view
+# of findings (live DriftReports), pending approvals, and remediation
+# history. It NEVER mutates the cluster — for any action it links out to
+# the EXISTING approval-server endpoints (built from approvalBaseURL).
+#
+# RBAC posture: a DEDICATED ServiceAccount (<release>-dashboard) carrying
+# ONLY get/list/watch on driftreports (and resolutionrecords when that
+# CRD is enabled) — no signing key, no mutate verbs, no Secret access.
+# Distinct from, and narrower than, both the watcher SA and the
+# approval-server SA.
+#
+# Trust posture mirrors the approval-server: meant to sit behind
+# oauth2-proxy at the Ingress (which sets X-Forwarded-User, read purely
+# for display) and to be covered by the same NetworkPolicy class
+# (default-off, gatewayNamespaceSelector REQUIRED when enabled).
+dashboard:
+  enabled: false
+  replicas: 1
+  image:
+    repository: docker4zerocool/cha-com
+    tag: ""                 # default = v<.Chart.AppVersion>
+    pullPolicy: IfNotPresent
+  # approvalBaseURL is REQUIRED when dashboard.enabled=true: the externally
+  # reachable base URL of the approval-server (e.g.
+  # https://cha-approve.example.com). The /approvals page builds
+  # Approve/Deny/Ignore links against it, so the action links work.
+  approvalBaseURL: ""
+  # authHeader is the HTTP header carrying the oauth2-proxy-authenticated
+  # operator identity, displayed in the page header. Default matches the
+  # approval-server convention.
+  authHeader: "X-Forwarded-User"
+  # auditLogPath optionally points at the approval-server's tamper-evident
+  # audit JSONL (its --ai-audit-log output) to power /history and
+  # /approvals. Empty = those pages render an empty state.
+  auditLogPath: ""
+  historyLimit: 100         # max rows on /history (most-recent first)
+  approvalsLimit: 50        # max rows on /approvals (most-recent first)
+  ingress:
+    enabled: false
+    host: ""                # REQUIRED if dashboard.ingress.enabled; e.g. cha-dashboard.example.com
+    ingressClassName: ""
+    annotations: {}         # e.g. oauth2-proxy / cert-manager annotations
+    tls:
+      enabled: true
+      secretName: ""        # default: <release>-dashboard-tls
+  # NetworkPolicy restricting ingress to the dashboard pods to ONLY the
+  # gateway/oauth2-proxy namespace — same default-off + required-selector
+  # contract as approval.networkPolicy (P2.6b). Default OFF because a
+  # NetworkPolicy is fail-closed: enabling it with the wrong
+  # gatewayNamespaceSelector (or on a CNI that does not enforce
+  # NetworkPolicy) silently makes the dashboard unreachable. Strongly
+  # RECOMMENDED in production once the gateway namespace's labels are known.
+  networkPolicy:
+    enabled: false
+    gatewayNamespaceSelector: {}   # REQUIRED if enabled; e.g. {kubernetes.io/metadata.name: gateway}
+  resources:                # defaults to top-level resources if unset
+    limits:
+      cpu: 200m
+      memory: 128Mi
+    requests:
+      cpu: 20m
+      memory: 32Mi
+  nodeSelector: {}
+
+# Protected namespaces — the act-side no-touch list. The compiled-in floor
+# (kube-system, kube-public, kube-node-lease, rook-ceph, vault,
+# external-secrets, cnpg-system) is NOT configurable and can never be
+# removed. `extra` APPENDS namespaces to that floor: each entry is rendered
+# as CHA_PROTECTED_NAMESPACES_EXTRA (comma-separated) on the watcher,
+# diagnose, remediate, AND aiwatch containers, so both act-side guards —
+# the fixer guard (internal/fix) and the AI-action validator (pkg/ai) —
+# extend the same boundary. Diagnose analyzers still REPORT findings in
+# protected namespaces; only mutations are gated.
+protectedNamespaces:
+  extra: []
+  # extra:
+  #   - prod-payments
+  #   - tenant-a
 
 # Gatekeeper ConstraintTemplate — third-layer admission policy that rejects
 # mutations against protected namespaces even if a signed approval somehow
@@ -639,6 +856,41 @@ gatekeeper:
 # entries to false on clusters that don't host the targeted asset
 # class.
 analyzers:
+  # Core analyzers — the secret-chain / cert / image-auth set the product
+  # was built around. Each defaults ON (do NOT flip these unless you have
+  # an external system producing the same signal); set enabled: false to
+  # emit CHA_ANALYZER_<NAME>=off on the watcher/diagnose containers.
+  secretKeyMissing:
+    # Workloads referencing a Secret key that does not exist (the
+    # CreateContainerConfigError root cause).
+    enabled: true
+  failingExternalSecrets:
+    # ExternalSecrets stuck SecretSyncedError / not Ready (ESO sync
+    # chain broken).
+    enabled: true
+  proactiveSecretKeyCheck:
+    # Proactive secretKeyRef validation BEFORE pods restart and hit
+    # CreateContainerConfigError.
+    enabled: true
+  unprovisionedSecret:
+    # Secrets referenced by workloads that no controller (ESO, cert-
+    # manager, Helm) ever provisioned.
+    enabled: true
+  imagePullAuth:
+    # ImagePullBackOff caused by missing/invalid pull credentials
+    # (namespace missing pull secret or deployment missing
+    # imagePullSecrets).
+    enabled: true
+  certExpiry:
+    # cert-manager Certificates close to / past expiry or stuck not
+    # Ready.
+    enabled: true
+  tlsSecretMismatch:
+    # Ingress TLS secretName pointing at a stale/mismatched Secret while
+    # a healthy Certificate targets a different Secret for the same host.
+    # (The optional auto-FIXER for this finding is gated separately under
+    # fixers.tlsSecretMismatch.)
+    enabled: true
   gitopsDrift:
     # GitOps drift — Argo CD Application + Flux Kustomization +
     # Flux HelmRelease. Surfaces controllers stuck OutOfSync,
@@ -700,6 +952,48 @@ analyzers:
     # (Kyverno, Gatekeeper, Sigstore) that already produce these
     # alerts independently.
     enabled: true
+  disruptionDrift:
+    # Disruption-tier drift (v1.21) — ResourceQuota near-exhaustion,
+    # PodDisruptionBudget blocking voluntary disruption (drains stuck),
+    # and Jobs past their activeDeadline / backoffLimit. Each sub-signal
+    # handles its own GVR-absence case. Set to false to silence.
+    enabled: true
+  oomkillRecurrence:
+    # Workload-tier (v1.22) — containers OOMKilled repeatedly (a sizing
+    # problem masquerading as a crash loop). Set to false to silence.
+    enabled: true
+  pvOrphan:
+    # Workload-tier (v1.22) — Released/Available PersistentVolumes with no
+    # bound PVC (a cost leak). Set to false to silence.
+    enabled: true
+  cronjobStuck:
+    # Workload-tier (v1.22) — CronJobs that have not scheduled a Job within
+    # their expected window (silent scheduling failure). Set to false to
+    # silence.
+    enabled: true
+  logPatternMatcher:
+    # v1.25 — scans recent Events for high-signal failure messages
+    # (ImagePullBackOff, OOMKilled, VolumeAttachFailed, ProbeFailed,
+    # Forbidden). Dedup'd one finding per (object, pattern). Set to false
+    # to silence.
+    enabled: true
+  netpolProposer:
+    # Phase 2d-β — on NetworkPolicy-enforcing CNIs, emits one warning per
+    # uncovered namespace with a deterministic ProposedPolicyYAML. Silent
+    # on Flannel-only k3s. Set to false to silence.
+    enabled: true
+  dnsChainDrift:
+    # v1.10 — verifies the DNS chain (Service → Ingress → external host)
+    # for the seeded endpoint hostnames. Runs the K8s-chain hops with no
+    # config; external-hop verification requires externalDNS.cloudflare.
+    # Set to false to silence.
+    enabled: true
+
+# Layer-2 investigator (deterministic, rule-based; ships in OSS). Defaults
+# ON. The paid binary may replace it with an LLM-backed implementation.
+# Set enabled: false to disable (CHA_INVESTIGATOR=off).
+investigator:
+  enabled: true
 
 # M2 probe-class additions (v1.8). Each defaults to ON and AUTO-SKIPS
 # when its CRD is absent (Kong / ArgoCD / Velero) or no-ops on an empty
@@ -707,6 +1001,31 @@ analyzers:
 # host the asset. Set enabled: false only to silence a probe on a
 # cluster that DOES host the CRD but you don't want CHA watching it.
 probes:
+  # Base probes — the original six. Each defaults ON; set enabled: false
+  # to emit CHA_PROBE_<NAME>=off and skip the probe entirely.
+  ceph:
+    # Rook-Ceph cluster health (HEALTH_OK / OSD status). Auto-skips when
+    # the rook-ceph CRDs are absent.
+    enabled: true
+  nodes:
+    # Node Ready conditions across the cluster.
+    enabled: true
+  postgres:
+    # PostgreSQL (CNPG) cluster health. Auto-skips when the CNPG CRDs
+    # are absent.
+    enabled: true
+  pvcs:
+    # PersistentVolumeClaims stuck Pending / Lost.
+    enabled: true
+  criticalWorkloads:
+    # Critical Services probe — the curated workload target list
+    # (defaults merged with CHA_CRITICAL_SERVICES / the probe-critical
+    # annotation). Emits CHA_PROBE_CRITICAL_WORKLOADS=off when disabled.
+    enabled: true
+  endpoints:
+    # External HTTP(S) endpoint reachability for discovered/seeded
+    # Ingress hostnames.
+    enabled: true
   kong:
     # Kong ingress — KongPlugin / KongConsumer / Kong proxy readiness
     # drift. Auto-skips when configuration.konghq.com CRDs are absent.
@@ -725,6 +1044,49 @@ probes:
     # Velero backup freshness / last-backup status. Auto-skips when
     # velero.io CRDs are absent.
     enabled: true
+  # Sprint-2 core probes — each no-ops on a cluster that doesn't host the
+  # asset class. Set enabled: false only to silence a probe explicitly.
+  nodePressure:
+    # Node MemoryPressure / DiskPressure / PIDPressure conditions.
+    enabled: true
+  daemonsets:
+    # DaemonSets with unavailable/misscheduled pods.
+    enabled: true
+  pendingPods:
+    # Pods stuck Pending past the scheduling grace window.
+    enabled: true
+  crashloop:
+    # Containers in CrashLoopBackOff.
+    enabled: true
+  etcd:
+    # etcd member health / quorum.
+    enabled: true
+  failedMounts:
+    # Pods blocked on FailedMount / FailedAttachVolume events.
+    enabled: true
+  # v1.10 / v1.23 / v1.25 additions — each auto-skips when not applicable
+  # (no Kong-managed Ingress, CPU-only cluster, non-k3s, no local-path PVCs).
+  kongRoutes:
+    # Kong-managed Ingress backend-Endpoint + plugin/consumer reference
+    # readiness. Silent on clusters without Kong-managed Ingresses.
+    enabled: true
+  gpuNodes:
+    # NotReady / cordoned / zero-allocatable GPU nodes. Silent on
+    # CPU-only clusters.
+    enabled: true
+  traefikRoutes:
+    # k3s Traefik IngressRoute backend readiness. Auto-skips on non-k3s
+    # or when the Traefik CRD is absent.
+    enabled: true
+  k3sLocalPathStorage:
+    # k3s local-path-provisioner PVC health. No-ops when there are no
+    # local-path PVCs.
+    enabled: true
+  k3sDatastore:
+    # k3s datastore (sqlite/etcd) health. Auto-skips on non-k3s. Set
+    # CHA_K3S_SINGLE_NODE_OK=true (via watcher.extraEnv) to suppress the
+    # single-node datastore warning on intentional single-node clusters.
+    enabled: true
 
 # Optional fixers — off by default. Each entry adds RBAC verbs and exposes
 # an env var the binary reads to enable the matching Fixer registration.
@@ -736,3 +1098,19 @@ fixers:
     # (ArgoCD / Flux / Helm release labels) are SKIPPED automatically — the
     # patch would just be reverted on the next reconcile.
     enabled: false
+
+# External-DNS verification for the DNSChainDrift analyzer. When enabled,
+# the watcher + diagnose containers receive CHA_CLOUDFLARE_TOKEN via a
+# secretKeyRef (NEVER a literal) so the analyzer can verify the external
+# DNS hop (Cloudflare record → Ingress host). Without this the analyzer
+# still runs the in-cluster chain hops and emits "external DNS hop not
+# verified". Mirrors the operator-managed spec.externalDNS.cloudflare
+# (wired in P1.5). Create the Secret out-of-band (ESO recommended).
+externalDNS:
+  cloudflare:
+    enabled: false
+    # apiTokenSecretRef.{name,key} — the Secret carrying the Cloudflare
+    # API token. key defaults to "token".
+    apiTokenSecretRef: {}
+      # name: cha-cloudflare-token
+      # key: token
