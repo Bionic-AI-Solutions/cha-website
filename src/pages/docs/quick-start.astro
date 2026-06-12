@@ -133,8 +133,8 @@ helm install cha cha/cluster-health-autopilot \\
       <h2 class="text-xl font-semibold text-zinc-900 dark:text-zinc-50">4. Verify</h2>
       <div class="mt-1 h-0.5 w-8 rounded-full bg-accent-500"></div>
       <pre class="mt-4 overflow-x-auto rounded-lg bg-zinc-900 px-5 py-4 text-sm text-zinc-100 dark:bg-zinc-950"><code>{`kubectl get driftreports     # cluster-scoped — no NAMESPACE column
-# NAME                  SEVERITY  SOURCE                    SUBJECT                                  LAST SEEN
-# stuck-certreq-4f9d2   warning   StuckCertificateRequests  CertificateRequest/kube-system/api-tls   12s
+# NAME                       SEVERITY  SOURCE                    SUBJECT                                  LAST SEEN
+# drift-4f9d2b8c3e1a7f05     warning   StuckCertificateRequests  CertificateRequest/kube-system/api-tls   12s
 
 kubectl get pods -n cluster-health-autopilot`}</code></pre>
       <p class="mt-4 text-sm leading-relaxed text-zinc-600 dark:text-zinc-400">

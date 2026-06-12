@@ -61,7 +61,7 @@ const layers = [
   {
     name: 'Per-(approver, class) rate budget',
     summary:
-      'Approval executions are token-bucket budgeted per (approver, action class) pair — default 10 executions per hour per pair, per-class overrides supported, and the bucket key is collision-safe so a crafted approver/class pair cannot alias another pair\'s budget. Layer-2 LLM investigations draw on their own budget. Prevents both flapping-workload cost blowup and a single approver bulk-approving a class of actions.',
+      'Approval executions are token-bucket budgeted per (approver, action class) pair — default 10 executions per hour per pair (per-class override is a library-level construct in RateLimitConfig; no CLI/Helm knob exists yet), and the bucket key is collision-safe so a crafted approver/class pair cannot alias another pair\'s budget. Layer-2 LLM investigations draw on their own budget. Prevents both flapping-workload cost blowup and a single approver bulk-approving a class of actions.',
     where: 'ai/rate_limit.go — TakeApproval (enforced in the approval-server)',
   },
 ];
