@@ -4,6 +4,38 @@
 <!-- re-sync: ./scripts/sync-changelogs.sh && npm run build -->
 <!-- truncated to newest 12 release sections; the public roadmap renders these only -->
 
+## [1.22.2] — 2026-06-12
+
+### Fixed — goreleaser `extra_files` missing `federation/` + `ticketing/` (v1.22.1 image context incomplete)
+
+Same failure class as v1.22.0, second location: goreleaser builds docker
+images from a minimal context listing `dockers[].extra_files`, and that
+allowlist also predated the P6 packages — the v1.22.1 build failed with
+`"/federation": not found` at context-checksum time. Both per-platform
+`extra_files` blocks now carry `federation` and `ticketing`.
+`scripts/dockerfile-copy-check.sh` extended to verify EVERY
+`extra_files` block independently (a dir present for amd64 but missing
+for arm64 still breaks the release) — negative-tested. v1.22.2 is the
+first buildable image of the 1.22 line; Go code identical to v1.22.0.
+
+## [1.22.1] — 2026-06-12
+
+### Fixed — Dockerfile missing `federation/` and `ticketing/` (v1.22.0 image unbuildable)
+
+The builder stage COPYs an explicit directory allowlist that predated the
+P6 work: `federation/` and `ticketing/` (Jira + ServiceNow sinks) were
+never added, so the v1.22.0 Docker image failed to build with
+"no required module provides package …/federation" while host builds
+passed. The v1.22.0 tag therefore shipped no image; v1.22.1 is the first
+buildable release of the 1.22 line and carries identical Go code.
+
+### Added — Dockerfile COPY-allowlist gate
+
+`scripts/dockerfile-copy-check.sh` (wired into CI) compares the
+Dockerfile's COPY allowlist against `go list -deps ./cmd/cha-com` and
+fails when the binary imports an in-module top-level directory the image
+build would not receive — the v1.22.0 failure class, now load-bearing.
+
 ## [1.22.0] — 2026-06-12
 
 Release-pairs with OSS `v1.26.0`. Rolls up everything since v1.21.0: the
@@ -1223,83 +1255,4 @@ Bumps `github.com/Bionic-AI-Solutions/cluster-health-autopilot` v1.18.2 → v1.2
   - Phase 1.D operator TicketingSpec wiring (`spec.ticketing.*` → `--ticketing-*` flags) — OSS v1.20.0
 
 Pairs with OSS v1.20.0+ (or v1.20.1+ for the full Phase-1.B audit-fix set).
-
-## [1.13.0] — 2026-06-05
-
-### Added — Forge GitHub-API hardening: rate-limiter + secondary-rate-limit + 429 (PR #39)
-
-The DigestPinProposer's per-cycle fan-out reaches GitHub's 5000 req/h authenticated limit on busy clusters with many digest-pin candidates. The 1.11.4 read cache cut volume ~14× but bursty cycles still risked the secondary-rate-limit kill (HTTP 403 + opaque body). Once limited, the forge surfaced the 403 as "token scope?" — operators saw nonsense and the proposer effectively died for the rest of the cycle.
-
-Three layers in `ai/forge`:
-
-- **`RateLimiter`** (`golang.org/x/time/rate`). Default: 5000/h, burst 50. Cache hits short-circuit before the HTTP layer so they don't consume tokens; only real GitHub calls do. `nil = unlimited` (legacy behaviour preserved).
-- **Secondary-rate-limit retry**. On HTTP 403 + body containing `"secondary rate limit"`, sleep `SecondaryRetryDelay` (default 60s) and retry exactly once. Two-strikes surfaces a real error.
-- **429 Retry-After**. Honor the header (delta-seconds form, GitHub's only output), capped at `Max429Wait` (default 5s) so a misbehaving upstream can't pin a worker for an hour.
-
-All retries are context-aware — a cancelled cycle aborts cleanly instead of pinning the worker.
-
-### Added — DigestPinProposer per-cycle workload-key dedup (PR #39)
-
-SecurityDrift emits one digest-pin diagnostic per Pod that lacks a digest pin. A Deployment with N replicas = N findings in one cycle, all mapping to the same `(ns, controller-name)` workload. Without dedup, the proposer did N rounds of (RAG + Detect + CreateBranch + UpdateFile + CreatePullRequest) when 1 was enough — and the redundant CreatePullRequest calls were the most expensive write-path step against GitHub's secondary rate limit.
-
-- Dedup map keyed on `workloadKey = "<ns>/<controller-name>"`.
-- `alreadyProposed()` check at the TOP of `Propose()` (early-skip saves the RAG round-trip on repeats).
-- `markProposed()` only AFTER `CreatePullRequest` succeeds — transient misses (RAG warmup, file not in repo) don't suppress retries on subsequent replicas in the same cycle.
-- `ResetCycle()` exposed for the caller. Wired into `watch_cmd.tick()` as the first thing each cycle. nil-receiver safe.
-
-Pairs with OSS v1.19.0.
-
-## [1.12.0] — 2026-06-05
-
-### Added — cha-com → Slack bridge: `🤖 AI Tier Activity` digest
-
-Closes the architectural gap where cha-com aiwatch's proposal output
-(auto-applied PRs, awaiting-approval items, AI-declined items) lived
-entirely in process memory + stdout and never reached the operator's
-Slack channel. The OSS bionic-watcher's Slack post only knows about
-OSS-side proposers (NetworkPolicy ManifestBridge) — paid-tier users
-got auto-PRs they couldn't see and Approve URLs they had no way to
-click.
-
-After each watch cycle's `proposeFixes` + `autonomy.Consider`, the
-new renderer produces a `🤖 AI Tier Activity` SlackPayload digest
-with three sections (each skipped when empty):
-
-- **🔧 Auto-applied (N)** — autonomy fired + action executed. Lists
-  subject + PR URL (for `ProposePullRequest`) so operators can
-  review/merge.
-- **⏳ Awaiting your approval (N)** — autonomy ran but the action
-  needs human approval. Includes findings where (a) autonomy is
-  disabled entirely OR (b) the ActionKind isn't in
-  `--autonomy-allow`. Both cases have valid signed Approve/Deny URLs
-  the operator can click directly from Slack.
-- **🚫 AI declined (N)** — autonomy hit a real safety block
-  (circuit breaker open, protected namespace, low confidence,
-  missing rollback). Lists subject + reason; no Approve/Deny links
-  because the AI deemed it unsafe.
-
-Chunked into ≤35K-char SlackPayloads to stay under Slack's silent
-40K-attachment-text truncation (same defense as OSS
-`SplitCriticalPayloads`).
-
-New flag: `--ai-slack-url-env=<ENV_VAR>` (default empty = feature
-OFF). When set, the named env var must hold a Slack incoming-webhook
-URL. Typical wiring: `--ai-slack-url-env=SLACK_CRITICAL_URL` reuses
-the OSS watcher's critical-channel webhook so all AI tier activity
-lands in one place.
-
-Per-cycle observability:
-- `ai-slack: cycle=N render produced M payloads from K proposalRecords`
-- `ai-slack: posted M chunks to webhook` (success path)
-- `ai-slack: post failed: ...` (error path)
-
-New files: `cmd/cha-com/ai_slack_digest.go` (renderer + chunker),
-`cmd/cha-com/ai_slack_digest_test.go` (6 unit tests),
-`cmd/cha-com/ai_slack_wiring.go` (flag + poster),
-`cmd/cha-com/ai_slack_wiring_test.go` (4 unit tests).
-Wired into `cmd/cha-com/watch_cmd.go::tick()` after autonomy.Consider.
-
-10 unit tests; verified live 2026-06-05 on dev3: 50 NetworkPolicy
-missing-network-policy items posted as 3 chunks to ceph-critical
-with Approve/Deny URLs operators can click directly.
 

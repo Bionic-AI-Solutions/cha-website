@@ -49,6 +49,8 @@ export const OSS_VERSION = 'v1.26.0';
 // tag (v1.25.1 assets were verified 2026-06-11). Re-verify once the release
 // workflow finishes.
 export const BINARY_RELEASE = 'v1.26.0';
-// Latest CHA-com git TAG (v1.22.0 tagged 2026-06-12).
+// Latest CHA-com git TAG; v1.22.2 is the first buildable 1.22-line release
+// (v1.22.0/v1.22.1 image builds failed on release-config allowlists);
+// binaries+SBOMs verified on the GitHub release 2026-06-12.
 // Consumed by the roadmap page (shippedOnly guard).
-export const PAID_VERSION = 'v1.22.0';
+export const PAID_VERSION = 'v1.22.2';
