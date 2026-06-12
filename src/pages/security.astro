@@ -48,7 +48,7 @@ const safetyPillars = [
 const compliance = [
   { name: 'Apache-2.0 OSS license', detail: 'Audit every line of the safety envelope before installing.' },
   { name: 'SBOM (paid)', detail: 'SBOM pipeline ships from v1.22 (CHA-com) / v1.26 (OSS) onward; earlier releases ship without one. First published SBOM artifacts pending CI billing restoration.' },
-  { name: 'Signed images (paid)', detail: 'Cosign signing pipeline ships from v1.22 (CHA-com) / v1.26 (OSS) onward; earlier releases are unsigned. First signed artifacts pending CI billing restoration.' },
+  { name: 'Signed artifacts', detail: 'OSS binary checksums are cosign-signed and Rekor-logged (checksums.txt.sigstore.json) on every release, signed from v1.26.0 onward. Container-image signing and CHA-com artifact signing pipelines ship from v1.22 (CHA-com) / v1.26 (OSS) but their first signed artifacts are pending CI billing restoration.' },
   { name: 'No telemetry by default', detail: 'OSS tier ships with zero outbound telemetry. Opt in to phone-home, never the reverse.' },
 ];
 ---

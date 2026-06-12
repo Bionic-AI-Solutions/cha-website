@@ -96,7 +96,7 @@ const tiers = [
       <h2 class="text-xl font-semibold text-zinc-900 dark:text-zinc-50">Bring your own LLM</h2>
       <div class="mt-1 h-0.5 w-8 rounded-full bg-accent-500"></div>
       <p class="mt-4 text-sm leading-relaxed text-zinc-600 dark:text-zinc-400">
-        CHA-com uses any OpenAI-compatible endpoint — your in-cluster vLLM instance, Azure OpenAI, or any other gateway. Cluster diagnostics and prompts never leave your perimeter when using an in-cluster LLM. Set <code class="font-mono">ai.endpoint</code> to the <code class="font-mono">/v1</code> base URL of your endpoint.
+        CHA-com uses any OpenAI-compatible endpoint — your in-cluster vLLM instance, Azure OpenAI, or any other gateway. Anthropic is also supported via a native Anthropic Messages API client (shipped v1.22.2): provider selection is automatic by endpoint host, so an <code class="font-mono">api.anthropic.com</code> endpoint gets the native client — and, like any SaaS endpoint, requires <code class="font-mono">--ai-allow-saas</code>. Cluster diagnostics and prompts never leave your perimeter when using an in-cluster LLM. Set <code class="font-mono">ai.endpoint</code> to the <code class="font-mono">/v1</code> base URL of your endpoint.
       </p>
       <div class="mt-4 rounded-lg border border-zinc-200/80 bg-zinc-50 px-4 py-3 dark:border-zinc-800/80 dark:bg-zinc-900/60">
         <p class="text-sm text-zinc-700 dark:text-zinc-300">

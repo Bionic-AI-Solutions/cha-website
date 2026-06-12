@@ -42,7 +42,7 @@ const tracks = [
 // also shipped across both repos (OSS v1.26.0 join keys + CHA-com v1.22.2
 // matchers).
 const openItems = [
-  { label: 'First cosign-signed artifacts on a tagged release', why: 'The SBOM (CycloneDX) + cosign signing pipeline shipped in P6.2 (v1.22.2), but the first signed artifacts are still pending CI billing restoration — no published release has been signed by it yet', when: 'P6.2 — pipeline shipped, artifacts pending' },
+  { label: 'Cosign-signed container images + CHA-com artifacts', why: 'The SBOM (CycloneDX) + cosign signing pipeline shipped in P6.2 (v1.22.2); OSS binary checksums are cosign-signed and Rekor-logged from v1.26.0 onward, but container-image and CHA-com artifact signing are still pending CI billing restoration', when: 'P6.2 — checksum signing live since OSS v1.26.0; image signing pending' },
   { label: 'Hosted playground', why: 'The "Try it now" path currently lands on quick-start; the live playground route is a coming-soon stub', when: 'P6.8 — in flight' },
   { label: 'OLM / OperatorHub publish', why: 'Operator bundle manifests + bundle-smoke CI gate exist; the bundle has not been published to OperatorHub', when: 'Next operator milestone' },
   { label: 'M7 phase 2 — per-probe dispatch', why: 'GVRWatcher interface shipped in v1.23.0, but the watcher still runs every probe on every trigger (static watchedGVRs loop)', when: 'Q3 2026' },
