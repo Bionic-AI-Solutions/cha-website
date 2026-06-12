@@ -1,43 +1,40 @@
 ---
 import DocsLayout from '../../layouts/DocsLayout.astro';
 import PageHero from '../../components/PageHero.astro';
+import { loadDriftReportCrd } from '../../data/driftreport-crd';
 
-const statusValues = [
-  { value: 'open', desc: 'Finding detected; no fix attempted or fix unresolved' },
-  { value: 'resolved', desc: 'Fix applied and re-verify passed' },
-  { value: 'suppressed', desc: 'Finding silenced by operator policy (paid tier)' },
-];
+// GENERATED from the real CRD: every field below comes from the vendored
+// snapshot of charts/cluster-health-autopilot/templates/crd-driftreport.yaml
+// (see scripts/sync-crd.sh + src/data/driftreport-crd.ts). The page cannot
+// document a field that does not exist in the chart.
+const crd = loadDriftReportCrd();
 
-const specFields = [
-  { field: 'subject.kind', desc: 'Kubernetes Kind of the affected resource (e.g. Pod, Deployment)' },
-  { field: 'subject.name', desc: 'Name of the affected resource' },
-  { field: 'subject.namespace', desc: 'Namespace of the affected resource' },
-  { field: 'analyzer', desc: 'Name of the analyzer that produced this finding' },
-  { field: 'severity', desc: 'Critical | Warning | Info' },
-  { field: 'summary', desc: 'Human-readable one-line finding description' },
-  { field: 'remediationHint', desc: 'Actionable suggestion for manual remediation' },
-  { field: 'fixerApplied', desc: 'Name of the fixer that ran (if any)' },
-  { field: 'detectedAt', desc: 'RFC3339 timestamp of first detection' },
-  { field: 'resolvedAt', desc: 'RFC3339 timestamp of resolution (if resolved)' },
-];
+// Hard build-time guarantees the prose below relies on.
+if (crd.scope !== 'Cluster') {
+  throw new Error(`driftreport.astro assumes a Cluster-scoped CRD but snapshot says scope=${crd.scope}`);
+}
+const gvr = `${crd.plural}.${crd.group}`;
 ---
 
 <DocsLayout
   title="CHA &mdash; DriftReport CRD"
-  description="DriftReport is the kubectl-queryable representation of CHA findings. Every detected issue creates or updates a DriftReport CR."
+  description="DriftReport is the kubectl-queryable representation of CHA findings. Each cycle upserts one cluster-scoped DriftReport per active diagnostic."
   topic="DriftReport CRD"
 >
   <PageHero
     eyebrow="Docs"
     title="DriftReport CRD"
-    subtitle="Every CHA finding creates or updates a DriftReport custom resource. kubectl get driftreports -A is your cluster's real-time drift state."
+    subtitle="Every active CHA finding is a cluster-scoped DriftReport custom resource. kubectl get driftreports is your cluster's real-time drift state."
   />
 
   <section class="mx-auto max-w-5xl space-y-16 px-6 py-16">
 
     <div>
       <p class="text-base leading-relaxed text-zinc-600 dark:text-zinc-400">
-        DriftReports are first-class Kubernetes objects. They persist in etcd, appear in <code class="font-mono">kubectl get</code>, work with OPA admission policies, and can be read by ArgoCD ApplicationSet generators and other tooling. CHA creates one DriftReport per finding per subject — re-detecting the same issue updates the existing CR rather than creating a new one.
+        DriftReports are first-class Kubernetes objects. They persist in etcd, appear in <code class="font-mono">kubectl get</code>, work with OPA admission policies, and can be read by ArgoCD ApplicationSet generators and other tooling. The CRD is <strong>cluster-scoped</strong> (the affected resource's namespace lives in <code class="font-mono">spec.resourceRef.namespace</code>). Each cycle upserts one DriftReport per active diagnostic — re-detecting the same subject updates the existing CR (<code class="font-mono">lastObserved</code>, <code class="font-mono">observationCount</code>), and CRs whose subject no longer appears in the latest run are deleted.
+      </p>
+      <p class="mt-4 text-xs text-zinc-500 dark:text-zinc-500">
+        Field reference generated from the chart's CRD (<code class="font-mono">crd-driftreport.yaml</code>, chart {crd.chartVersion}, OSS commit <code class="font-mono">{crd.ossCommit}</code>, synced {crd.syncedDate}). API: <code class="font-mono">{gvr}/{crd.version}</code>, short names <code class="font-mono">{crd.shortNames.join(', ')}</code>.
       </p>
     </div>
 
@@ -49,13 +46,20 @@ const specFields = [
           <thead>
             <tr class="border-b border-zinc-200 dark:border-zinc-800">
               <th class="py-2 pr-6 text-left font-medium text-zinc-500 dark:text-zinc-400">Field</th>
+              <th class="py-2 pr-6 text-left font-medium text-zinc-500 dark:text-zinc-400">Type</th>
               <th class="py-2 text-left font-medium text-zinc-500 dark:text-zinc-400">Description</th>
             </tr>
           </thead>
           <tbody>
-            {specFields.map((f) => (
+            {crd.specFields.map((f) => (
               <tr class="border-b border-zinc-100 dark:border-zinc-800/60">
-                <td class="py-3 pr-6 font-mono text-xs font-medium text-zinc-900 dark:text-zinc-100">{f.field}</td>
+                <td class="py-3 pr-6 font-mono text-xs font-medium text-zinc-900 dark:text-zinc-100">
+                  {f.field}
+                  {f.required && (
+                    <span class="ml-2 inline-block rounded-full border border-accent-200 bg-accent-50 px-1.5 py-0.5 font-sans text-[10px] font-medium text-accent-700 dark:border-accent-900/40 dark:bg-accent-950/40 dark:text-accent-300">required</span>
+                  )}
+                </td>
+                <td class="py-3 pr-6 font-mono text-xs text-zinc-500 dark:text-zinc-400">{f.type}</td>
                 <td class="py-3 text-zinc-600 dark:text-zinc-400">{f.desc}</td>
               </tr>
             ))}
@@ -65,21 +69,54 @@ const specFields = [
     </div>
 
     <div>
-      <h2 class="text-xl font-semibold text-zinc-900 dark:text-zinc-50">Status values</h2>
+      <h2 class="text-xl font-semibold text-zinc-900 dark:text-zinc-50">Status fields</h2>
       <div class="mt-1 h-0.5 w-8 rounded-full bg-accent-500"></div>
+      <p class="mt-4 text-sm leading-relaxed text-zinc-600 dark:text-zinc-400">
+        Status is written by CHA only (a <code class="font-mono">status</code> subresource). There is no open/resolved state machine — an active finding has a DriftReport; a cleared finding's CR is deleted on the next reconcile. The exception is ticket bookkeeping: <code class="font-mono">status.ticket</code> records the external ticket CHA filed so subsequent cycles don't open duplicates.
+      </p>
       <div class="mt-6 overflow-x-auto">
         <table class="w-full border-collapse text-sm">
           <thead>
             <tr class="border-b border-zinc-200 dark:border-zinc-800">
-              <th class="py-2 pr-6 text-left font-medium text-zinc-500 dark:text-zinc-400">Status</th>
-              <th class="py-2 text-left font-medium text-zinc-500 dark:text-zinc-400">Meaning</th>
+              <th class="py-2 pr-6 text-left font-medium text-zinc-500 dark:text-zinc-400">Field</th>
+              <th class="py-2 pr-6 text-left font-medium text-zinc-500 dark:text-zinc-400">Type</th>
+              <th class="py-2 text-left font-medium text-zinc-500 dark:text-zinc-400">Description</th>
             </tr>
           </thead>
           <tbody>
-            {statusValues.map((s) => (
+            {crd.statusFields.map((f) => (
               <tr class="border-b border-zinc-100 dark:border-zinc-800/60">
-                <td class="py-3 pr-6 font-mono text-xs font-semibold text-zinc-900 dark:text-zinc-100">{s.value}</td>
-                <td class="py-3 text-zinc-600 dark:text-zinc-400">{s.desc}</td>
+                <td class="py-3 pr-6 font-mono text-xs font-medium text-zinc-900 dark:text-zinc-100">{f.field}</td>
+                <td class="py-3 pr-6 font-mono text-xs text-zinc-500 dark:text-zinc-400">{f.type}</td>
+                <td class="py-3 text-zinc-600 dark:text-zinc-400">{f.desc}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div>
+      <h2 class="text-xl font-semibold text-zinc-900 dark:text-zinc-50">kubectl output columns</h2>
+      <div class="mt-1 h-0.5 w-8 rounded-full bg-accent-500"></div>
+      <p class="mt-4 text-sm leading-relaxed text-zinc-600 dark:text-zinc-400">
+        The CRD registers printer columns, so plain <code class="font-mono">kubectl get driftreports</code> is already useful (no <code class="font-mono">NAMESPACE</code> column — the CRD is cluster-scoped):
+      </p>
+      <div class="mt-4 overflow-x-auto">
+        <table class="w-full border-collapse text-sm">
+          <thead>
+            <tr class="border-b border-zinc-200 dark:border-zinc-800">
+              <th class="py-2 pr-6 text-left font-medium text-zinc-500 dark:text-zinc-400">Column</th>
+              <th class="py-2 pr-6 text-left font-medium text-zinc-500 dark:text-zinc-400">Type</th>
+              <th class="py-2 text-left font-medium text-zinc-500 dark:text-zinc-400">JSONPath</th>
+            </tr>
+          </thead>
+          <tbody>
+            {crd.printerColumns.map((c) => (
+              <tr class="border-b border-zinc-100 dark:border-zinc-800/60">
+                <td class="py-3 pr-6 font-semibold text-zinc-900 dark:text-zinc-100">{c.name}</td>
+                <td class="py-3 pr-6 font-mono text-xs text-zinc-500 dark:text-zinc-400">{c.type}</td>
+                <td class="py-3 font-mono text-xs text-zinc-600 dark:text-zinc-400">{c.jsonPath}</td>
               </tr>
             ))}
           </tbody>
@@ -90,27 +127,34 @@ const specFields = [
     <div>
       <h2 class="text-xl font-semibold text-zinc-900 dark:text-zinc-50">kubectl examples</h2>
       <div class="mt-1 h-0.5 w-8 rounded-full bg-accent-500"></div>
-      <pre class="mt-4 overflow-x-auto rounded-lg bg-zinc-900 px-5 py-4 text-sm text-zinc-100 dark:bg-zinc-950"><code>{`# List all findings across all namespaces
-kubectl get driftreports -A
+      <pre class="mt-4 overflow-x-auto rounded-lg bg-zinc-900 px-5 py-4 text-sm text-zinc-100 dark:bg-zinc-950"><code>{`# List all active findings (cluster-scoped — no namespace flag needed)
+kubectl get driftreports
+kubectl get drifts          # short name
 
-# Wide output with kind and status
-kubectl get driftreports -A -o wide
+# Filter by severity (lowercase enum: info | warning | critical)
+kubectl get driftreports -o json \\
+  | jq '.items[] | select(.spec.severity == "critical")'
 
-# Filter by status (jq — field selectors require CRD selectableFields registration)
-kubectl get driftreports -A -o json | jq '.items[] | select(.status.state == "open")'
+# Filter by category: probe | analyzer | fixer-action | fixer-skipped
+kubectl get driftreports -o json \\
+  | jq '.items[] | select(.spec.category == "analyzer")'
 
-# Describe a specific finding
-kubectl describe driftreport drift-tls-secret-1 -n default
+# Findings about resources in one namespace (namespace lives in resourceRef)
+kubectl get driftreports -o json \\
+  | jq '.items[] | select(.spec.resourceRef.namespace == "mcp")'
 
-# Watch for new findings in real time
-kubectl get driftreports -A -w`}</code></pre>
+# Describe a specific finding (name is a hash of spec.subject)
+kubectl describe driftreport <name>
+
+# Watch findings appear/clear in real time
+kubectl get driftreports -w`}</code></pre>
     </div>
 
     <div>
       <h2 class="text-xl font-semibold text-zinc-900 dark:text-zinc-50">Using DriftReports in GitOps</h2>
       <div class="mt-1 h-0.5 w-8 rounded-full bg-accent-500"></div>
       <p class="mt-4 text-sm leading-relaxed text-zinc-600 dark:text-zinc-400">
-        DriftReports are standard Kubernetes CRs. You can reference them in OPA/Gatekeeper constraints (block deploys to namespaces with open Critical findings), ArgoCD ApplicationSet generators (exclude clusters with drift), or your own controllers via a standard informer on the <code class="font-mono">driftreports.cha.bionicaisolutions.com</code> GVR.
+        DriftReports are standard Kubernetes CRs. You can reference them in OPA/Gatekeeper constraints (block deploys while Critical findings reference a namespace), ArgoCD ApplicationSet generators (exclude clusters with drift), or your own controllers via a standard informer on the <code class="font-mono">{gvr}</code> GVR.
       </p>
     </div>
 
