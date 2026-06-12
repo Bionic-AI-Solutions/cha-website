@@ -101,7 +101,19 @@ kubectl create secret generic cha-slack-healthinfo \\
       <h2 class="text-xl font-semibold text-zinc-900 dark:text-zinc-50">Prometheus metrics</h2>
       <div class="mt-1 h-0.5 w-8 rounded-full bg-accent-500"></div>
       <p class="mt-4 text-sm leading-relaxed text-zinc-600 dark:text-zinc-400">
-        The paid <code class="font-mono">cha-com</code> aiwatch Deployment exposes <code class="font-mono">cha_*</code> metric families on <code class="font-mono">/metrics:9090</code>. Enable the listener with <code class="font-mono">ai.metrics.addr=":9090"</code>; the chart then renders the matching port and Service, plus a ServiceMonitor when <code class="font-mono">ai.metrics.serviceMonitor.enabled=true</code> and a PrometheusRule when <code class="font-mono">ai.metrics.prometheusRule.enabled=true</code>. Key metrics: <code class="font-mono">cha_findings_total</code>, <code class="font-mono">cha_fixes_total</code>, <code class="font-mono">cha_breaker_open</code>, <code class="font-mono">cha_autonomy_rejections_total</code>.
+        The paid <code class="font-mono">cha-com</code> aiwatch Deployment exposes <code class="font-mono">cha_*</code> metric families on <code class="font-mono">/metrics:9090</code>. Enable the listener with <code class="font-mono">ai.metrics.addr=":9090"</code>; the chart then renders the matching port and Service, plus a ServiceMonitor when <code class="font-mono">ai.metrics.serviceMonitor.enabled=true</code> and a PrometheusRule when <code class="font-mono">ai.metrics.prometheusRule.enabled=true</code>.
+      </p>
+      <p class="mt-4 text-sm leading-relaxed text-zinc-600 dark:text-zinc-400">
+        The full metric set (from <code class="font-mono">cmd/cha-com/metrics.go</code>): <code class="font-mono">cha_cycle_total</code>, <code class="font-mono">cha_diagnostic_total</code>, <code class="font-mono">cha_outcome_total</code>, <code class="font-mono">cha_outcome_revert_total</code>, <code class="font-mono">cha_policy_active</code>, <code class="font-mono">cha_llm_proposer_total</code>, <code class="font-mono">cha_autonomy_decision_total</code>, and <code class="font-mono">cha_breaker_open</code>.
+      </p>
+    </div>
+
+    <!-- AI providers -->
+    <div>
+      <h2 class="text-xl font-semibold text-zinc-900 dark:text-zinc-50">AI providers (paid tiers)</h2>
+      <div class="mt-1 h-0.5 w-8 rounded-full bg-accent-500"></div>
+      <p class="mt-4 text-sm leading-relaxed text-zinc-600 dark:text-zinc-400">
+        The AI tiers talk to any <strong>OpenAI-compatible</strong> endpoint via <code class="font-mono">--ai-endpoint</code> — in-cluster vLLM is the BYOM recommendation. Anthropic is supported through a <strong>native Anthropic Messages API client</strong>: provider selection is automatic by endpoint host (an <code class="font-mono">*.anthropic.com</code> endpoint gets the native client; everything else uses the OpenAI-compatible client). Non-cluster (SaaS) endpoints — <code class="font-mono">api.openai.com</code>, <code class="font-mono">api.anthropic.com</code>, etc. — are refused unless the operator explicitly passes <code class="font-mono">--ai-allow-saas</code>.
       </p>
     </div>
 

@@ -26,7 +26,7 @@ const safetyPillars = [
   {
     title: 'Signed-JWT click-to-fix URLs (paid tiers)',
     body:
-      'AI-tier fix proposals require human approval via signed-JWT URLs delivered to Slack or ticket. The approval-server enforces signature, expiry, and one-time-use. Without the click, nothing mutates — unless you explicitly enable confidence-gated auto-merge (off by default; Wilson lower bound ≥0.95; every safety gate must pass).',
+      'AI-tier fix proposals require human approval via signed-JWT URLs delivered to Slack or ticket. The approval-server enforces signature, expiry, one-time-use, and a per-(approver, action-class) rate budget (default 10 executions/hour per pair). Without the click, nothing mutates — unless you explicitly enable confidence-gated auto-merge (off by default; Wilson lower bound ≥0.95; the PR body is re-fetched and its Ed25519 attestation re-verified before merge; every safety gate must pass).',
   },
   {
     title: 'Dry-run mode',
@@ -36,7 +36,7 @@ const safetyPillars = [
   {
     title: 'Auditable by default',
     body:
-      'Apache-2.0 source. Helm-rendered RBAC visible before install. DriftReport CRs are first-class audit objects. Loki / OTLP sinks for compliance pipelines (paid).',
+      'Apache-2.0 source. Helm-rendered RBAC visible before install. DriftReport CRs are first-class audit objects. AI AuditEvents are hash-chained (prev_hash) in OSS pkg/audit; the Loki / OTLP / JSONL streaming sinks for compliance pipelines are paid.',
   },
   {
     title: 'Workload-identity auth',
@@ -47,8 +47,8 @@ const safetyPillars = [
 
 const compliance = [
   { name: 'Apache-2.0 OSS license', detail: 'Audit every line of the safety envelope before installing.' },
-  { name: 'SBOM (paid)', detail: 'CycloneDX SBOM published per release for Enterprise + Federal tiers.' },
-  { name: 'Signed images (paid)', detail: 'Cosign-signed container images with attestation in Enterprise + Federal.' },
+  { name: 'SBOM (paid)', detail: 'SBOM published per release from v1.22 (CHA-com) / v1.26 (OSS) onward; earlier releases ship without one.' },
+  { name: 'Signed images (paid)', detail: 'Cosign-signed container images published per release from v1.22 (CHA-com) / v1.26 (OSS) onward; earlier releases are unsigned.' },
   { name: 'No telemetry by default', detail: 'OSS tier ships with zero outbound telemetry. Opt in to phone-home, never the reverse.' },
 ];
 ---

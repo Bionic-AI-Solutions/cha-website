@@ -144,7 +144,7 @@ import {
    │   (dual-approval, 30-min window, key names only)     │
    │     │                                                │
    │     ▼                                                │
-   │   Re-diagnose ──► DriftReport status: resolved       │
+   │   Re-diagnose ──► DriftReport cleared (deleted)      │
    │     │                                                │
    │     ▼                                                │
    │   AuditEvent (hash-chained, prev_hash)               │
@@ -159,7 +159,7 @@ import {
         <ul class="mt-2 space-y-1 text-xs leading-snug text-zinc-700 dark:text-zinc-300">
           <li><strong class="text-zinc-900 dark:text-zinc-100">T0 Narration</strong> &mdash; LLM-enriched diagnostic text in Slack &middot; sub-second latency on in-cluster Qwen 3.6 35B</li>
           <li><strong class="text-zinc-900 dark:text-zinc-100">T1 Fix proposer</strong> &mdash; agent picks action_kind from whitelist; JWT click-to-fix URL</li>
-          <li><strong class="text-zinc-900 dark:text-zinc-100">T2 Planner</strong> &mdash; multi-step plan, each step still a JWT click; plan signed as a unit</li>
+          <li><strong class="text-zinc-900 dark:text-zinc-100">T2 Planner</strong> &mdash; multi-step plan, each step still a JWT click; plan signed as a unit; prerequisite ordering enforced at execution</li>
           <li><strong class="text-zinc-900 dark:text-zinc-100">T3 Vault break-glass</strong> &mdash; runbook text + dual-approval timeline; CHA never executes, operator runs manually</li>
         </ul>
       </div>

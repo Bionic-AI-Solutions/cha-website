@@ -16,9 +16,9 @@ const flowSteps = [
       'helm install cha cha/cluster-health-autopilot — works on any conformant K8s 1.27+ (EKS, GKE, AKS, k3s, RKE2, OpenShift).',
     code: `$ helm repo add cha https://bionic-ai-solutions.github.io/cluster-health-autopilot
 $ helm install cha cha/cluster-health-autopilot
-$ kubectl get driftreports -A
-NAMESPACE    NAME                                  AGE
-kube-system  driftreport-stuck-certreq-xz4q9       12s`,
+$ kubectl get driftreports        # cluster-scoped CRD
+NAME                       SEVERITY  SOURCE                    SUBJECT
+drift-9c1e04f2a77b3d18     warning   StuckCertificateRequests  CertificateRequest/kube-system/api-tls`,
   },
   {
     n: '02',
@@ -61,11 +61,11 @@ Re-verify in 60s ...`,
     title: 'Report',
     claim:
       'Findings flow to Slack, Alertmanager, OpenProject (OSS), and Jira / ServiceNow (paid). DriftReport CRDs let you kubectl get your cluster’s drift state.',
-    code: `kubectl get driftreports -A -o wide
-NAMESPACE   NAME                    KIND              STATUS
-default     drift-tls-secret-1      TLSSecretMismatch resolved
-ai          drift-stuck-job-7       StuckJob          resolved
-mcp         drift-stuck-certreq-3   StuckCertReq      open    → ticketed`,
+    code: `kubectl get driftreports          # columns: SEVERITY SOURCE SUBJECT LAST SEEN COUNT TICKET
+NAME                       SEVERITY  SOURCE             SUBJECT                       COUNT  TICKET
+drift-9c1e04f2a77b3d18     critical  SecretKeyMissing   Secret/mcp/openproject-url    4      WP-1287
+drift-4f2a77b3d189c1e0f    warning   CronJobStuck       CronJob/ai/nightly-index      2
+# active findings have a CR; cleared findings are deleted on the next cycle`,
   },
   {
     n: '05',
