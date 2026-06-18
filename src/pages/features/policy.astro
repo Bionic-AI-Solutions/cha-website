@@ -10,8 +10,8 @@ const actionKinds = [
   { kind: 'PatchDeployment', line: 'Patch a Deployment — every JSONPath in the patch must pass the patch validator allowlist (no image, no replica changes).' },
   { kind: 'DeleteCertRequest', line: 'Delete a stuck cert-manager CertificateRequest so issuance retries.' },
   { kind: 'DeleteACMEOrder', line: 'Delete a stuck ACME Order so the challenge re-runs.' },
-  { kind: 'ApplyManifest', line: 'Apply a full manifest (v1.15) — constrained by ValidateManifest before it can ever reach an approval link.' },
-  { kind: 'ProposePullRequest', line: 'No direct cluster mutation (v1.17) — the GitOps path: CHA opens a pull request against your repo and the merge is the approval.' },
+  { kind: 'ApplyManifest', line: 'Apply a full manifest — constrained by ValidateManifest before it can ever reach an approval link.' },
+  { kind: 'ProposePullRequest', line: 'No direct cluster mutation — the GitOps path: CHA opens a pull request against your repo and the merge is the approval.' },
 ];
 
 const layers = [

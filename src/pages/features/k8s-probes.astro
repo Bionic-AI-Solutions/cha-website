@@ -6,84 +6,84 @@ import { K8S_PROBES, OSS_VERSION } from '../../data/product-facts';
 const probes = [
   {
     name: 'Ceph storage',
-    since: 'v0.1',
+    since: 'v0.1.0-alpha.1',
     severity: 'Critical / Warning',
     detail:
       'Inspects CephCluster CRs (rook-ceph): health, capacity used, OSD readiness. Surfaces the same "is the storage layer alive?" signal you would otherwise have to read out of rook-ceph-tools.',
   },
   {
     name: 'PostgreSQL',
-    since: 'v0.1',
+    since: 'v0.1.0-alpha.1',
     severity: 'Critical / Warning',
     detail:
       'CloudNativePG (CNPG) and Zalando Spilo / Patroni clusters, auto-detected from CRDs. Replica readiness, primary identity, and lag classification.',
   },
   {
     name: 'Critical workloads',
-    since: 'v0.1 · v1.6 configurable',
+    since: 'v0.1.0-alpha.1',
     severity: 'Critical / Warning',
     detail:
-      'Counts pods by the READY column, not phase=Running (so CCE/ImagePull failures don\'t silently green). The list of "critical" workloads is configurable in v1.6 via the CHA_CRITICAL_SERVICES env var and the cha.bionicaisolutions.com/probe-critical: "true" annotation — no fork needed for non-Bionic clusters.',
+      'Counts pods by the READY column, not phase=Running (so CCE/ImagePull failures don\'t silently green). The list of "critical" workloads is configurable via the CHA_CRITICAL_SERVICES env var and the cha.bionicaisolutions.com/probe-critical: "true" annotation — no fork needed for non-Bionic clusters.',
   },
   {
     name: 'Cluster Nodes',
-    since: 'v0.1',
+    since: 'v0.1.0-alpha.1',
     severity: 'Critical',
     detail:
       'Ready condition across every node. Distinguishes kubectl-error from empty-list to avoid the false-green trap.',
   },
   {
     name: 'PVC binding',
-    since: 'v0.1',
+    since: 'v0.1.0-alpha.1',
     severity: 'Critical / Warning',
     detail:
       'PersistentVolumeClaim phase: Bound vs Pending. The "bound but mount fails" class is handled by the new FailedMounts probe below.',
   },
   {
     name: 'External endpoints',
-    since: 'v1.2',
+    since: 'v0.1.0-alpha.1',
     severity: 'Critical / Warning',
     detail:
-      'Every Ingress host auto-discovered and probed externally. Per-Ingress opt-out via cha.bionicaisolutions.com/probe-disable: "true". Layer-1 flake suppression (2-of-2 streak) added in v1.4.',
+      'Every Ingress host auto-discovered and probed externally. Per-Ingress opt-out via cha.bionicaisolutions.com/probe-disable: "true". Layer-1 flake suppression (2-of-2 streak) included.',
   },
   {
     name: 'Node pressure',
-    since: 'v1.6',
+    since: 'v0.1.0-alpha.1',
     severity: 'Critical / Warning',
     detail:
       'DiskPressure, MemoryPressure, PIDPressure, NetworkUnavailable conditions. DiskPressure and NetworkUnavailable auto-escalate to Critical (eviction or broken pod traffic imminent). The basic Nodes probe only checks Ready — pressure flips first.',
   },
   {
     name: 'System DaemonSets',
-    since: 'v1.6',
+    since: 'v0.1.0-alpha.1',
     severity: 'Critical',
     detail:
       'Inspects DaemonSets in eight system namespaces (kube-system, cilium-system, calico-system, kube-flannel, rook-ceph, longhorn-system, openebs, metallb-system). Catches the case where a CNI/CSI plugin is down but the kubelet still reports Ready=True for several minutes.',
   },
   {
     name: 'Pending pods',
-    since: 'v1.6',
+    since: 'v0.1.0-alpha.1',
     severity: 'Critical',
     detail:
       'Pods stuck Pending past a 60s grace window with PodScheduled=False. Reason-aware remediation distinguishes Insufficient CPU/Memory, unbound PVC, taint mismatch, nodeSelector miss. Doesn\'t double-flag ImagePullBackOff (owned by the ImagePullAuth analyzer).',
   },
   {
     name: 'CrashLoopBackOff',
-    since: 'v1.6',
+    since: 'v0.1.0-alpha.1',
     severity: 'Critical / Warning',
     detail:
-      'Generic any-namespace detector. The pre-v1.6 behavior only caught crashes in the hardcoded critical-services list; this probe catches everything. Protected-namespace pods (kube-system etc.) are always Critical; user-namespace pods start as Warning and escalate past the restart threshold.',
+      'Generic any-namespace detector — catches crashes anywhere, not just a hardcoded critical-services list. Protected-namespace pods (kube-system etc.) are always Critical; user-namespace pods start as Warning and escalate past the restart threshold.',
   },
   {
     name: 'ETCD',
-    since: 'v1.6',
+    since: 'v0.1.0-alpha.1',
     severity: 'Critical / Warning',
     detail:
       'Watches kubeadm-style static-pod etcd members. Honest "blind probe" Warning for external / managed etcd (RKE2, k3s, EKS, GKE managed control plane) — never false-greens on a control plane it can\'t see.',
   },
   {
     name: 'Failed mounts',
-    since: 'v1.6',
+    since: 'v0.1.0-alpha.1',
     severity: 'Critical',
     detail:
       'Joins pods stuck ContainerCreating past 90s with their kubelet FailedMount / FailedAttachVolume / FailedDetachVolume / ProvisioningFailed events. Names the volume and explains why — closes the gap where PVCs probe sees Bound but the actual mount hangs.',
@@ -98,7 +98,7 @@ const probes = [
   <PageHero
     eyebrow="Features &middot; K8s probes"
     title={`${K8S_PROBES} native K8s probes.`}
-    subtitle={`The infra-grade depth no SaaS tool matches because they're not in the cluster. Six probes shipped in v1.0; six more shipped in v1.6 to close the most-impactful blind spots (Node pressure, system DaemonSets, stuck Pending pods, generic CrashLoopBackOff, ETCD, failed volume mounts); nine more landed through ${OSS_VERSION} (Kong, KongRoutes, GPUNodes, HPA, ArgoCD, Velero, Traefik routes, k3s local-path storage + datastore) — this page deep-dives the core twelve.`}
+    subtitle={`The infra-grade depth no SaaS tool matches because they're not in the cluster. All ${K8S_PROBES} probes ship in ${OSS_VERSION}: the core six (Ceph, Postgres, critical workloads, nodes, PVCs, endpoints), six blind-spot probes (Node pressure, system DaemonSets, stuck Pending pods, generic CrashLoopBackOff, ETCD, failed volume mounts), plus Kong, KongRoutes, GPUNodes, HPA, ArgoCD, Velero, Traefik routes, and k3s local-path storage + datastore — this page deep-dives the core twelve.`}
   />
 
   <section class="mx-auto max-w-5xl px-6 py-16">
@@ -120,7 +120,7 @@ const probes = [
     <div class="mt-12 rounded-2xl border border-white/10 bg-white/5 p-6">
       <h3 class="text-lg font-semibold text-white">Per-probe opt-out</h3>
       <p class="mt-2 text-sm text-slate-300">
-        Each of the v1.6 probes can be disabled independently with an env var, no fork needed:
+        Each probe can be disabled independently with an env var, no fork needed:
       </p>
       <ul class="mt-3 grid gap-1 text-sm font-mono text-slate-400 md:grid-cols-2">
         <li>CHA_PROBE_NODE_PRESSURE=off</li>

@@ -120,12 +120,15 @@ cha diagnose --live`}</code></pre>
       <div class="mt-1 h-0.5 w-8 rounded-full bg-accent-500"></div>
       <p class="mt-4 text-sm leading-relaxed text-zinc-600 dark:text-zinc-400">
         Installs a watcher Deployment and diagnose/remediate CronJobs. Watches Kubernetes events with a ~10s debounce.
+        The current chart is a SemVer pre-release (<code class="font-mono">0.1.0-alpha.1</code>), so pass <code class="font-mono">--devel</code>
+        (or pin <code class="font-mono">--version 0.1.0-alpha.1</code>) — Helm hides pre-releases otherwise.
       </p>
       <pre class="mt-4 overflow-x-auto rounded-lg bg-zinc-900 px-5 py-4 text-sm text-zinc-100 dark:bg-zinc-950"><code>{`helm repo add cha https://bionic-ai-solutions.github.io/cluster-health-autopilot
 helm repo update
-helm install cha cha/cluster-health-autopilot \\
+helm install cha cha/cluster-health-autopilot --devel \\
   --namespace cluster-health-autopilot --create-namespace \\
-  --set watcher.enabled=true`}</code></pre>
+  --set watcher.enabled=true
+# pinned alternative: --version 0.1.0-alpha.1 (instead of --devel)`}</code></pre>
     </div>
 
     <!-- Verify -->

@@ -1,7 +1,7 @@
 # DO NOT EDIT — vendored snapshot of the OSS DriftReport CRD.
 # source: charts/cluster-health-autopilot/templates/crd-driftreport.yaml (Bionic-AI-Solutions/cluster-health-autopilot)
 # chart-version: 0.1.0-alpha.1
-# oss-commit: 6945469
+# oss-commit: 929f28e
 # synced: 2026-06-18
 # re-sync: ./scripts/sync-crd.sh && npm run build
 # NOTE: Helm template directives are stripped so this parses as plain YAML.
