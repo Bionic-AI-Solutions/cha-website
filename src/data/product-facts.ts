@@ -23,6 +23,10 @@
 //       (discovery.k8s.io/v1, added in PR #199 / v1.26.0).
 //   - Versions: latest release tags of the two repos
 //       (OSS: cluster-health-autopilot, paid: CHA-com).
+//       PRE-ALPHA RE-BASELINE (2026-06-17): both products re-numbered to
+//       v0.1.0-alpha.1. The prior 1.x tags (OSS ≤ v1.26.3, paid ≤ v1.22.4)
+//       were mis-numbered pre-launch / pre-alpha iterations, now all marked
+//       pre-release. Nothing has shipped GA yet.
 //
 // When a release adds/removes a probe or analyzer, update THIS file only;
 // every page imports from here.
@@ -40,17 +44,14 @@ export const CLOUD_PROBES_AZURE = 10;
 export const CLOUD_PROBES_TOTAL =
   CLOUD_PROBES_AWS + CLOUD_PROBES_GCP + CLOUD_PROBES_AZURE;
 
-export const OSS_VERSION = 'v1.26.0';
-// Newest release with goreleaser binary assets. `releases/latest` resolves
-// to a chart-releaser release that carries NO binaries, so ALWAYS pin
-// download URLs to this tag — never link releases/latest/download/.
-// v1.26.0: the goreleaser release is building as of 2026-06-12 — the four
-// _<os>_<arch>.tar.gz assets have NOT yet been re-verified HTTP 200 for this
-// tag (v1.25.1 assets were verified 2026-06-11). Re-verify once the release
-// workflow finishes.
-export const BINARY_RELEASE = 'v1.26.0';
-// Latest CHA-com git TAG; v1.22.2 is the first buildable 1.22-line release
-// (v1.22.0/v1.22.1 image builds failed on release-config allowlists);
-// binaries+SBOMs verified on the GitHub release 2026-06-12.
+export const OSS_VERSION = 'v0.1.0-alpha.1';
+// Pin download URLs to this tag — never link releases/latest/download/
+// (chart-releaser releases carry NO binaries).
+// PRE-ALPHA: the v0.1.0-alpha.1 GitHub release is being cut now; the OSS
+// release artifacts (the four _<os>_<arch>.tar.gz assets) will exist
+// shortly — assets on the v0.1.0-alpha.1 GitHub release.
+export const BINARY_RELEASE = 'v0.1.0-alpha.1';
+// Latest CHA-com git TAG. PRE-ALPHA re-baseline: prior 1.x tags
+// (≤ v1.22.4) were pre-launch / pre-alpha iterations, now pre-release.
 // Consumed by the roadmap page (shippedOnly guard).
-export const PAID_VERSION = 'v1.22.2';
+export const PAID_VERSION = 'v0.1.0-alpha.1';

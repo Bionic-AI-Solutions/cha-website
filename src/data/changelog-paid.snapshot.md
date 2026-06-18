@@ -1,8 +1,108 @@
 <!-- DO NOT EDIT — vendored snapshot of CHANGELOG.md (Bionic-AI-Solutions/CHA-com, private) -->
 <!-- source: CHANGELOG.md (Bionic-AI-Solutions/CHA-com, private) -->
-<!-- synced: 2026-06-12 -->
+<!-- synced: 2026-06-18 -->
 <!-- re-sync: ./scripts/sync-changelogs.sh && npm run build -->
 <!-- truncated to newest 12 release sections; the public roadmap renders these only -->
+
+## [0.1.0-alpha.1] — 2026-06-18
+
+**Version re-baseline.** Pre-launch project; releases through v1.22.4 were
+internal pre-alpha iterations mis-numbered as 1.x. Reset to SemVer 0.x with
+`-alpha.N` pre-releases. No code change — 0.1.0-alpha.1 is the v1.22.4 tree
+under honest numbering.
+
+For continuity, the content shipped at v1.22.4 (the tree this re-baseline
+points at):
+
+### Added — one-click Silence (SC: the CHA-com half)
+
+The AI digest's "🚫 AI declined" / "⏳ Awaiting your approval" items now
+carry two signed one-click Silence links — **🔕 Silence 24h** (subject-scoped,
+matcher `{source, subject}`) and **🔕 Silence class (90d)** (class-scoped,
+matcher `{source}` + optional `messagePattern`). Links are minted via the OSS
+`pkgai.MintSilenceLinks` (signed with the approval-server's Ed25519 key) and
+carried on `proposalRecord`. A new approval-server endpoint
+**`GET /silence?token=<JWS>`** verifies the signed token, enforces one-time
+use via the replay store (`silence:` JTI namespace), rate-budgets the click,
+then materializes a real OSS **`Silence` CR**
+(`cha.bionicaisolutions.com/v1alpha1`) via a dynamic client on the `silences`
+GVR. Fail-closed throughout; audited as `ai.approval.silenced`. The 90d
+class-silence link supersedes the legacy 7d `ActionSilenceClassURL`.
+
+### Changed
+
+- OSS dependency pinned to **v1.26.3** (adds `pkgai.SilenceTokenClaims` +
+  `SignSilenceToken`/`VerifySilenceToken` + `MintSilenceLinks`, the
+  approval-server `silences` create RBAC, and the `/silence` Ingress path).
+
+## [1.22.4] — 2026-06-17
+
+### Added — one-click Silence (SC: the CHA-com half)
+
+The AI digest's "🚫 AI declined" items (and "⏳ Awaiting your approval"
+items) were linkless — an operator who decided a decline was *by design*
+had no way to mute it without leaving Slack. They now carry two signed
+one-click Silence links:
+
+- **🔕 Silence 24h** — subject-scoped: snoozes THIS finding
+  (matcher `{source, subject}`) for `--silence-short-duration` (default 24h).
+- **🔕 Silence class (90d)** — class-scoped: mutes the finding's whole
+  `Source` (matcher `{source}`, optional `messagePattern`) for
+  `--silence-long-duration` (default 2160h / 90d).
+
+Links are minted via the OSS `pkgai.MintSilenceLinks` (signed with the
+same Ed25519 key the approval-server verifies) and carried on
+`proposalRecord` (`SilenceSubjectURL` / `SilenceClassURL`).
+
+New approval-server endpoint **`GET /silence?token=<JWS>`** verifies the
+signed token (`pkgai.VerifySilenceToken`, reusing the verifier's public
+key), enforces one-time use via the shared replay store (under a
+`silence:` JTI namespace; replay → 409), rate-budgets the click (class
+`silence`, mirrors `/approve`), then materializes the verified claims
+into a real OSS **`Silence` CR** (`cha.bionicaisolutions.com/v1alpha1`)
+in the approval-server's own namespace. The CR is created via a dynamic
+client on the `silences` GVR (no controller-runtime dependency added);
+the SA gained `silences` create/get/list in OSS v1.26.3. CR name is a
+deterministic hash of the matcher + window, so an idempotent re-click is
+treated as success (`AlreadyExists` → 200). Fail-closed throughout:
+bad/expired/tampered token, replay, store error, or RBAC failure leave
+nothing half-done. Audited as `ai.approval.silenced`.
+
+The new 90d class-silence link **supersedes** the legacy 7d
+`ActionSilenceClassURL` class-silence line — they are never rendered
+together, so there is no duplicate class-silence button.
+
+### Changed
+
+- OSS dependency bumped to **v1.26.3** (adds `pkgai.SilenceTokenClaims`
+  + `SignSilenceToken`/`VerifySilenceToken` + `MintSilenceLinks`, the
+  approval-server `silences` create RBAC, and the `/silence` Ingress
+  path).
+
+## [1.22.3] — 2026-06-17
+
+### Fixed — human-approved executions spuriously failing on missing rollback (OF1/CF1)
+
+`MutatorExecutor.Execute` re-validated the proposal it RECONSTRUCTS from
+the signed approval token by calling the full `(*AIProposedAction).Validate()`.
+That token intentionally omits the rollback description (a creation-time
+quality gate enforced at proposal mint + shown to the approver), so
+`Validate()` always failed with `ErrMissingRollback` ("ai proposal lacks
+rollback info") — every human-approved (token-based) execution of a
+`DeletePod`/`DeleteJob`/`PatchDeployment`/etc. action errored before
+reaching the mutator. The executor now calls the new OSS
+`(*AIProposedAction).ValidateForExecution()` (full Validate MINUS the
+rollback-description requirement); all other safety/structural invariants
+are still enforced and the protected-namespace admission check still runs
+separately. The autonomy auto-apply path keeps its OWN independent
+`Rollback.Description == ""` rejection gate (`DecideAutonomy` /
+`DecideAutonomyWithInputs`) — auto-apply still requires a rollback and is
+unaffected by this change.
+
+### Changed — OSS dependency → v1.26.2
+
+Bumped `github.com/Bionic-AI-Solutions/cluster-health-autopilot` to
+`v1.26.2`, which adds `(*AIProposedAction).ValidateForExecution()`.
 
 ## [1.22.2] — 2026-06-12
 
@@ -1026,233 +1126,4 @@ behavior, nil-deps safety.
 
 `v1.22.0+` (no chart change needed — the Forge surface ships in the
 binary; gate enabled per-cluster via `--digest-pin-auto-merge`).
-
-## [1.16.0] — 2026-06-08
-
-Phase 2 paid-tier closure. Pairs with OSS `v1.21.1`.
-
-23 commits across 8 sub-deliverables (PR #45). All locally tested
-and live-verified on the dev cluster as `cha-com:1.16.0-dev1` before
-canonical tagging.
-
-### Added — "Approve+remember class" workflow end-to-end (Phase 2.B)
-
-- `ai/policy.PolicyEntry` + `ai/policy.Store` (RAG-backed,
-  in-Qdrant under `Kind="auto_apply_policy"`)
-- `autonomyEngine.policies policyLooker` consults active policies
-  BEFORE the static MinConfidence gate; a matching approve-policy
-  yields `AutoApply=true` without similarity-prior requirement
-- `/approve-class`, `/deny-class`, `/silence-class` HTTP routes
-  on the approval-server, each scoped to its own JWT
-  (`Scope ∈ {approve-class, deny-class, silence-class}`) so a
-  click on one URL can't be replayed against another
-- New `ClassTokenClaims` JWT type carries Source + ActionKind +
-  MessagePattern (locally defined in cha-com to avoid bumping OSS
-  `pkg/ai.TokenClaims` for paid-tier-only fields)
-- 4-button Slack render row: ✅ Approve · 🚫 Deny ·
-  🧠 Approve+remember class · ❌ Deny+remember class ·
-  🔕 Silence class (7d)
-- Per-cycle observability log: `policies: cycle=N active=A muted=M`
-- `policyAdapter` calls `policy.PolicyEntry.Matches(d, kind, now)` so
-  MessagePattern matching fires on per-message granularity (NOT
-  just MessagePattern="" wildcards as in v1.16.0-dev1's first cut)
-
-### Added — Wilson-bound class-success-rate confidence (Phase 2.C)
-
-`classSuccessConfidence` computes a 95% Wilson lower bound on the
-cleared / (cleared + still-present + reverted) rate. `DecideAutonomyWithInputs`
-merges it with the existing similarity-based confidence via `max()`.
-Class history rescues high-volume well-tested classes (50/50 ≈ 0.93
-confidence) while small samples don't over-claim (1/1 ≈ 0.21,
-10/10 ≈ 0.72).
-
-### Added — LLM-driven proposer for unmatched diagnostics (Phase 2.D)
-
-`LLMProposer` fills the click-to-fix gap for findings outside the
-keyword fixer set. Closed-enum gate enforces ActionKind ∈ pkg/ai's
-fixed set (defense-in-depth before pkg/ai's Validate). Memory-grounded
-prompts include per-(source, action_kind) success stats from the
-Phase 2.A.1 RAG outcome memory. Per-cycle observability:
-`llm-proposer: cycle=N attempted=A succeeded=S refused=R invalid=I errored=E rejected=J`.
-
-### Added — Lease-based leader election (Phase 2.F)
-
-`LeaderElector` interface + `leaseLeaderElector` impl wrapping
-`client-go/tools/leaderelection` + `coordination.k8s.io/v1.Lease`.
-`--leader-election*` CLI flags. nil-safe `noopLeaderElector` for
-single-replica (default) — byte-identical to pre-2.F. Audit events
-on lease lifecycle.
-
-### Added — Prometheus instrumentation + /metrics endpoint (Phase 2.G)
-
-8 metric families — `cha_cycle_total`, `cha_diagnostic_total`,
-`cha_outcome_total`, `cha_outcome_revert_total`, `cha_policy_active`,
-`cha_llm_proposer_total`, `cha_autonomy_decision_total`,
-`cha_breaker_open` — exposed at `/metrics` via the
-`--metrics-addr` flag. Label sets are closed enums for bounded
-cardinality.
-
-### Added — Cosign-style attestation on DigestPin PR bodies (Phase 2.H)
-
-Ed25519 signature over a canonical payload (action_id, repo, ref,
-file_path, before_digest, after_digest, observed_at). Embedded
-public-key PEM in the PR body. Reviewers verify with `openssl` (or
-a future cosign upgrade — same key + payload format). Soft-fail on
-key-read errors. `--digest-pin-attestation-key` +
-`--digest-pin-attestation-kid` flags. Chart wires a Secret mount at
-`/etc/cha/attestation/` (OSS v1.21.1+).
-
-### Changed — Pin OSS dependency to v1.21.0
-
-`go get github.com/Bionic-AI-Solutions/cluster-health-autopilot@v1.21.0`.
-Carries the chart-side Phase 2 changes (HA, metrics, class buttons,
-Silence MessagePattern, DisruptionDrift analyzer).
-
-### Fixed — Race-safe leader-election test fixtures
-
-CI runs with `-race` and caught concurrent access on the raw
-`bytes.Buffer` in two leader-election tests. Wrapped in a
-sync.Mutex-protected `syncBuf` helper.
-
-### Fixed — `MY_POD_NAME` env var fallback in lease elector ctor
-
-`buildLeaderElector` now reads `MY_POD_NAME` (the chart's
-downward-API name) with `POD_NAME` as fallback.
-
-### [1.15.1-dev1] — 2026-06-08 (LOCAL DEV; canonical v1.16.0 deferred to credit return)
-
-This is the **Phase 2.B "Approve+remember class" rollout**. Single
-local-only release (no `git push`, no goreleaser) due to a temporary
-GH Actions credit constraint; promoted to canonical `v1.16.0`
-in one batch push when credits return.
-
-### Added — `policy.PolicyEntry` + `policy.Store` (Phase 2.B.1 + 2.B.2)
-
-`PolicyEntry{Source, ActionKind, MessagePattern, ExpiresAt, Decision,
-ClickedBy, ClickedAt}` defines a class-level approve/deny/silence
-memory. `InferMessagePattern` projects the clicked diagnostic's
-message to a stable class-substring at click time (recognized
-templates: SecurityDrift digest-pin, CapacityDrift HPA-pinned,
-ConfigDrift rollout-stuck, DNSChainDrift missing-ingress; fallback
-to first 6 words).
-
-`policy.Store` backs onto rag.Reader+Writer with local
-`Kind="auto_apply_policy"`. Nil-safe so memory-unconfigured deploys
-degrade cleanly.
-
-### Added — Autonomy class-policy bypass (Phase 2.B.3)
-
-`autonomyEngine.policies policyLooker` consults active class policies
-BEFORE the static MinConfidence gate. A matching approve-policy →
-AutoApply=true with no prior-evidence requirement. The operator's
-prior click IS the trust signal. Circuit breaker still gates.
-
-### Added — `/approve-class`, `/deny-class`, `/silence-class` routes (Phase 2.B.4)
-
-New `ClassTokenClaims` JWT carries `Scope` + Source + ActionKind +
-MessagePattern. Three handlers share `handleClassCommon`: OIDC,
-token verify, scope check, PolicyWriter.Put with 7-day default
-lifetime, audit write, optional execute (only /approve-class).
-Scope mismatch → 403.
-
-### Added — 4-button row in Slack render + class-URL minting (Phase 2.B.5)
-
-`SignerImpl.SignClassAction(claims)` + `approvalURLMinter.classActionURLs`
-mint 3 URLs with distinct Scope claims. Render emits 5 lines:
-
-```
-✅ Approve / 🚫 Deny / 🧠 Approve+remember class /
-❌ Deny+remember class / 🔕 Silence class (7d)
-```
-
-Class buttons hidden when URL empty (legacy memory-off byte-identical).
-
-### Added — JWT scope check (Phase 2.B.7) — folded into 2.B.4
-
-Defense-in-depth for URL substitution attacks.
-
-### Added — Per-cycle policy observability log (Phase 2.B.8)
-
-`policies: cycle=N active=A muted=M` sibling to the Phase 2.A.4
-`outcomes:` line.
-
-### Added — Field-travels integration test (Phase 2.B.10)
-
-Methodology refinement from Phase 1's DriftReport bug:
-`TestIntegration_ClassPolicy_ClickRoundTripsToStore` proves click
-→ JWT mint → /approve-class → policy.Store.Active path with every
-field intact.
-
-### Added — Approval-server wires ClassVerifier + PolicyWriter (Phase 2.B.11)
-
-`approvalServerCmd` registers `--rag-*` flags. Both nil = class
-endpoints return 503 cleanly (legacy unchanged).
-
-### Deferred — OSS Slack render parity (2.B.6) + class-scoped Silence CR (2.B.9)
-
-Both require OSS edits + `replace` directive plumbing to test locally
-under the GH-Actions-credit constraint. Will land alongside the
-canonical `v1.16.0` push when credits return; OSS `v1.21.0` pair.
-
-### Pairs with OSS
-
-OSS `v1.20.1` (unchanged from `v1.15.0`).
-
----
-
-## [1.15.0] — 2026-06-07
-
-Phase 2.A — foundation deliverable for Phase 2's test→learn loop closure
-(PR #44; master plan
-`docs/superpowers/plans/2026-06-07-cha-phase-2-master.md`). Adds the
-READ side of the outcome-memory pipeline (the WRITE side had already
-shipped) and unblocks 2.B (Approve + remember-class) and 2.C (confidence
-model from memory).
-
-### Added — RAG memory READ path + revert detection + per-cycle observability (PR #44)
-
-- `Memory.RecentOutcomesByTarget` + `RecentOutcomesByClass` — read
-  helpers for per-target and per-class outcome lookup with a recency
-  filter. Legacy entries (no `RecordedAt`) are silently skipped.
-- `DigestPinProposer.Memory` — when a recent (≤24h) `reverted` outcome
-  exists for the target, the new proposal's Rationale carries a
-  cautionary prefix so the SRE sees prior-revert context before clicking
-  Approve.
-- Revert detection in the watch tick — for each fresh diagnostic, memory
-  is queried for recent (≤1h) `cleared` outcomes; if found, a follow-up
-  `Verdict="reverted"` Resolution is written. Powers the prior-revert
-  rationale.
-- Per-cycle observability log — `outcomes: cycle=N applied=A approved=B
-  denied=C reverted=D` at the end of every tick (zero-counts still emit
-  the line).
-- Field-travels-end-to-end integration test (build-tagged
-  `integration`) — methodology refinement from the Phase 1
-  `DriftReport.spec.remediation` bug-class.
-
-17 new tests (15 unit + 2 integration). Full regression green.
-
-### Changed — docs
-
-- `ai/proposer` dedup TOCTOU contract clarified post-Phase-1 audit
-  (PR #43).
-
-### Pairs with OSS
-
-OSS `v1.20.1`+.
-
-## [1.14.0] — 2026-06-07
-
-### Added — `TestAISlackFlags_RegisterBindsFlags` (PR #41)
-
-Post-Phase-1 adversarial audit caught a test the original 1.A plan called for (Task 1.A.11) that was never written. The test invokes `aiSlackFlags.register(...)` with a captured slice and asserts the `--ai-slack-url-env` flag is registered. Without it, a rename or arity drift on the register closure (which has happened before to `digestPinFlags`) would only surface on a live deploy. Mirrors `TestRegister_DigestPinFlagsRegistered`.
-
-### Changed — Pin OSS dependency to v1.20.0
-
-Bumps `github.com/Bionic-AI-Solutions/cluster-health-autopilot` v1.18.2 → v1.20.0. The paid binary now carries:
-
-  - Phase 1.B placeholder substitution (PVC StorageClass, Deployment selector) — OSS v1.19.0
-  - Phase 1.E per-cycle delta render (🆕 New this cycle + stable-collapse + opt-in no-change digest) — OSS v1.19.0
-  - Phase 1.D operator TicketingSpec wiring (`spec.ticketing.*` → `--ticketing-*` flags) — OSS v1.20.0
-
-Pairs with OSS v1.20.0+ (or v1.20.1+ for the full Phase-1.B audit-fix set).
 

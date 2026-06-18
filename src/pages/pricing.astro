@@ -41,7 +41,7 @@ const tiers = [
       'T0 enricher — LLM context on every DriftReport',
       'T1 fix proposer — LLM-augmented fix suggestions',
       'Signed-JWT approval-server (click-to-fix)',
-      'Dashboard (self-hosted) (v1.22)',
+      'Dashboard (self-hosted)',
       'Email support',
     ],
   },
@@ -62,8 +62,8 @@ const tiers = [
       'Audit-bundle export — SOC2-friendly evidence pack (manifest + audit.jsonl + outcomes.jsonl), local-only',
       'Approve-class policies — approve / deny / silence a whole finding class, not just one DriftReport',
       'Cloud-aware RCA — deterministic K8s↔cloud correlation grounding T0/T1 prompts (MVP)',
-      'Jira / ServiceNow ticketing (v1.22)',
-      'Multi-cluster federation (v1.22)',
+      'Jira / ServiceNow ticketing',
+      'Multi-cluster federation',
       'SLA support + named TAM',
     ],
   },
@@ -77,7 +77,7 @@ const tiers = [
     features: [
       'Everything in Enterprise',
       'Air-gap installer',
-      'SBOM + cosign-signed images (OSS binary checksums cosign-signed from v1.26.0; container-image + CHA-com artifact signing pending CI billing restoration)',
+      'SBOM + cosign-signed images (OSS binary checksums cosign-signed; container-image + CHA-com artifact signing pending CI billing restoration)',
       'Independent audit reports',
       'Sovereign deployment patterns',
       'Dedicated security engineering',
@@ -95,6 +95,15 @@ const tiers = [
     title="Transparent, flat per-cluster pricing."
     subtitle="No per-investigation pricing. No 'contact sales' wall for the open-core engine. Helm install, evaluate, upgrade to the AI SRE tier when you're ready to put an agent on top."
   />
+
+  <section class="mx-auto max-w-7xl px-6 pt-10">
+    <div class="rounded-xl border border-amber-300/80 bg-amber-50 px-4 py-3 text-sm text-amber-800 dark:border-amber-500/40 dark:bg-amber-500/10 dark:text-amber-300">
+      <span class="font-semibold">Pre-alpha.</span> Both products are at
+      <span class="font-mono">v0.1.0-alpha.1</span> (pre-launch). Pricing and
+      tiers below are pre-launch and may change before GA; versions are
+      pre-alpha and not yet generally available.
+    </div>
+  </section>
 
   <section class="mx-auto max-w-7xl px-6 py-20">
     <div class="grid gap-6 md:grid-cols-2 xl:grid-cols-4">

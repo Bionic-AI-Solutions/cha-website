@@ -1,8 +1,80 @@
 <!-- DO NOT EDIT — vendored snapshot of CHANGELOG.md (Bionic-AI-Solutions/cluster-health-autopilot) -->
 <!-- source: CHANGELOG.md (Bionic-AI-Solutions/cluster-health-autopilot) -->
-<!-- synced: 2026-06-12 -->
+<!-- synced: 2026-06-18 -->
 <!-- re-sync: ./scripts/sync-changelogs.sh && npm run build -->
 <!-- truncated to newest 12 release sections; the public roadmap renders these only -->
+
+## [0.1.0-alpha.1] — 2026-06-18
+
+**Version re-baseline.** This project is pre-launch; releases through v1.26.3
+were internal pre-alpha iterations mis-numbered as 1.x. Versioning is reset to
+SemVer 0.x with `-alpha.N` pre-releases. No code regression — 0.1.0-alpha.1 is
+the v1.26.3 tree under honest pre-alpha numbering.
+
+This release also moves per-checkin verification from GitHub CI to a local
+`make verify` flow (see `RELEASING.md`); the GitHub `ci.yml` / `bundle-smoke` /
+`helm-publish` workflows are now manual-only or release-tag-triggered.
+
+Content carried from the v1.26.3 tree (what the prior 1.x line shipped):
+
+- **Live watcher one-click silence links (OSS foundation, ex-1.26.3).** The
+  per-cycle watcher Slack post renders two signed one-click silence links
+  (24h subject-scoped snooze + 90d class-scoped mute) when a signer + approval
+  base URL are configured; falls back to the 24h kubectl one-liner when
+  unconfigured. Signed `SilenceTokenClaims` (EdDSA compact-JWS) protect the
+  window/scope/matcher from URL tampering; durations configurable via
+  `approval.silence.{shortDuration,longDuration}`.
+- **Execution-gate fix (ex-1.26.2).** New `ValidateForExecution()` enforces
+  every safety/structural invariant except the creation-time rollback-description
+  requirement, so human-approved token-based executions no longer fail with
+  "ai proposal lacks rollback info". `Validate()` (creation/sign-time) unchanged.
+- **Standby `/healthz` fix (ex-1.26.1).** `cha watch` binds the health listener
+  before leader election (process lifetime, not lease lifetime); `/readyz` is an
+  unconditional 200 alias. Fixes the `maxUnavailable=0` rolling-upgrade deadlock.
+- The full operator port, drift-class + M2 probes, supply-chain provenance,
+  ticketing, dashboard/playground surfaces, and the CHANGELOG↔tag CI gate that
+  accumulated across the 1.x line (see the headings below for detail).
+
+## [1.26.3] — 2026-06-17
+
+### Added — one-click Silence links on the LIVE watcher "needs human" Slack path (OSS foundation)
+
+Non-actionable "human intervention" findings previously had no in-Slack way to dismiss them. The **live per-cycle watcher Slack post** (the `cha watch` delta path — `internal/watcher` → `report.RouteAndPost` → `SplitCriticalPayloads` / `FormatSlackDelta`, which is what the operator/watcher actually posts) now renders **two signed one-click silence links** under each posted finding when a signer + approval base URL are configured: **🔕 Silence 24h** (subject-scoped snooze, `matcher.subject` = the finding's real `Subject`) and **🔕 Silence class (90d)** (class-scoped mute, `matcher.source` = the finding's real `Source`). Clicking either hits the CHA-com approval-server's `/silence` endpoint, which consumes the signed token and creates a real OSS `Silence` CR (`api/v1alpha1`, `pkg/silence`) with the right `Matcher` + `Until`. Durations are configurable (default 24h / 90d) and the link label tracks the actual window. This PR ships the OSS foundation; the approval-server `/silence` handler is a separate CHA-com task.
+
+When NO signer/base-URL is configured (OSS-only / air-gapped), the renderer keeps the existing **24h kubectl one-liner** fallback so the air-gapped affordance is never lost.
+
+- **Watcher delta-path wiring** (`internal/watcher/watcher.go`): `attachApprovalURLs` now also mints the two links for every posted finding via `pkgai.MintSilenceLinks` when `Config.SilenceLinks` is fully configured. `DeltaDiag` gained `Source`, `SilenceSubjectURL`, `SilenceClassLongURL`, `SilenceShortDur`, `SilenceLongDur`; the finding `Source` is threaded from `diagnose.Diagnostic.Source` through `seenEntry` into the rendered `DeltaDiag` (probe findings use their component as Source). The shared `renderSilenceSnippet` (used by both `SplitCriticalPayloads` and `FormatSlackDelta`) emits the click-links when present and the kubectl heredoc otherwise; the legacy hardcoded "Silence class (7d)" link is replaced by the single configurable-duration class link (no duplicate class links).
+- **Durations flow to `watch`**: `cha watch` gains `--silence-short-duration` (24h) / `--silence-long-duration` (90d), reusing the already-loaded approval signing key. The operator wires `spec.approval.silence.{shortDuration,longDuration}` → the watcher Deployment's `--silence-{short,long}-duration` flags (rendered only when explicitly set; unset keeps binary defaults).
+- **Signed silence token** (`pkg/ai/silence_token.go`): `SilenceTokenClaims{Scope, Source, Subject, MessagePattern, UntilUnix, …}` + `SignSilenceToken` / `VerifySilenceToken`, mirroring the existing approval `TokenClaims` EdDSA compact-JWS (same `kid`, same verify-before-unmarshal discipline). The silence WINDOW (`UntilUnix`), `Scope`, and the whole matcher are SIGNED — an attacker cannot widen a 24h subject snooze into a 90d cluster-wide class mute by editing the URL (it flips the signature). Security model is doc-commented.
+- **Link minter** (`pkg/ai/silence_link.go`): `MintSilenceLinks(priv, kid, baseURL, req, now)` returns the two signed `<baseURL>/silence?token=…` URLs (subject-scoped `now+ShortDur`, class-scoped `now+LongDur`), each with a unique JTI; token `exp` extends a clickability buffer past the silence window (mirrors approve-token exp policy).
+- **Legacy diagnose path** (`internal/report/slack.go`): the earlier `cha diagnose --slack-webhook` wiring (`FormatSlackWithSilence`, `FormatSlack` kept as a thin no-link wrapper, `--approval-server-url` / `--signing-key-path` / `--silence-{short,long}-duration` flags on `cha diagnose`) is retained as harmless secondary coverage; the watcher delta path above is the primary surface.
+- **Config knobs**: `approval.silence.{shortDuration,longDuration}` Helm values + `spec.approval.silence.{shortDuration,longDuration}` CR fields (defaults 24h / 90d).
+- **RBAC**: the approval-server SA gets `create,get,list` on `silences.cha.bionicaisolutions.com` via a namespace-local Role in BOTH the chart (`approval-server-rbac.yaml`) and the operator (`BuildApprovalSilenceWriterRole`, reconciled + finalizer-owned). The operator/CSV/chart operator-ClusterRole also hold the silences verbs so RBAC escalation prevention passes when materializing that Role (chart↔operator↔bundle parity preserved).
+- **Tests**: silence token sign/verify round-trip + tamper (UntilUnix/Scope/Subject) + expiry + malformed; minter two-well-formed-URLs with correct scope/until/jti + messagePattern propagation; delta renderer (`SplitCriticalPayloads` + `FormatSlackDelta`) shows BOTH click-links with correct scope + configurable-duration labels when minted, falls back to the kubectl one-liner when unconfigured, and emits exactly one class link; `attachApprovalURLs` mints both links with the matcher built from real `Subject`/`Source` (not Component), verified by signature; operator watcher gets `--silence-{short,long}-duration` only when `spec.approval.silence.*` is set; legacy `FormatSlackWithSilence` configured/no-link regression; operator silence-writer Role/RoleBinding unit tests.
+
+## [1.26.2] — 2026-06-17
+
+### Fixed — human-approved (token-based) executions no longer fail with "ai proposal lacks rollback info" (OF1)
+
+The CHA-com approval-server executor reconstructs an `AIProposedAction` from the signed approval JWT and validated it with `(*AIProposedAction).Validate()` before applying the mutation. But the signed token deliberately carries only the safety-relevant identity (`action_id` / `tier` / `action_kind` / `target` / `diag_subject`) and intentionally OMITS the rollback description — while `Validate()` requires `Rollback.Description != ""` (`ErrMissingRollback`). So every human-approved, token-based execution failed at the execution gate even though the proposal was a fully-valid, approved action. Rollback is a proposal-CREATION quality gate (the LLM must supply a rollback plan, rendered to the approver in Slack/the ticket) — it is not an execution-time invariant and cannot be re-checked against a token that omits it by design.
+
+- **New `(*AIProposedAction).ValidateForExecution()`** (`pkg/ai/validate.go`) enforces every safety/structural invariant `Validate()` does — action_kind closed enum, target presence/shape, protected-namespace boundary, patch-payload/kind pairing, manifest validity for `ApplyManifest`, pull-request URL shape, expiry window, proposal-tier check — EXCEPT the rollback-description requirement. This is the correct check for executing an already-approved, reconstructed action; the CHA-com approval-server executor is the intended caller.
+- **`Validate()` behavior is UNCHANGED** (creation/sign-time contract stays strict, including `ErrMissingRollback`). The shared checks are factored into an unexported `validateStructural()` helper; `Validate()` = shared checks + rollback requirement, `ValidateForExecution()` = shared checks only. No signature or external-behavior change for existing callers/tests.
+- **Tests** pin the exact failing case (empty-rollback proposal passes `ValidateForExecution`, fails `Validate`) across every executor-reachable kind (`DeletePod` / `DeleteJob` / `DeleteCertRequest` / `DeleteACMEOrder` / `PatchDeployment` / `ApplyManifest`), assert `ValidateForExecution` still rejects the genuinely-unsafe cases (invalid/empty action_kind, missing target, protected namespace, patch on non-patch kind, invalid manifest, expired window, disallowed tier), and assert Validate↔ValidateForExecution parity when rollback is present.
+
+The T3/runbook validation path (`VaultRunbook.Validate`, which reuses `ErrMissingRollback` for "incomplete runbook") is untouched — scope is strictly `AIProposedAction` execution.
+
+## [1.26.1] — 2026-06-12
+
+### Fixed — watcher standby pods now serve `/healthz`; rolling upgrades no longer deadlock (O11, production 1.26.0 upgrade incident)
+
+PR #186 (1.26.0) introduced the always-on `:8081` health server **and** the chart/operator liveness+readiness probes that target it — but started the listener inside `Watcher.Run`, which `cha watch` wraps in `RunWithLeader`, i.e. inside the leader-election `OnStartedLeading` callback. A standby (non-leader) pod therefore served nothing on `:8081`: the liveness probe got `connection refused` and kubelet kill-looped it. Under the operator-built Deployment's `RollingUpdate maxUnavailable=0` strategy this deadlocked **every** upgrade — the new pod could never pass its probes while the old leader held the `cha-watcher` lease, and the old pod was never terminated. Production recovery required deleting the old leader pod and temporarily relaxing `maxUnavailable`.
+
+- **`cha watch` now binds the health listener BEFORE entering leader election**, on the command context (process lifetime, not lease lifetime), via the new idempotent `Watcher.StartHealthServer`. `/healthz` returns 200 as soon as the process is up — leader, standby, or still-acquiring. A bind failure is a hard startup error (loud exit beats a silent probe kill-loop). `Watcher.Run` still calls `StartHealthServer` defensively (idempotent no-op when already started), so direct `Run` callers and the `CHA_LEADER_ELECTION=off` path keep the listener.
+- **`/readyz` added as an unconditional 200 alias of `/healthz`** — deliberately NOT gated on holding the leader lease. The chart and operator point both probes at `/healthz`; the watcher serves no Service traffic that readiness needs to gate, and a leadership-gated readiness would re-create the same deadlock (a standby pod that never goes Ready blocks `maxUnavailable=0` rollouts and single-replica rollover). Documented in the chart template, the operator's `watcherHealthProbes`, and the handler.
+- **Regression test** `TestStartHealthServer_Serves200WhileStandby_NotLeader` (internal/watcher) pins the incident: health server started the way `cmd/cha` does, leader election entered against a lease already held by another identity, asserts `/healthz` answers 200 while the watch-loop body has never run. Plus an idempotency test (second `StartHealthServer` must not re-bind).
+
+No probe endpoints, ports, or chart values changed — `helm upgrade` from 1.26.0 picks up the fixed binary and rolls cleanly (this release is itself the first upgrade that no longer needs the manual leader-pod delete).
 
 ## [1.26.0] — 2026-06-12
 
@@ -414,151 +486,4 @@ Adds `persistentvolumes` to:
 
 Verified live: with the live ClusterRole patched and the watcher
 restarted, PVOrphan now fires on the dev cluster's 117 Released PVs.
-
-## [1.22.1] — 2026-06-09
-
-### Fixed — PVOrphan needs `persistentvolumes` in CaptureGVRs
-
-The v1.22.0 PVOrphan analyzer was silent on live clusters because
-`internal/snapshot.CaptureGVRs` didn't include PVs (PVCs were
-captured separately; PVs are their own cluster-scoped GVR). Adds
-`GVRPV` to the capture list and refactors PVOrphan to consume the
-shared constant. Verified live: with 117 Released PVs on the dev
-cluster, the analyzer now fires the expected warnings.
-
-## [1.22.0] — 2026-06-09
-
-Phase 3.E + 3.D bundled.
-
-### Added — 3 new workload-tier analyzers (Phase 3.E)
-
-The 3 most-requested signals from the deferred wishlist:
-
-- **`OOMKillRecurrence`** (warning) — Pod container with ≥3 OOMKilled
-  restarts in 24h. Catches the sizing problem masquerading as a crash
-  loop. One finding per pod (operator's edit pass fixes all containers
-  simultaneously). Opts out via `CHA_ANALYZER_OOMKILL_RECURRENCE=off`.
-- **`PVOrphan`** (warning) — PersistentVolume in `Released` phase for
-  >7d. Underlying cloud disk (EBS / GCE-PD / Azure-Disk) may still be
-  billing. Message surfaces storageClass + capacity + reclaimPolicy
-  for cost-sizing. Opts out via `CHA_ANALYZER_PV_ORPHAN=off`.
-- **`CronJobStuck`** (warning/critical) — CronJob whose lastSuccessfulTime
-  is >24h old OR has never succeeded OR is suspended. Each cause gets
-  tailored remediation guidance. Opts out via `CHA_ANALYZER_CRONJOB_STUCK=off`.
-
-### Added — `spec.ai.metrics` + `spec.ai.llmProposer` typed CR fields (Phase 3.D)
-
-Promotes two Phase 2 surfaces from chart-only / extraArgs-hatch into
-typed CR fields so operator-managed installs (ArgoCD/Flux/kubectl apply)
-don't need escape hatches.
-
-- `AIMetricsSpec {Addr, Port}` — operator renders `--metrics-addr` arg +
-  named container port + headless Service. Selectors target aiwatch pods
-  so Prometheus pod-discovery sees per-pod endpoints (leader vs follower
-  stay distinct in `cha_cycle_total{leader=...}`).
-- `AILLMProposerSpec {Enabled}` — typed switch for the Phase 2.D LLM
-  fallback proposer.
-
-CRD schema additions on both chart-side template and OLM bundle manifest.
-3 helm-template invariants preserved: legacy installs (no Metrics / no
-LLMProposer fields) render byte-identical to v1.21.1.
-
-### Pairs with CHA-com
-
-The CHA-com binary `--metrics-addr` + `--llm-proposer` flags ship since
-v1.16.0; this release wires them through the operator schema. Cluster
-operators can now drop their `extraArgs: ["--metrics-addr=:9090"]`
-escape hatch in favor of `spec.ai.metrics.addr: ":9090"`.
-
-## [1.21.1] — 2026-06-08
-
-Follow-up to the v1.21.0 Phase 2 closure. Adds the
-`spec.ai.digestPinAttestation` field that the v1.21.0 merge missed
-(the chart-version bump from v1.20.1 → v1.21.0 was also missed at
-tag time; this release bumps both together).
-
-### Added — `spec.ai.digestPinAttestation` chart wiring (Phase 2.H)
-
-`DigestPinAttestationSpec {SecretName, SecretKey, KeyID}` on AISpec.
-When set, the chart mounts the Secret at `/etc/cha/attestation/` and
-passes `--digest-pin-attestation-key` + `--digest-pin-attestation-kid`
-to the aiwatch container. Operator reconciler mirrors the chart.
-Mount path is separate from `/etc/cha/keys/` so attestation key
-rotation is independent of the approval-server signing key.
-
-### Fixed — `internal/report.DeltaDiag` class-URL docs (Phase 2.B.6)
-
-The render-only class-URL fields shipped in v1.21.0 — `ApproveClassURL`,
-`DenyClassURL`, `SilenceClassURL` — now carry a doc clarifying that
-the OSS enrich pipeline does NOT mint class-action JWTs (the signer
-lives in CHA-com's `ai/approval`). The CHA-com aiwatch's renderer
-(`cmd/cha-com/render.go`) is the active surface; the OSS render is
-preparatory for a future shared-signer extraction.
-
-### Pairs with CHA-com
-
-`v1.16.0+` (binary-side surfaces are unchanged from v1.21.0 →
-v1.21.1; only the chart's wiring of an existing CHA-com flag is new).
-
-## [1.21.0] — 2026-06-08
-
-Phase 2 closure on the OSS side. Pairs with CHA-com `v1.16.0`
-for the paid-tier binary half.
-
-### Added — `spec.ai.replicas` for HA aiwatch (Phase 2.F)
-
-`ClusterHealthAutopilot.spec.ai.replicas` (`int32`, min 1 max 5).
-Default 1 (single-replica, noop elector — byte-identical to pre-2.F).
-When `>1`, the chart turns on `--leader-election=true` + binds the
-SA to a scoped Lease Role; the binary races for a
-`coordination.k8s.io/v1.Lease` named `<release>-aiwatch-leader`.
-Failover within ~30s on lease loss.
-
-### Added — Prometheus instrumentation + Grafana dashboard + canary alerts (Phase 2.G)
-
-`ai.metrics.{addr,port,serviceMonitor,grafanaDashboard,prometheusRule}`
-values opt in to: aiwatch `/metrics:9090` headless Service +
-optional `ServiceMonitor` + `dashboards/cha-overview.json` ConfigMap
-(Grafana sidecar labels) + `PrometheusRule` canaries
-(`ChaWatcherStuck`, `ChaBreakerOpen`, `ChaAutonomyRejectionSpike`).
-
-All gated on `ai.enabled` + non-empty `ai.metrics.addr` — pure-OSS
-deploys see no new resources.
-
-### Added — Slack class-button render row (Phase 2.B.6)
-
-`internal/report.DeltaDiag` gains `ApproveClassURL` /
-`DenyClassURL` / `SilenceClassURL`. When populated, `FormatSlackDelta`
-renders an extra row under the Approve/Deny pair. Render-only on
-OSS — the OSS enrich pipeline does NOT yet mint class-action JWTs
-(the signer lives in CHA-com). CHA-com aiwatch's renderer
-(`cmd/cha-com/render.go`) is the active surface in production.
-
-### Added — `Silence.spec.matcher.messagePattern` (Phase 2.B.9)
-
-Substring-match on `Diagnostic.Message`. Enables class-scoped
-silences from the CHA-com `/silence-class` click. `pkg/silence.Matches`
-ANDs MessagePattern alongside Source + Subject + Severity.
-
-### Added — `DisruptionDrift` analyzer (Phase 2.E)
-
-Three new signals: **PDB blocks all evictions** (`critical`),
-**stuck Indexed Job failed indexes** (`warning`), **stale
-ResourceQuota at 100%** (`warning`). Opts out via
-`CHA_ANALYZER_DISRUPTION_DRIFT=off`.
-
-### Added — `spec.ai.digestPinAttestation` chart wiring (Phase 2.H)
-
-`DigestPinAttestationSpec {SecretName, SecretKey, KeyID}` on AISpec.
-When set, chart mounts the Secret at `/etc/cha/attestation/` and
-passes `--digest-pin-attestation-key` + `--digest-pin-attestation-kid`
-to the aiwatch container. Operator reconciler mirrors the chart.
-Mount path is separate from `/etc/cha/keys/` so attestation key
-rotation is independent of the approval-server signing key.
-
-### Pairs with CHA-com
-
-`v1.16.0+` carries the binary-side surfaces this chart drives:
-class-action JWT routes, `/metrics` endpoint, attestation signer,
-lease elector, LLM proposer, autonomy class-policy bypass.
 
