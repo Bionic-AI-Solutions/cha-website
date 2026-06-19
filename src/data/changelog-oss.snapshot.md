@@ -1,6 +1,6 @@
 <!-- DO NOT EDIT — vendored snapshot of CHANGELOG.md (Bionic-AI-Solutions/cluster-health-autopilot) -->
 <!-- source: CHANGELOG.md (Bionic-AI-Solutions/cluster-health-autopilot) -->
-<!-- synced: 2026-06-18 -->
+<!-- synced: 2026-06-19 -->
 <!-- re-sync: ./scripts/sync-changelogs.sh && npm run build -->
 <!-- truncated to newest 12 release sections; the public roadmap renders these only -->
 
