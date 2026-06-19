@@ -44,9 +44,9 @@ const safetyPillars = [
       'IRSA on EKS, Workload Identity on GKE, AAD Workload Identity on AKS. No long-lived cloud credentials in CHA. Same IAM your cluster already uses — same audit trail.',
   },
   {
-    title: 'Firecrawl external egress — opt-in, redacted query only (paid deep-RCA)',
+    title: 'Firecrawl external egress — key-gated, redacted query only (paid deep-RCA)',
     body:
-      'When the paid deep-RCA feature is enabled (`--deep-rca-enabled`, off by default), CHA sends exactly one outbound HTTPS request per investigation to the Firecrawl API for live web research. The payload is a generic technical query synthesized by the LLM — no cluster namespace, hostname, IP address, pod name, or secret value is included. The LLM synthesis step runs in-cluster before any data leaves. Air-gap (`cloud.enabled=false`) disables deep-RCA entirely. The Firecrawl API key is sourced from a K8s Secret (never a flag literal). This is the only intentional external-egress exception in the paid tier.',
+      'The Firecrawl web-research step is active only when a Firecrawl API key is configured (K8s Secret `cha-firecrawl-key`); it can be disabled explicitly with `--firecrawl-enabled=false`. When active, CHA sends exactly one outbound HTTPS request per investigation to the Firecrawl API. The payload is a generic technical query synthesized by the LLM — no cluster namespace, hostname, IP address, pod name, or secret value is included. Without a key, the deep-RCA investigator falls back to cluster-only root-cause analysis (Describe + events + LLM synthesis) — no external call is made. The Firecrawl API key is sourced from a K8s Secret (never a flag literal). This is the only intentional external-egress exception in the paid tier.',
   },
 ];
 
@@ -55,7 +55,7 @@ const compliance = [
   { name: 'SBOM (paid)', detail: 'SBOM (CycloneDX) pipeline ships in the v0.1.0-alpha.1 line (pre-alpha). First published SBOM artifacts pending CI billing restoration.' },
   { name: 'Signed artifacts', detail: 'OSS binary checksums are cosign-signed and Rekor-logged (checksums.txt.sigstore.json) on every release in the v0.1.0-alpha.1 line (pre-alpha). Container-image signing and CHA-com artifact signing pipelines are wired but their first signed artifacts are pending CI billing restoration.' },
   { name: 'No telemetry by default', detail: 'OSS tier ships with zero outbound telemetry. Opt in to phone-home, never the reverse.' },
-  { name: 'Firecrawl egress disclosure (paid deep-RCA)', detail: 'When `--deep-rca-enabled` is set (off by default), one HTTPS call per investigation goes to the Firecrawl API. Only a generic LLM-synthesized technical question is sent — no namespace, hostname, IP, pod name, or secret. Air-gap mode disables deep-RCA entirely. API key sourced from a K8s Secret only.' },
+  { name: 'Firecrawl egress disclosure (paid deep-RCA)', detail: 'The Firecrawl web-research step is active only when a Firecrawl API key is configured (K8s Secret `cha-firecrawl-key`); it can be disabled explicitly with `--firecrawl-enabled=false`. When active, one HTTPS call per investigation goes to the Firecrawl API. Only a generic LLM-synthesized technical question is sent — no namespace, hostname, IP, pod name, or secret. Without a key, the deep-RCA investigator performs cluster-only root-cause analysis — no external call is made. API key sourced from a K8s Secret only.' },
 ];
 ---
 

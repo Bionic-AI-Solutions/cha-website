@@ -28,9 +28,11 @@ A new paid investigator tier performs structured root-cause analysis using
 **Firecrawl** to query live public web sources. The LLM synthesizes a generic
 technical query from the finding — **no cluster namespace, hostname, IP address,
 or secret leaves the cluster**; only a generic technical question is sent.
-The Firecrawl integration is **opt-in** (`--deep-rca-enabled`, off by default)
-and classified as an external-egress integration (see the security page for the
-full egress disclosure).
+The Firecrawl web-research step is active only when a Firecrawl API key is
+configured (K8s Secret `cha-firecrawl-key`); it can be disabled explicitly with
+`--firecrawl-enabled=false`. Without a key, the investigator falls back to
+cluster-only root-cause analysis — no external call is made. This is classified
+as an external-egress integration (see the security page for the full egress disclosure).
 
 The RCA artifact is **persisted** alongside the finding and **forwarded into every
 AI tier (T0 → T3)** as a shared `<root_cause>` context block, so T0 enrichment,
