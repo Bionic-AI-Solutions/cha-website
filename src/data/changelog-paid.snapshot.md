@@ -1,8 +1,33 @@
 <!-- DO NOT EDIT — vendored snapshot of CHANGELOG.md (Bionic-AI-Solutions/CHA-com, private) -->
 <!-- source: CHANGELOG.md (Bionic-AI-Solutions/CHA-com, private) -->
-<!-- synced: 2026-06-18 -->
+<!-- synced: 2026-06-19 -->
 <!-- re-sync: ./scripts/sync-changelogs.sh && npm run build -->
 <!-- truncated to newest 12 release sections; the public roadmap renders these only -->
+
+## [0.2.0-alpha.1] — 2026-06-19
+
+### Added
+
+- Firecrawl-grounded deep-RCA LLM investigator: performs structured root-cause
+  analysis using live public web research (read-only cluster tools + web
+  research via an LLM-synthesized, client-redacted query). Flags:
+  `--firecrawl-endpoint`, `--firecrawl-enabled`, `--firecrawl-api-key-env`,
+  `--investigator-web-timeout`. API key read from K8s Secret `cha-firecrawl-key`.
+- Deep-RCA artifact persisted to `cha_investigations` Qdrant collection;
+  cross-cycle retrieval injects prior root-cause context into the T1 proposer.
+- Root-cause forwarded into every AI tier (T0–T3) via a `<root_cause>` prompt
+  block so all tiers reason from the same root cause; T1 also receives T0
+  enrichment in the same block.
+- Ticket-closure outcome recorded to RAG/audit store
+  (`verdict=cleared, delivery=ticket-closed`) so future short-circuit lookups
+  benefit from resolved findings.
+
+### Changed
+
+- `--rag-short-circuit` now defaults **ON** (previously default off). Inert
+  without `--memory-store-url`.
+- OSS dependency remains pinned to **v1.26.3** (no bump — the new code uses
+  only existing OSS symbols).
 
 ## [0.1.0-alpha.1] — 2026-06-18
 
@@ -1066,64 +1091,4 @@ outcome timeline (counterpart to `RecentOutcomesByTarget/Class`).
 `v1.22.x+`. No chart or operator changes — 3.C is binary-side prompt
 plumbing; 3.F is a new subcommand that runs as a Job/CronJob/ad-hoc
 exec on a pod with `--ai-audit-log` + `--rag-store-url` access.
-
-## [1.17.0] — 2026-06-09
-
-Phase 3.B — auto-merge DigestPin PRs at very-high confidence.
-
-### Added — Forge.MergePullRequest + GitHubForge implementation
-
-`ai/forge.Forge` interface gains `MergePullRequest(ctx, owner, repo,
-number, commitMessage)`. The GitHubForge implementation PUTs the
-GitHub merge endpoint with `merge_method=squash`. Errors:
-- `ErrMergeBlocked` (HTTP 405) — branch protection / required
-  reviews / pending status checks
-- `ErrMergeConflict` (HTTP 409) — head/base diverged
-
-### Added — `AutoMergeGate` interface + concrete `digestPinAutoMergeGate`
-
-The proposer-side `AutoMergeGate` interface (1 method:
-`ShouldAutoMerge`) keeps `DigestPinProposer` policy-agnostic.
-`cmd/cha-com/auto_merge_gate.go` is the concrete gate that ANDs
-all five guard conditions:
-
-1. AutoMerge feature flag on (`--digest-pin-auto-merge=true`,
-   off by default)
-2. Attestation signer configured (Phase 2.H) — refuses to
-   auto-merge unsigned PRs
-3. Circuit breaker closed (open = recent outcomes bad)
-4. ≥1 matching approve-class policy (the SRE explicitly trusted
-   this class via Phase 2.B "approve+remember")
-5. Wilson lower-bound class success-rate ≥ minSuccessRate
-   (default 0.95 — very-high confidence)
-
-Any miss → PR stays open for human review (legacy Phase 2 flow).
-Soft-fail on `MergePullRequest` errors: PR stays open + the action
-Rationale records "auto-merge attempted but blocked by branch
-protection" / etc, for audit + Slack visibility.
-
-### Added — `--digest-pin-auto-merge` CLI flag
-
-Operator-facing switch. The gate's threshold (`minSuccessRate=0.95`)
-is currently a constant inside the gate construction; a follow-up
-will surface it as `--digest-pin-min-success-rate`.
-
-### Deferred to follow-up
-
-Full `main.go` wiring (constructing `digestPinAutoMergeGate` with
-concrete `breaker` + `policies` + `classHistory` deps + CLI flag
-plumbing for the threshold) lands in a follow-up PR — this release
-delivers the interface + Forge surface + test coverage so the gate
-can be wired per-cluster without core re-touches.
-
-### Tests
-
-11 new tests: 4 propose-side (`ai/proposer`) + 7 gate (`cmd/cha-com`).
-Covers all 5 gate paths, soft-fail merge errors, nil-gate legacy
-behavior, nil-deps safety.
-
-### Pairs with OSS
-
-`v1.22.0+` (no chart change needed — the Forge surface ships in the
-binary; gate enabled per-cluster via `--digest-pin-auto-merge`).
 

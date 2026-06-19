@@ -54,4 +54,32 @@ export const BINARY_RELEASE = 'v0.1.0-alpha.1';
 // Latest CHA-com git TAG. PRE-ALPHA re-baseline: prior 1.x tags
 // (≤ v1.22.4) were pre-launch / pre-alpha iterations, now pre-release.
 // Consumed by the roadmap page (shippedOnly guard).
-export const PAID_VERSION = 'v0.1.0-alpha.1';
+export const PAID_VERSION = 'v0.2.0-alpha.1';
+
+// ── v0.2.0-alpha.1 capability facts (shipped 2026-06-19) ──────────────────
+//
+// RAG memory: LIVE as of v0.2.0-alpha.1.
+//   - Prior resolutions are read before every proposal (short-circuit default ON).
+//   - Every approve/deny/ticket-close outcome is recorded to the learning store.
+//   - `--rag-short-circuit` defaults ON; reuses a previously-cleared fix and
+//     skips the LLM when cosine similarity >= threshold (default 0.92).
+//
+// Deep-RCA (paid, opt-in):
+//   - A paid investigator performs root-cause analysis grounded in live web
+//     research via Firecrawl (external egress, opt-in, redacted query).
+//   - The LLM synthesizes a generic technical query — no namespace, hostname,
+//     or secret leaves the cluster.
+//   - The RCA artifact is persisted and forwarded into EVERY AI tier (T0→T3)
+//     so enrichment and fix proposals all reason from the same root cause.
+//
+// Tier chaining:
+//   - The deep-RCA result is injected as a shared context block across T0–T3.
+//
+// Ticket-close recording:
+//   - When a finding is cleared (ticket closed), the outcome is recorded to
+//     the RAG learning store, improving future short-circuit accuracy.
+//
+export const RAG_MEMORY_LIVE = true;
+export const RAG_SHORT_CIRCUIT_DEFAULT = true;
+export const DEEP_RCA_LIVE = true;        // paid, opt-in; Firecrawl-grounded, redacted query
+export const TIER_CHAINING_LIVE = true;   // RCA forwarded T0→T3

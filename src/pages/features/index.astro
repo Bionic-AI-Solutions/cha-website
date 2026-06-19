@@ -67,6 +67,13 @@ const features = [
       'Operator-defined action_kinds, target-namespace allowlists, dual-approval thresholds, signed-JWT click-to-fix URLs, hash-chained audit. The brake is in code you can read before you install.',
     status: 'shipped',
   },
+  {
+    href: '/features/rag-learning/',
+    title: 'RAG learning loop + deep-RCA',
+    summary:
+      'RAG memory is live: CHA reads prior resolutions before proposing and records every approve/deny/ticket-close outcome. Short-circuit default ON (skips the LLM when a high-confidence cleared prior exists). Paid opt-in: deep-RCA grounded in live web research via Firecrawl — a generic technical query is synthesized by the LLM (no namespace, hostname, or secret leaves the cluster) and the RCA is forwarded into every AI tier (T0 → T3). Pre-alpha v0.2.0-alpha.1.',
+    status: 'shipped (paid)',
+  },
 ];
 
 const statusStyles: Record<string, string> = {
