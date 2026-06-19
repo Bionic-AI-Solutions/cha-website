@@ -45,7 +45,7 @@ drift-9c1e04f2a77b3d18     warning   StuckCertificateRequests  CertificateReques
     n: '03',
     title: 'Remediate',
     claim:
-      '5 policy-bounded fixers run by default. AI-tier fix proposals require human approval via signed click-to-fix URLs — OR auto-merge silently at very-high confidence (Phase 3.B): matching approve-class policy + verified Ed25519 attestation + Wilson-bound class success-rate ≥ threshold (default 0.95) + closed circuit breaker.',
+      '5 policy-bounded fixers run by default. AI-tier fix proposals require human approval via signed click-to-fix URLs — OR auto-merge silently at very-high confidence (Phase 3.B): matching approve-class policy + verified Ed25519 attestation + Wilson-bound class success-rate ≥ threshold (default 0.95) + closed circuit breaker. RAG memory is live: CHA reads prior resolutions before proposing (short-circuit default ON at similarity ≥ 0.92). Paid tier: opt-in deep-RCA grounded in live web research via Firecrawl — LLM synthesizes a generic technical query (no namespace, hostname, or secret leaves the cluster); the RCA is forwarded into every AI tier (T0 → T3).',
     code: `DriftReport  StaleErrorPod    — fixer ran        OK
 DriftReport  StuckJob         — fixer ran        OK
 DriftReport  StuckRS          — fixer ran        OK
@@ -107,6 +107,7 @@ const integrations = [
     items: ['K8s informers', 'Alertmanager polling', 'Webhook (HMAC)', 'CronJob resync'],
   },
   { row: 'AI providers', items: ['OpenAI', 'Anthropic', 'In-cluster vLLM'] },
+  { row: 'Research (opt-in, paid)', items: ['Firecrawl (deep-RCA, redacted query, external egress)'] },
 ];
 
 const wedges = [

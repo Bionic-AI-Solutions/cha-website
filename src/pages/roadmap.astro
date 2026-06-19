@@ -55,6 +55,8 @@ const tracks = [
 // all shipped — they are part of the v0.1.0-alpha.1 line and were removed
 // from here on 2026-06-12. Cloud-aware RCA also shipped (join keys +
 // matchers across both repos), now rolled into v0.1.0-alpha.1.
+// RAG memory live + deep-RCA + tier chaining + ticket-close recording
+// shipped in v0.2.0-alpha.1 (2026-06-19) — removed from open items.
 const openItems = [
   { label: 'Cosign-signed container images + CHA-com artifacts', why: 'The SBOM (CycloneDX) + cosign signing pipeline shipped (P6.2) and OSS binary checksums are cosign-signed and Rekor-logged in the v0.1.0-alpha.1 line, but container-image and CHA-com artifact signing are still pending CI billing restoration', when: 'P6.2 — checksum signing live; image signing pending' },
   { label: 'Hosted playground', why: 'The "Try it now" path currently lands on quick-start; the live playground route is a coming-soon stub', when: 'P6.8 — in flight' },
@@ -63,6 +65,7 @@ const openItems = [
   { label: 'M7 phase 3 — controller-runtime reconciler per probe', why: '~10-day effort + separate design doc', when: 'Q4 2026' },
   { label: 'Anonymized run-log opt-in collection', why: 'GTM day 14–90 milestone (no engineering blocker)', when: 'Product/marketing track' },
   { label: 'Multi-tenant SaaS variant', why: 'One binary serving N customer clusters; not yet designed, needs an RFC', when: 'Post first 3 paying customers' },
+  { label: 'Deep-RCA Firecrawl egress domain allowlist (operator-configurable)', why: 'Current implementation uses default Firecrawl endpoint; operator-specified domain allowlist is a hardening follow-up', when: 'Next hardening sprint' },
 ];
 ---
 
@@ -80,8 +83,9 @@ const openItems = [
 
     <div class="mb-10 rounded-xl border border-amber-300/80 bg-amber-50 px-4 py-3 text-sm leading-relaxed text-amber-800 dark:border-amber-500/40 dark:bg-amber-500/10 dark:text-amber-300">
       <span class="font-semibold">Pre-alpha re-baseline.</span> The project
-      re-baselined to 0.x-alpha (pre-launch). Both tracks are now at
-      <span class="font-mono">v0.1.0-alpha.1</span>. Earlier versions
+      re-baselined to 0.x-alpha (pre-launch). OSS is at
+      <span class="font-mono">v0.1.0-alpha.1</span>; Enterprise CHA-com is at
+      <span class="font-mono">v0.2.0-alpha.1</span> (adds RAG-live, deep-RCA, tier chaining). Earlier versions
       (OSS &le; <span class="font-mono">v1.26.3</span>, paid &le;
       <span class="font-mono">v1.22.4</span>) were internal pre-alpha
       iterations and are marked pre-release — nothing has shipped GA yet.

@@ -1,8 +1,49 @@
 <!-- DO NOT EDIT — vendored snapshot of CHANGELOG.md (Bionic-AI-Solutions/CHA-com, private) -->
 <!-- source: CHANGELOG.md (Bionic-AI-Solutions/CHA-com, private) -->
-<!-- synced: 2026-06-18 -->
+<!-- synced: 2026-06-19 -->
 <!-- re-sync: ./scripts/sync-changelogs.sh && npm run build -->
 <!-- truncated to newest 12 release sections; the public roadmap renders these only -->
+
+## [0.2.0-alpha.1] — 2026-06-19
+
+RAG memory is now live and the default. Adds paid deep-RCA grounded in live
+web research (Firecrawl, opt-in, redacted query), tier chaining, and
+ticket-close outcome recording.
+
+### Added — RAG memory live: short-circuit default ON, ticket-close recording
+
+`--rag-short-circuit` now defaults **ON** (previously default off in v0.1.0-alpha.1 /
+v1.22.0). CHA reads prior resolutions before every proposal: when a previously-cleared
+fix for the same finding class exists at cosine similarity ≥ 0.92, the LLM call is
+skipped and the known-good fix is replayed directly. The reused proposal still flows
+through the G6 precondition re-check, the autonomy gate, and the post-apply verifier.
+
+Ticket-close recording: when a DriftReport finding is cleared (ticket resolved),
+the outcome is now written to the RAG learning store so future short-circuit
+lookups benefit from the closed finding.
+
+### Added — Deep-RCA: root-cause analysis grounded in live web research (paid, opt-in)
+
+A new paid investigator tier performs structured root-cause analysis using
+**Firecrawl** to query live public web sources. The LLM synthesizes a generic
+technical query from the finding — **no cluster namespace, hostname, IP address,
+or secret leaves the cluster**; only a generic technical question is sent.
+The Firecrawl integration is **opt-in** (`--deep-rca-enabled`, off by default)
+and classified as an external-egress integration (see the security page for the
+full egress disclosure).
+
+The RCA artifact is **persisted** alongside the finding and **forwarded into every
+AI tier (T0 → T3)** as a shared `<root_cause>` context block, so T0 enrichment,
+T1 fix proposals, T2 multi-step plans, and T3 runbook proposers all reason from
+the same root cause rather than independently re-deriving it.
+
+### Added — Tier chaining: shared RCA context across T0 → T3
+
+The deep-RCA result (when present) is injected as a `<root_cause>` block into
+every AI tier prompt in the same watcher cycle, ensuring consistent reasoning
+across tiers and eliminating redundant per-tier investigation calls.
+
+### Changed — OSS dependency pinned to v0.1.0-alpha.1
 
 ## [0.1.0-alpha.1] — 2026-06-18
 

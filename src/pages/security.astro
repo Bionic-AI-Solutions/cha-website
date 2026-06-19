@@ -43,6 +43,11 @@ const safetyPillars = [
     body:
       'IRSA on EKS, Workload Identity on GKE, AAD Workload Identity on AKS. No long-lived cloud credentials in CHA. Same IAM your cluster already uses — same audit trail.',
   },
+  {
+    title: 'Firecrawl external egress — opt-in, redacted query only (paid deep-RCA)',
+    body:
+      'When the paid deep-RCA feature is enabled (`--deep-rca-enabled`, off by default), CHA sends exactly one outbound HTTPS request per investigation to the Firecrawl API for live web research. The payload is a generic technical query synthesized by the LLM — no cluster namespace, hostname, IP address, pod name, or secret value is included. The LLM synthesis step runs in-cluster before any data leaves. Air-gap (`cloud.enabled=false`) disables deep-RCA entirely. The Firecrawl API key is sourced from a K8s Secret (never a flag literal). This is the only intentional external-egress exception in the paid tier.',
+  },
 ];
 
 const compliance = [
@@ -50,6 +55,7 @@ const compliance = [
   { name: 'SBOM (paid)', detail: 'SBOM (CycloneDX) pipeline ships in the v0.1.0-alpha.1 line (pre-alpha). First published SBOM artifacts pending CI billing restoration.' },
   { name: 'Signed artifacts', detail: 'OSS binary checksums are cosign-signed and Rekor-logged (checksums.txt.sigstore.json) on every release in the v0.1.0-alpha.1 line (pre-alpha). Container-image signing and CHA-com artifact signing pipelines are wired but their first signed artifacts are pending CI billing restoration.' },
   { name: 'No telemetry by default', detail: 'OSS tier ships with zero outbound telemetry. Opt in to phone-home, never the reverse.' },
+  { name: 'Firecrawl egress disclosure (paid deep-RCA)', detail: 'When `--deep-rca-enabled` is set (off by default), one HTTPS call per investigation goes to the Firecrawl API. Only a generic LLM-synthesized technical question is sent — no namespace, hostname, IP, pod name, or secret. Air-gap mode disables deep-RCA entirely. API key sourced from a K8s Secret only.' },
 ];
 ---
 
@@ -65,7 +71,7 @@ const compliance = [
 
   <section class="mx-auto max-w-6xl px-6 py-20">
     <h2 class="text-2xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">
-      The eight safety guarantees.
+      The nine safety guarantees.
     </h2>
     <div class="mt-8 grid gap-5 md:grid-cols-2">
       {safetyPillars.map((p, i) => (
