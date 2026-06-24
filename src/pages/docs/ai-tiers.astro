@@ -12,7 +12,7 @@ const tiers = [
   {
     tier: 'T1',
     name: 'Fix proposals',
-    does: 'Proposes a specific action (bounded to the operator-defined action_kind policy) and delivers a signed click-to-fix URL to Slack or the ticket. Nothing mutates until the URL is clicked — unless confidence-gated auto-merge is explicitly enabled (off by default).',
+    does: 'Proposes a specific action (bounded to the operator-defined action_kind policy) and delivers a signed click-to-fix URL to Slack or the ticket. Nothing mutates until the URL is clicked — unless you explicitly enable an autonomy tier (PR auto-merge or in-cluster confidence-gated auto-apply; both off by default).',
     approval: 'One-click signed URL',
   },
   {
@@ -49,7 +49,7 @@ const tiers = [
       </p>
       <div class="mt-4 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 dark:border-amber-900/50 dark:bg-amber-950/30">
         <p class="text-sm text-amber-800 dark:text-amber-300">
-          <strong>Nothing mutates without a human click</strong> — unless you explicitly enable confidence-gated auto-merge (off by default; Wilson lower bound &ge;0.95; every safety gate must pass). T1 and above require an approval action — a signed URL delivered to Slack or your ticket. Without the click (or that explicit opt-in), no cluster state changes.
+          <strong>Nothing mutates without a human click</strong> — unless you explicitly enable an autonomy tier: either PR auto-merge (off by default; Wilson lower bound &ge;0.95; every safety gate must pass) or in-cluster confidence-gated auto-apply (off by default; reversible-action allowlist; confidence &ge;0.95 — see below). T1 and above require an approval action — a signed URL delivered to Slack or your ticket. Without the click (or that explicit opt-in), no cluster state changes.
         </p>
       </div>
     </div>
@@ -90,6 +90,26 @@ const tiers = [
   --set ai.endpoint=https://your-llm-endpoint/v1 \\
   --set ai.model=your-model-name \\
   --set ai.apiKey.secretName=cha-ai-llm-key`}</code></pre>
+    </div>
+
+    <div>
+      <h2 class="text-xl font-semibold text-zinc-900 dark:text-zinc-50">Confidence-gated auto-apply (<code class="font-mono">--autonomy</code>)</h2>
+      <div class="mt-1 h-0.5 w-8 rounded-full bg-accent-500"></div>
+      <p class="mt-4 text-sm leading-relaxed text-zinc-600 dark:text-zinc-400">
+        Separate from PR auto-merge, the <code class="font-mono">cha-com watch</code> loop has an opt-in <strong>in-cluster auto-apply</strong> tier. It is <strong>OFF by default</strong>. You enable it with the <code class="font-mono">--autonomy</code> flag, which also requires <code class="font-mono">--memory-store-url</code> for the confidence signal. When a proposal qualifies, it is applied <strong>without a human click</strong> — but only when <em>every</em> gate below passes (defense-in-depth; the first failing gate is reported and audited):
+      </p>
+      <ol class="mt-4 list-decimal space-y-2 pl-6 text-sm leading-relaxed text-zinc-600 dark:text-zinc-400">
+        <li><strong>Confidence &ge; threshold.</strong> Default <code class="font-mono">0.95</code> (configurable via <code class="font-mono">--autonomy-min-confidence</code>). Confidence is <code class="font-mono">max(</code>cosine similarity to a verifiably-cleared prior fix, Wilson lower bound of the action class's success rate<code class="font-mono">)</code>.</li>
+        <li><strong>Reversible low-risk action.</strong> The action kind must be in the <code class="font-mono">--autonomy-allow</code> allowlist. Default: <code class="font-mono">DeletePod</code>, <code class="font-mono">DeleteCertRequest</code>, <code class="font-mono">DeleteACMEOrder</code> (controller-recreated / reversible). It explicitly <strong>excludes</strong> <code class="font-mono">PatchDeployment</code> and <code class="font-mono">DeleteJob</code>.</li>
+        <li><strong>Unprotected namespace.</strong> The target namespace must not be a protected namespace.</li>
+        <li><strong>Circuit breaker closed.</strong> If the breaker has tripped, autonomy is suspended until it resets.</li>
+        <li><strong>A near-identical prior fix verifiably cleared.</strong> The post-apply verifier must have confirmed a matching prior fix actually resolved the finding.</li>
+      </ol>
+      <div class="mt-4 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 dark:border-amber-900/50 dark:bg-amber-950/30">
+        <p class="text-sm text-amber-800 dark:text-amber-300">
+          The zero value is safe: with <code class="font-mono">--autonomy</code> unset, nothing ever auto-applies. The allowlist is intentionally limited to reversible actions, and the live-state precondition is re-validated at apply time, so a stale prior can never push through a now-invalid change.
+        </p>
+      </div>
     </div>
 
     <div>

@@ -25,13 +25,13 @@ const layers = [
   {
     name: 'Target-resource scope',
     summary:
-      "Each action_kind ships with a hard-coded target-resource filter. DeletePod only matches Pod resources. PatchDeployment payloads are gated JSONPath-by-JSONPath by the patch validator — not container images, not replicas. ApplyManifest payloads must pass ValidateManifest.",
+      "Each action_kind ships with a hard-coded target-resource filter. DeletePod only matches Pod resources. PatchDeployment payloads are restricted to a single allowed path: spec.template.metadata.annotations.kubectl.kubernetes.io/restartedAt (triggers a rollout restart) — not container images, not replicas. ApplyManifest payloads must pass ValidateManifest.",
     where: 'ai/approval/patch_validator.go — allow-list of JSONPaths',
   },
   {
     name: 'Namespace protection',
     summary:
-      'Protected namespaces are a compiled-in floor (kube-system, kube-public, kube-node-lease, rook-ceph, vault, external-secrets, cnpg-system) the agent refuses to touch. Operators extend the list append-only — CHA_PROTECTED_NAMESPACES_EXTRA, rendered from Helm protectedNamespaces.extra or the operator CR — so nothing can ever remove a compiled-in namespace. The fixer guard and the AI validator consume the same set, and the detect side escalates (not shields) findings in protected namespaces.',
+      'Protected namespaces are a compiled-in floor (kube-system, kube-public, kube-node-lease, rook-ceph, vault, external-secrets, cnpg-system, calico-system, tigera-operator) the agent refuses to touch. Operators extend the list append-only — CHA_PROTECTED_NAMESPACES_EXTRA, rendered from Helm protectedNamespaces.extra or the operator CR — so nothing can ever remove a compiled-in namespace. The fixer guard and the AI validator consume the same set, and the detect side escalates (not shields) findings in protected namespaces.',
     where: 'pkg/ai/protected.go — append-only extras over the validate.go floor',
   },
   {
@@ -43,7 +43,7 @@ const layers = [
   {
     name: 'Signed JWT click-to-fix',
     summary:
-      "Every T1+ mutation is wrapped in an Ed25519-signed JWT URL delivered to the operator via Slack or ticket. The approval-server verifies signature + expiry + JTI (one-time use). T2 plan steps additionally enforce prerequisite ordering at execution time — a step cannot run before its predecessor has executed. Without the click, nothing mutates — unless you explicitly enable confidence-gated auto-merge (off by default; Wilson lower bound ≥0.95; the PR body is re-fetched from the forge and its Ed25519 attestation re-verified and field-bound before merge; every safety gate must pass).",
+      "Every T1+ mutation is wrapped in an Ed25519-signed JWT URL delivered to the operator via Slack or ticket. The approval-server verifies signature + expiry + JTI (one-time use). T2 plan steps additionally enforce prerequisite ordering at execution time — a step cannot run before its predecessor has executed. Without the click, nothing mutates — unless you explicitly enable an autonomy tier: either PR auto-merge (off by default; Wilson lower bound ≥0.95; the PR body is re-fetched from the forge and its Ed25519 attestation re-verified and field-bound before merge) or in-cluster confidence-gated auto-apply (off by default; reversible-action allowlist; confidence ≥0.95). Both require every safety gate to pass.",
     where: 'ai/approval/{signer,verifier,replay}.go',
   },
   {

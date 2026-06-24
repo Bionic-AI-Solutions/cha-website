@@ -15,25 +15,25 @@ const diagnostic = [
   { name: 'CertExpiry', detects: 'cert-manager Certificate not Ready, expiring within 14 days, or already expired', severity: 'Critical / Warning', disable: 'CHA_ANALYZER_CERT_EXPIRY=off' },
   { name: 'TLSSecretMismatch', detects: 'Ingress points at an expired Secret while cert-manager renews into a different Secret (two-Secret naming drift)', severity: 'Warning', disable: 'CHA_ANALYZER_TLS_SECRET_MISMATCH=off' },
   { name: 'VaultPathMissing', optIn: true, detects: 'Queries Vault directly to catch drift before ESO\'s next refresh. Apache-2.0; you provide the Vault client. Paid tier auto-wires from your Vault config.', severity: 'Warning', disable: '— (opt-in, not default-registered)' },
-  { name: 'DNSChainDrift', detects: 'Cloudflare DNS → cluster ingress LB → Ingress host → Service → ready Endpoints. Emits the highest broken layer per host', severity: 'Warning', disable: 'CHA_ANALYZER_DNS_CHAIN_DRIFT=off' },
+  { name: 'DNSChainDrift', detects: 'Cloudflare DNS → cluster ingress LB → Ingress host → Service → ready Endpoints. Emits the highest broken layer per host. Also detects multiple Ingresses claiming the same host+path combination.', severity: 'Warning', disable: 'CHA_ANALYZER_DNS_CHAIN_DRIFT=off' },
   { name: 'NetworkPolicyProposer', detects: 'User namespaces with no NetworkPolicy on CNIs that enforce NetworkPolicy — emits a ready-to-apply policy YAML per uncovered namespace. Silent on non-enforcing CNIs (e.g. k3s Flannel-only)', severity: 'Warning', disable: 'CHA_ANALYZER_NETPOL_PROPOSER=off' },
 ];
 
 const drift = [
   { name: 'GitOpsDrift', detects: 'Resources that have drifted from their GitOps-managed desired state', disable: 'CHA_ANALYZER_GITOPS_DRIFT=off' },
-  { name: 'WorkloadStateDrift', detects: 'Deployment/StatefulSet replica count vs desired', disable: 'CHA_ANALYZER_WORKLOAD_STATE_DRIFT=off' },
+  { name: 'WorkloadStateDrift', detects: 'CNPG cluster phase and primary-switchover detection, StatefulSet pod-0 absence or not-ready', disable: 'CHA_ANALYZER_WORKLOAD_STATE_DRIFT=off' },
   { name: 'RBACDrift', detects: 'ClusterRoleBinding/RoleBinding changes not reflected in expected state', disable: 'CHA_ANALYZER_RBAC_DRIFT=off' },
-  { name: 'ConfigDrift', detects: 'ConfigMap or Secret content changed outside GitOps', disable: 'CHA_ANALYZER_CONFIG_DRIFT=off' },
+  { name: 'ConfigDrift', detects: 'CRD storage version drift, stuck Deployment rollout (generation vs observedGeneration), and Helm checksum annotation divergence across pods', disable: 'CHA_ANALYZER_CONFIG_DRIFT=off' },
   { name: 'CapacityDrift', detects: 'Resource request/limit ratios that have drifted from baseline', disable: 'CHA_ANALYZER_CAPACITY_DRIFT=off' },
-  { name: 'SecurityDrift', detects: 'Pod SecurityContext changes — privilege escalation, host network, host PID', disable: 'CHA_ANALYZER_SECURITY_DRIFT=off' },
+  { name: 'SecurityDrift', detects: 'Missing Pod Security Standards enforcement labels, mutable image tags (no digest pin), and NetworkPolicy coverage gaps per namespace. Mutable-tag severity is registry-dependent: Info for trusted upstream registries (quay.io, gcr.io, ghcr.io, registry.k8s.io, docker.io/library, etc.), Warning for untrusted/in-house registries (tunable via CHA_DIGEST_PIN_UNTRUSTED_SEVERITY)', disable: 'CHA_ANALYZER_SECURITY_DRIFT=off' },
 ];
 
 const workload = [
   { name: 'LogPatternMatcher', detects: 'Recent Events matching high-signal failure patterns (ImagePullBackOff, OOMKilled, VolumeAttachFailed, ProbeFailed, RBAC Forbidden) — dedup\'d per (object, pattern)', disable: 'CHA_ANALYZER_LOG_PATTERN_MATCHER=off' },
-  { name: 'DisruptionDrift', detects: 'PDB blocks all evictions / stuck Indexed-Job failed indexes / ResourceQuota at 100% past 1h', disable: 'CHA_ANALYZER_DISRUPTION_DRIFT=off' },
+  { name: 'DisruptionDrift', detects: 'PDB: disruptionsAllowed=0 past 5 min; Indexed-Job failed indexes past 10 min; ResourceQuota at 100% past 1h', disable: 'CHA_ANALYZER_DISRUPTION_DRIFT=off' },
   { name: 'OOMKillRecurrence', detects: 'Pod with ≥3 OOMKilled restarts in 24h — signals a persistent memory sizing issue', disable: 'CHA_ANALYZER_OOMKILL_RECURRENCE=off' },
   { name: 'PVOrphan', detects: 'PersistentVolume Released >7 days — still billing on the underlying cloud disk', disable: 'CHA_ANALYZER_PV_ORPHAN=off' },
-  { name: 'CronJobStuck', detects: 'Warning: >24h since last success. Critical: never succeeded or suspended unexpectedly', disable: 'CHA_ANALYZER_CRONJOB_STUCK=off' },
+  { name: 'CronJobStuck', detects: 'Warning: >24h since last success or suspended CronJob; Critical: never succeeded', disable: 'CHA_ANALYZER_CRONJOB_STUCK=off' },
 ];
 
 const paid = [

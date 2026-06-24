@@ -47,7 +47,7 @@ kubectl create secret generic cha-slack-healthinfo \\
 --set slack.critical.enabled=true --set slack.critical.secretName=cha-slack-critical \\
 --set slack.healthinfo.enabled=true --set slack.healthinfo.secretName=cha-slack-healthinfo`}</code></pre>
       <p class="mt-4 text-sm leading-relaxed text-zinc-600 dark:text-zinc-400">
-        Repeated alerts are deduplicated — the watcher re-posts still-active warnings at <code class="font-mono">watcher.slack.repeatInterval</code> (default <code class="font-mono">4h</code>, <code class="font-mono">0</code> = never) and still-active criticals at <code class="font-mono">watcher.slack.criticalRepeatInterval</code> (empty = fall back to <code class="font-mono">repeatInterval</code>).
+        Repeated alerts are deduplicated — the watcher re-posts still-active warnings at <code class="font-mono">watcher.slack.repeatInterval</code> (default <code class="font-mono">6h</code>, <code class="font-mono">0</code> = never) and still-active criticals at <code class="font-mono">watcher.slack.criticalRepeatInterval</code> (default <code class="font-mono">2h</code> so criticals stay loud; <code class="font-mono">0</code> = fall back to <code class="font-mono">repeatInterval</code>).
       </p>
     </div>
 

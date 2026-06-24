@@ -26,7 +26,7 @@ const safetyPillars = [
   {
     title: 'Signed-JWT click-to-fix URLs (paid tiers)',
     body:
-      'AI-tier fix proposals require human approval via signed-JWT URLs delivered to Slack or ticket. The approval-server enforces signature, expiry, one-time-use, and a per-(approver, action-class) rate budget (default 10 executions/hour per pair). Without the click, nothing mutates — unless you explicitly enable confidence-gated auto-merge (off by default; Wilson lower bound ≥0.95; the PR body is re-fetched and its Ed25519 attestation re-verified before merge; every safety gate must pass).',
+      'AI-tier fix proposals require human approval via signed-JWT URLs delivered to Slack or ticket. The approval-server enforces signature, expiry, one-time-use, and a per-(approver, action-class) rate budget (default 10 executions/hour per pair). Without the click, nothing mutates — unless you explicitly enable an autonomy tier: either PR auto-merge (off by default; Wilson lower bound ≥0.95; the PR body is re-fetched and its Ed25519 attestation re-verified before merge) or in-cluster confidence-gated auto-apply (off by default; reversible-action allowlist; confidence ≥0.95). Both require every safety gate to pass.',
   },
   {
     title: 'Dry-run mode',
