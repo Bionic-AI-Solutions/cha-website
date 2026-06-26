@@ -1,5 +1,5 @@
 # DO NOT EDIT — vendored snapshot of the OSS DriftReport CRD.
-# source: charts/agentic-sre/templates/crd-driftreport.yaml (Srenix/agentic-sre)
+# source: charts/agentic-sre/templates/crd-driftreport.yaml (srenix-ai/agentic-sre)
 # chart-version: 0.1.0-alpha.1
 # oss-commit: 929f28e
 # synced: 2026-06-18

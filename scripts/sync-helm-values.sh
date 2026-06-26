@@ -30,7 +30,7 @@ SYNC_DATE="$(date -u +%Y-%m-%d)"
 
 {
   echo "# DO NOT EDIT — vendored snapshot of the OSS chart's default values."
-  echo "# source: charts/agentic-sre/values.yaml (Srenix/agentic-sre)"
+  echo "# source: charts/agentic-sre/values.yaml (srenix-ai/agentic-sre)"
   echo "# chart-version: $CHART_VERSION"
   echo "# synced: $SYNC_DATE"
   echo "# re-sync: ./scripts/sync-helm-values.sh && npm run build"

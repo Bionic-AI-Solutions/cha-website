@@ -44,6 +44,6 @@ sync_one() {
 }
 
 sync_one "$OSS_REPO/CHANGELOG.md" "$SITE_ROOT/src/data/changelog-oss.snapshot.md" \
-  "CHANGELOG.md (Srenix/agentic-sre)" 12
+  "CHANGELOG.md (srenix-ai/agentic-sre)" 12
 sync_one "$PAID_REPO/CHANGELOG.md" "$SITE_ROOT/src/data/changelog-paid.snapshot.md" \
-  "CHANGELOG.md (Srenix/agentic-sre-enterprise, private)" 12
+  "CHANGELOG.md (srenix-ai/agentic-sre-enterprise, private)" 12

@@ -36,7 +36,7 @@ OSS_COMMIT="$(git -C "$OSS_REPO" rev-parse --short HEAD 2>/dev/null || echo unkn
 
 {
   echo "# DO NOT EDIT — vendored snapshot of the OSS DriftReport CRD."
-  echo "# source: charts/agentic-sre/templates/crd-driftreport.yaml (Srenix/agentic-sre)"
+  echo "# source: charts/agentic-sre/templates/crd-driftreport.yaml (srenix-ai/agentic-sre)"
   echo "# chart-version: $CHART_VERSION"
   echo "# oss-commit: $OSS_COMMIT"
   echo "# synced: $SYNC_DATE"

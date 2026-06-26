@@ -1,5 +1,5 @@
-<!-- DO NOT EDIT — vendored snapshot of CHANGELOG.md (Srenix/agentic-sre) -->
-<!-- source: CHANGELOG.md (Srenix/agentic-sre) -->
+<!-- DO NOT EDIT — vendored snapshot of CHANGELOG.md (srenix-ai/agentic-sre) -->
+<!-- source: CHANGELOG.md (srenix-ai/agentic-sre) -->
 <!-- synced: 2026-06-19 -->
 <!-- re-sync: ./scripts/sync-changelogs.sh && npm run build -->
 <!-- truncated to newest 12 release sections; the public roadmap renders these only -->

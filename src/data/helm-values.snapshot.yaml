@@ -1,5 +1,5 @@
 # DO NOT EDIT — vendored snapshot of the OSS chart's default values.
-# source: charts/agentic-sre/values.yaml (Srenix/agentic-sre)
+# source: charts/agentic-sre/values.yaml (srenix-ai/agentic-sre)
 # chart-version: 0.1.0-alpha.1
 # synced: 2026-06-18
 # re-sync: ./scripts/sync-helm-values.sh && npm run build
@@ -17,7 +17,7 @@ image:
   # image the platform depends on); no extra pull-secret config needed for
   # operators who already use it. GHCR is published as a mirror by
   # GoReleaser on every tag for operators who prefer it — flip the
-  # repository value below to `ghcr.io/srenix/agentic-sre`
+  # repository value below to `ghcr.io/srenix-ai/agentic-sre`
   # to use it.
   repository: docker4zerocool/agentic-sre
   tag: ""                         # default = .Chart.appVersion (e.g. v0.1.0-alpha.1)
@@ -515,7 +515,7 @@ watcher:
 #                                        publish-minio.if: false
 runner:
   enabled: false
-  repoUrl: "https://github.com/Srenix/agentic-sre"
+  repoUrl: "https://github.com/srenix-ai/agentic-sre"
   labels: "self-hosted,cluster"        # must match runs-on in publish-runs.yml
   name: "srenix-cluster-runner"
   # Runner image — ubuntu-jammy = Ubuntu 22.04; ubuntu-noble = 24.04

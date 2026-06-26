@@ -1,5 +1,5 @@
-<!-- DO NOT EDIT — vendored snapshot of CHANGELOG.md (Srenix/agentic-sre-enterprise, private) -->
-<!-- source: CHANGELOG.md (Srenix/agentic-sre-enterprise, private) -->
+<!-- DO NOT EDIT — vendored snapshot of CHANGELOG.md (srenix-ai/agentic-sre-enterprise, private) -->
+<!-- source: CHANGELOG.md (srenix-ai/agentic-sre-enterprise, private) -->
 <!-- synced: 2026-06-19 -->
 <!-- re-sync: ./scripts/sync-changelogs.sh && npm run build -->
 <!-- truncated to newest 12 release sections; the public roadmap renders these only -->
@@ -126,7 +126,7 @@ unaffected by this change.
 
 ### Changed — OSS dependency → v1.26.2
 
-Bumped `github.com/Srenix/agentic-sre` to
+Bumped `github.com/srenix-ai/agentic-sre` to
 `v1.26.2`, which adds `(*AIProposedAction).ValidateForExecution()`.
 
 ## [1.22.2] — 2026-06-12
@@ -258,7 +258,7 @@ Kubernetes Events `MultiSink`.
 
 ### Added — CycloneDX SBOM + cosign keyless image signing + attestation (P6.2)
 
-Mirrors the OSS P6.2 supply-chain work so paired releases ship identical provenance, fulfilling the website's "SBOM (paid)" and "Cosign-signed container images with attestation" claims for the paid tier. `.goreleaser.yaml` gains `sboms:` (syft → one **CycloneDX JSON** SBOM per `srenix-enterprise` binary archive), `signs:` (cosign **keyless** `sign-blob` over `checksums.txt` → `checksums.txt.sigstore.json`), and `docker_signs:` (cosign **keyless** `sign` over every `docker4zerocool/srenix-enterprise` + `ghcr.io/srenix/srenix-enterprise` image + manifest, logged to Rekor). Keyless via the workflow's GitHub OIDC token (`id-token: write`, previously "reserved for future" — wired now) → short-lived Fulcio cert; no key on disk. The release workflow installs syft + cosign (`anchore/sbom-action`, `sigstore/cosign-installer`); it already ran goreleaser with `--timeout 2h`. The Srenix Enterprise repo + Releases are private, but the image registries are **public**, so customers verify image signatures without repo access. New `docs/RELEASE_VERIFICATION.md` gives the `cosign verify` / `verify-blob` + SBOM-inspection commands. Verified locally: `goreleaser check` passes and `goreleaser release --snapshot` produces four valid CycloneDX SBOMs; signing pipes only execute in CI under a real OIDC token.
+Mirrors the OSS P6.2 supply-chain work so paired releases ship identical provenance, fulfilling the website's "SBOM (paid)" and "Cosign-signed container images with attestation" claims for the paid tier. `.goreleaser.yaml` gains `sboms:` (syft → one **CycloneDX JSON** SBOM per `srenix-enterprise` binary archive), `signs:` (cosign **keyless** `sign-blob` over `checksums.txt` → `checksums.txt.sigstore.json`), and `docker_signs:` (cosign **keyless** `sign` over every `docker4zerocool/srenix-enterprise` + `ghcr.io/srenix-ai/srenix-enterprise` image + manifest, logged to Rekor). Keyless via the workflow's GitHub OIDC token (`id-token: write`, previously "reserved for future" — wired now) → short-lived Fulcio cert; no key on disk. The release workflow installs syft + cosign (`anchore/sbom-action`, `sigstore/cosign-installer`); it already ran goreleaser with `--timeout 2h`. The Srenix Enterprise repo + Releases are private, but the image registries are **public**, so customers verify image signatures without repo access. New `docs/RELEASE_VERIFICATION.md` gives the `cosign verify` / `verify-blob` + SBOM-inspection commands. Verified locally: `goreleaser check` passes and `goreleaser release --snapshot` produces four valid CycloneDX SBOMs; signing pipes only execute in CI under a real OIDC token.
 
 ### Added — Jira Cloud REST ticketing sink (paid Enterprise tier) (P6.3)
 
@@ -692,7 +692,7 @@ Neither mode opens a PR (there's no GitOps repo to target). The difference is pu
 
 ### Changed — bump OSS pin v1.23.1 → v1.25.1 (P2.5)
 
-Bumped the pinned `github.com/Srenix/agentic-sre`
+Bumped the pinned `github.com/srenix-ai/agentic-sre`
 dependency from the stale `v1.23.1` to the latest released tag `v1.25.1`.
 
 The only `pkg/` source change across this range is `pkg/feeder/workload.go`:
@@ -721,7 +721,7 @@ hash-chain swap entry above.)
 
 ### Changed — bump OSS pin v1.25.1 → v1.26.0 (release pairing)
 
-Bumps the pinned `github.com/Srenix/agentic-sre`
+Bumps the pinned `github.com/srenix-ai/agentic-sre`
 dependency to `v1.26.0`, the OSS release this binary pairs with. The OSS
 API change across v1.25.1→v1.26.0 is additive — notably the new
 `pkg/audit` hash-chain primitive (ported from this repo; see the
