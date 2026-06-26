@@ -1,8 +1,32 @@
 <!-- DO NOT EDIT — vendored snapshot of CHANGELOG.md (srenix-ai/agentic-sre-enterprise, private) -->
 <!-- source: CHANGELOG.md (srenix-ai/agentic-sre-enterprise, private) -->
-<!-- synced: 2026-06-19 -->
+<!-- synced: 2026-06-26 -->
 <!-- re-sync: ./scripts/sync-changelogs.sh && npm run build -->
 <!-- truncated to newest 12 release sections; the public roadmap renders these only -->
+
+## [0.2.0-alpha.5] — 2026-06-23
+
+### Fixed
+- **NetworkPolicy `ManifestBridge` approval links now honor `--approval-ttl`.** The v0.2.0-alpha.2 TTL fix and v0.2.0-alpha.4 LLM/digest-pin fix both missed `ManifestBridge` / `BuildApplyManifestProposal` — the path that mints approve/deny URLs for `NetworkPolicyProposer` findings. Those links expired after 15 min regardless of the `--approval-ttl` setting, leaving on-call SREs unable to click Approve before the token expired. Fixed by: (1) adding `BuildApplyManifestProposalWithTTL(d, ttl)` to OSS `pkg/ai` (backward-compat wrapper preserves `BuildApplyManifestProposal` for old callers); (2) adding `manifestBridgeTTL time.Duration` to `proposeFixes` and wiring `ai.parseApprovalTTL()` from `watch_cmd.go` and `diagnose_cmd.go`; (3) adding `ProposalTTL` field to `ManifestBridge` for OSS direct-register callers. OSS module pinned via local replace directive for development.
+- **Investigator: `runEnvTools` subject remapping via `remapSubjectForEnvTools`.** Synthetic subject prefixes (`image-pull-auth/`, `cert-expiry/`, `tls-secret-mismatch/`, `missing-secret/`, `missing-key/`, `unprovisioned/`, `service-no-endpoints/`, `ingress-orphan-service/`, `service-external-name-mismatch/`) were passed raw to `env.Describe()` which parsed `parts[0]` as a Kubernetes Kind — causing every such investigation to fail silently. `remapSubjectForEnvTools` now maps these prefixes to the correct K8s Kind and returns `""` for subjects with no corresponding K8s object (DNS loops, Vault path checks) to skip env tools entirely.
+- **Investigator: `runEnvTools` handles cluster-scoped subjects (2 segments).** Previously assumed all subjects were `Kind/ns/name`; cluster-scoped resources like `Node/my-node` caused an index-out-of-bounds on `parts[2]`.
+- **Digest: `isAwaitingApproval` recognizes confidence-below-threshold declines with an ApprovalURL.** Items declined by the autonomy engine for low AI confidence but still carrying a valid `ActionApproveURL` (meaning a human CAN override) were incorrectly routed to the "🚫 AI declined" section with no Approve/Deny buttons. Now routed to "⏳ Awaiting your approval" when `isAwaitingApproval(reason) && ActionApproveURL != ""`.
+- **All OSS probe and analyzer fixes from OSS 0.2.0-alpha.6 are included** (Spilo multi-namespace, CrashLoop coupling, PVC Lost, ETCD threshold, Velero completionTimestamp, ArgoCD Suspended, subject format, renderAIBlocks Investigation, hasActionableFindings, color logic, silence gate).
+
+## [0.2.0-alpha.4] — 2026-06-19
+
+### Fixed
+- **Approval-link TTL now applies to ALL proposer paths.** The `--approval-ttl` (4h) fix previously covered only the T1 fix-proposer and T2 planner; the **LLM fallback proposer** (`ai/proposer/llm.go`) and **digest-pin proposer** (`ai/proposer/digest_pin.go`) still hardcoded the 15-minute `DefaultProposalTTL`, so their links (e.g. a DeletePod for a readiness-stuck pod) expired in ~15 min. Both now honor `--approval-ttl`.
+
+## [0.2.0-alpha.3] — 2026-06-19
+
+### Fixed
+- **Human-approved `ApplyManifest`/`PatchDeployment` actions now execute.** The signed approval token carried only action-kind + target, so the approval-server reconstructed the proposal with an empty `ManifestYAML`/`PatchPayload` and rejected the click with `re-validation failed: ai: manifest_yaml is empty`. The payload now rides **inside the signed JWT** (gzip+base64 private claims `manifest_yaml_gz`/`patch_payload_gz`, re-read only after Ed25519 verification — tamper-proof), with a 7 KB mint-time size guard and a 128 KiB decompression cap. `ValidateForExecution` still re-validates the manifest before apply. `DeletePod`/`DeleteJob` (payload-less) tokens are unchanged.
+
+## [0.2.0-alpha.2] — 2026-06-19
+
+### Fixed
+- Click-to-fix **approval links now live for a configurable, multi-hour window** (`--approval-ttl`, default `4h`, was a hard 15m). Proposals are minted once on first appearance, so the old 15m window often left an on-call SRE no time to respond by the time Slack delivered the link. The G6 precondition re-check and JTI one-time-use still gate execution. Applies to T1/T2 proposal `ExpiresAt` and the approve-class token fallback.
 
 ## [0.2.0-alpha.1] — 2026-06-19
 
@@ -258,7 +282,7 @@ Kubernetes Events `MultiSink`.
 
 ### Added — CycloneDX SBOM + cosign keyless image signing + attestation (P6.2)
 
-Mirrors the OSS P6.2 supply-chain work so paired releases ship identical provenance, fulfilling the website's "SBOM (paid)" and "Cosign-signed container images with attestation" claims for the paid tier. `.goreleaser.yaml` gains `sboms:` (syft → one **CycloneDX JSON** SBOM per `srenix-enterprise` binary archive), `signs:` (cosign **keyless** `sign-blob` over `checksums.txt` → `checksums.txt.sigstore.json`), and `docker_signs:` (cosign **keyless** `sign` over every `docker4zerocool/srenix-enterprise` + `ghcr.io/srenix-ai/srenix-enterprise` image + manifest, logged to Rekor). Keyless via the workflow's GitHub OIDC token (`id-token: write`, previously "reserved for future" — wired now) → short-lived Fulcio cert; no key on disk. The release workflow installs syft + cosign (`anchore/sbom-action`, `sigstore/cosign-installer`); it already ran goreleaser with `--timeout 2h`. The Srenix Enterprise repo + Releases are private, but the image registries are **public**, so customers verify image signatures without repo access. New `docs/RELEASE_VERIFICATION.md` gives the `cosign verify` / `verify-blob` + SBOM-inspection commands. Verified locally: `goreleaser check` passes and `goreleaser release --snapshot` produces four valid CycloneDX SBOMs; signing pipes only execute in CI under a real OIDC token.
+Mirrors the OSS P6.2 supply-chain work so paired releases ship identical provenance, fulfilling the website's "SBOM (paid)" and "Cosign-signed container images with attestation" claims for the paid tier. `.goreleaser.yaml` gains `sboms:` (syft → one **CycloneDX JSON** SBOM per `srenix-enterprise` binary archive), `signs:` (cosign **keyless** `sign-blob` over `checksums.txt` → `checksums.txt.sigstore.json`), and `docker_signs:` (cosign **keyless** `sign` over every `docker4zerocool/srenix-enterprise` + `ghcr.io/bionic-ai-solutions/srenix-enterprise` image + manifest, logged to Rekor). Keyless via the workflow's GitHub OIDC token (`id-token: write`, previously "reserved for future" — wired now) → short-lived Fulcio cert; no key on disk. The release workflow installs syft + cosign (`anchore/sbom-action`, `sigstore/cosign-installer`); it already ran goreleaser with `--timeout 2h`. The Srenix Enterprise repo + Releases are private, but the image registries are **public**, so customers verify image signatures without repo access. New `docs/RELEASE_VERIFICATION.md` gives the `cosign verify` / `verify-blob` + SBOM-inspection commands. Verified locally: `goreleaser check` passes and `goreleaser release --snapshot` produces four valid CycloneDX SBOMs; signing pipes only execute in CI under a real OIDC token.
 
 ### Added — Jira Cloud REST ticketing sink (paid Enterprise tier) (P6.3)
 
@@ -916,179 +940,10 @@ replay store since v1.0.0; the class paths now match.
 
 ### Added — Observability log lines for Phase 3.B + 3.C
 
-- `digest-pin: auto-merge gate armed (min_success_rate=0.95, attestation=on, policies=on, breaker=shared)` logs once at startup when the Phase 3.B auto-merge gate is constructed. Operators can `kubectl logs deploy/srenix-aiwatch | grep auto-merge` to prove the gate is armed without reading source. Per-fire decisions still flow through the proposer's Rationale + the audit event chain (no per-call log noise).
+- `digest-pin: auto-merge gate armed (min_success_rate=0.95, attestation=on, policies=on, breaker=shared)` logs once at startup when the Phase 3.B auto-merge gate is constructed. Operators can `kubectl logs deploy/bionic-aiwatch | grep auto-merge` to prove the gate is armed without reading source. Per-fire decisions still flow through the proposer's Rationale + the audit event chain (no per-call log noise).
 - `ai.target_history.applied` audit event fires when the Phase 3.C `<target_history>` block prepends to an enricher prompt (silent in the first-encounter case). Closes the "wired but no observability" gap surfaced in the v1.20.1 adversarial review.
 
 ### Note — `--ai-audit-log` should NOT be `-` in production
 
 The Srenix Enterprise binary supports `--ai-audit-log=-` (stdout) for development. In production, set it to a persistent file path (e.g. `--ai-audit-log=/var/log/srenix-enterprise/audit.jsonl`) so `srenix-enterprise audit-bundle` has audit events to bundle. The audit-bundle subcommand otherwise correctly reports a zero-byte audit.jsonl with the manifest note "audit-log flag empty".
-
-## [1.20.1] — 2026-06-10
-
-### Fixed — CRITICAL: aiwatch panic at startup on v1.20.0
-
-v1.20.0 added `--cluster-name` to the audit-bundle subcommand AND
-called `ck.register` (which already registers `--cluster-name`).
-Pflag panicked at startup with `flag redefined: cluster-name`,
-crashing every aiwatch / approval-server pod into CrashLoopBackOff
-on every cluster that rolled to v1.20.0.
-
-This hotfix removes the subcommand-local `--cluster-name` flag;
-the bundle now reads cluster identity from `ck.clusterID` (set by
-the shared `--cluster-name` registered by ck.register).
-
-2 new regression tests assert `auditBundleCmd()` constructs
-without panic and that the expected flags are registered exactly
-once. Verified locally: `go run ./cmd/srenix-enterprise --help` succeeds;
-`go run ./cmd/srenix-enterprise audit-bundle --help` shows all expected flags.
-
-Rollout-safe: v1.20.0 was rolled back to v1.19.0 on the affected
-cluster before this hotfix tagged.
-
-## [1.20.0] — 2026-06-10
-
-Adversarial-review fixes after v1.19.0.
-
-### Fixed — `audit-bundle --since 30d` now parses
-
-v1.18.0 shipped the subcommand with `DurationVar` for `--since`, but
-Go's `time.ParseDuration` rejects "d" because of calendar-day vs
-civil-day ambiguity. The doc example showed `--since 30d` which
-broke at runtime: `invalid argument "30d" for "--since" flag: time: unknown unit "d" in duration "30d"`.
-
-This release accepts `<N>d` shorthand (mapped to N*24h) alongside
-standard Go duration syntax. Empty `--since` defaults to 30d. Four
-new tests cover day-suffix, hour-suffix, empty-default, and
-invalid-day-count.
-
-### Fixed — `audit-bundle --rag-store-url` now registered
-
-v1.18.0 also called out `--rag-store-url` in the help text but the
-flag was never registered (it lives on `clusterKnowledgeFlags`, not
-`aiFlags`). Running the bundle against a live RAG store returned
-`Error: unknown flag: --rag-store-url`.
-
-This release registers the cluster-knowledge family on the
-subcommand. The flag's value plumbs into `aiFlags.memStoreURL` when
-the operator hasn't set `--memory-store-url` directly. `--cluster-name`
-falls back to `clusterKnowledgeFlags.clusterID` when not set
-directly on the subcommand.
-
-### Fixed — goreleaser disk-OOM root cause
-
-Releases v1.16.0 through v1.19.0 all failed at goreleaser's docker-
-build phase with `no space left on device` on the GitHub runner
-(~14 GiB free → multi-arch builds need ~25 GiB). Each was salvaged
-via local single-arch build + push, which broke arm64 operators.
-
-This release adds a pre-checkout disk-cleanup step that frees ~25
-GiB by removing pre-installed Android SDK / .NET / Haskell / Swift
-/ CodeQL toolchains that the workflow doesn't need. Multi-arch
-builds should now complete without local fallback. Verified locally:
-the same workflow runs in ~75 min with ~40 GiB free at the docker-
-build step.
-
-## [1.19.0] — 2026-06-09
-
-### Fixed — Phase 3.B production wiring of `digestPinAutoMergeGate`
-
-The v1.17.0 release shipped the `AutoMergeGate` interface + Forge
-surface + 11 gate-behavior tests but never CONSTRUCTED
-`digestPinAutoMergeGate` at runtime. The flag `--digest-pin-auto-merge=true`
-was a silent no-op because the gate stayed nil.
-
-This release closes the loop:
-
-- `aiFlags.sharedBreaker()` exposes the SAME `CircuitBreaker` to
-  both the autonomy engine and the auto-merge gate, so an open
-  breaker from a bad auto-apply stops auto-merge too (otherwise
-  auto-merge would amplify a regression).
-- `ai.ClassSuccessConfidence` exported. Same Wilson-lower-bound
-  semantics as Phase 2.C; gate uses it via the new
-  `memoryWilsonClassHistory` adapter.
-- `aiFlags.buildPolicyLooker(ragStore)` shares the autonomy engine's
-  `policyAdapter` with the gate.
-- `--digest-pin-min-success-rate` flag (default 0.95) surfaces the
-  threshold as an operator-facing knob.
-- `digestPinFlags.resolveAutoMergeGate(ai, ragStore, hasAttestation)`
-  constructs the gate when all deps are present; errors with
-  actionable wording listing exactly which missing dep blocks the
-  half-config (no `--ai-tier` / no `--digest-pin-attestation-key`
-  / no `--rag-store-url`).
-- `watch_cmd` calls `resolveAutoMergeGate` BEFORE
-  `buildDigestPinProposer` so the proposer picks up the gate.
-
-4 wiring tests added (disabled-by-default, nil-ai-hard-fails,
-no-attestation-hard-fails, no-memory-hard-fails). The 11 gate
-tests from v1.17.0 still cover `ShouldAutoMerge` end-to-end.
-
-### Pairs with OSS
-
-`v1.23.0+` (trigger-expansion M1-M7 bundle). No new Srenix Enterprise / OSS
-interaction surfaces — this is the production wiring for an
-existing Srenix Enterprise feature.
-
-## [1.18.0] — 2026-06-09
-
-Phase 3.C + 3.F bundled.
-
-### Added — Investigator-level RAG grounding (Phase 3.C)
-
-`TargetHistoryRetriever` interface + `EnricherConfig.TargetHistory`
-field. When wired, the enricher prepends a `<target_history>` block
-to the LLM prompt summarizing recent outcomes on the SAME target:
-
-  "This exact target has been touched 14 time(s) in the recent window:
-   11 cleared, 2 still-present, 1 reverted. The most recent attempt
-   (4h ago) cleared with action_kind=ApplyManifest."
-
-Plus up to 8 detail lines, each citing verdict + recorded_at +
-action + rationale. The framing emphasizes history is OBSERVATIONAL
-not INSTRUCTIONAL — the runtime re-validates every fix against live
-state before acting.
-
-Reuses Phase 2.A's existing outcome memory (`Memory.RecentOutcomesByTarget`)
-via a new `RecentByTarget` adapter. nil retriever = no block in prompt
-(legacy single-cluster behavior). For repeat findings on the same
-resource, expected to cut investigator wall-clock + token cost by
-~90% while sharpening the conclusion.
-
-### Added — `srenix-enterprise audit-bundle` subcommand (Phase 3.F)
-
-SOC2-friendly evidence pack exporter. Reads the audit JSONL written
-by `--ai-audit-log` + the RAG outcome memory, produces a tar.gz:
-
-  - `manifest.json` — tool version, generation timestamp, cluster
-    name, since-window, audit event count, outcome count, SHA256 of
-    every contained file
-  - `audit.jsonl` — verbatim copy of the source audit log
-  - `outcomes.jsonl` — every `memory.Resolution` within `since`,
-    one JSON object per line
-
-Soft-fails on missing audit log (records a manifest note + ships a
-zero-byte audit.jsonl); hard-fails only on unwritable output path
-or unreachable RAG store. Bundle is local-only — no network egress.
-
-Reuses the existing `aiFlags` registry for memory wiring so the
-same `--rag-store-url` + `--ai-llm-*` flags as the watcher.
-
-New `memory.Memory.RecentAll(ctx, since)` exposes the unfiltered
-outcome timeline (counterpart to `RecentOutcomesByTarget/Class`).
-
-### Tests
-
-- 8 new tests in ai/ covering TargetHistoryRetriever soft-fail paths
-  + aggregate counts + cap behavior + RecordedAt rendering +
-  enricher-side wiring (block lands in user message; nil retriever
-  = legacy behavior)
-- 10 new tests in cmd/srenix-enterprise/ covering happy-path bundle layout,
-  manifest checksums, missing/empty audit log soft-fail, memory error
-  hard-fail, line-counting edges, SHA256 vector, gzip-magic-bytes
-  smoke
-
-### Pairs with OSS
-
-`v1.22.x+`. No chart or operator changes — 3.C is binary-side prompt
-plumbing; 3.F is a new subcommand that runs as a Job/CronJob/ad-hoc
-exec on a pod with `--ai-audit-log` + `--rag-store-url` access.
 

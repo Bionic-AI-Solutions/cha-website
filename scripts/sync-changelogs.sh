@@ -17,7 +17,7 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 SITE_ROOT="$(dirname "$SCRIPT_DIR")"
 OSS_REPO="${SRENIX_OSS_REPO:-$SITE_ROOT/../agentic-sre}"
-PAID_REPO="${SRENIX_PAID_REPO:-$SITE_ROOT/../Srenix Enterprise}"
+PAID_REPO="${SRENIX_PAID_REPO:-$SITE_ROOT/../agentic-sre-enterprise}"
 SYNC_DATE="$(date -u +%Y-%m-%d)"
 
 # max_releases: this repo is PUBLIC. Vendor ONLY the newest N release

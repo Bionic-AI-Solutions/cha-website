@@ -1,7 +1,7 @@
 # DO NOT EDIT — vendored snapshot of the OSS chart's default values.
 # source: charts/agentic-sre/values.yaml (srenix-ai/agentic-sre)
 # chart-version: 0.1.0-alpha.1
-# synced: 2026-06-18
+# synced: 2026-06-26
 # re-sync: ./scripts/sync-helm-values.sh && npm run build
 
 # Default values for agentic-sre.

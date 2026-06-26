@@ -1,8 +1,8 @@
 # DO NOT EDIT — vendored snapshot of the OSS DriftReport CRD.
 # source: charts/agentic-sre/templates/crd-driftreport.yaml (srenix-ai/agentic-sre)
 # chart-version: 0.1.0-alpha.1
-# oss-commit: 929f28e
-# synced: 2026-06-18
+# oss-commit: d6237fd
+# synced: 2026-06-26
 # re-sync: ./scripts/sync-crd.sh && npm run build
 # NOTE: Helm template directives are stripped so this parses as plain YAML.
 

@@ -1,8 +1,34 @@
 <!-- DO NOT EDIT — vendored snapshot of CHANGELOG.md (srenix-ai/agentic-sre) -->
 <!-- source: CHANGELOG.md (srenix-ai/agentic-sre) -->
-<!-- synced: 2026-06-19 -->
+<!-- synced: 2026-06-26 -->
 <!-- re-sync: ./scripts/sync-changelogs.sh && npm run build -->
 <!-- truncated to newest 12 release sections; the public roadmap renders these only -->
+
+## [0.2.0-alpha.5] — 2026-06-19
+
+### Changed
+- **Alertmanager push is now limited to critical + actionable findings.** Purely-advisory warnings (no approve/deny action) are no longer pushed to Alertmanager — they stay on Srenix's native Slack with the honest "Srenix Advisory" title. This stops the duplicate, misleadingly-titled "Human Action Required" alerts that the cluster Alertmanager's Slack receiver rendered for advisory findings. Criticals (always) and findings with a signed approve/deny URL still reach Alertmanager for paging/escalation.
+
+## [0.2.0-alpha.4] — 2026-06-19
+
+### Fixed
+- **Terminating pods are no longer flagged as stuck/not-ready.** Pod probes (CrashLoopBackOff, PendingPods, FailedMounts, Services, ETCD) now skip pods with a `metadata.deletionTimestamp` (i.e. already Terminating) — they're intentionally being deleted, so flagging them (and proposing DeletePod, which then "already resolved" on click) was pure noise. Most visible during rollouts, including Srenix's own pods. Non-terminating pods in the same state are still detected.
+
+## [0.2.0-alpha.3] — 2026-06-19
+
+### Added
+- **Configurable RBAC allowlist** — extend the built-in expected-system allowlist at runtime (no rebuild) via an optional `srenix-rbac-allowlist` ConfigMap in the install namespace. Data keys `allowNamespaces`, `allowRolePrefixes`, `allowRoleNames` (comma/newline-separated) are merged with the built-ins per cycle; absent ConfigMap → built-ins only.
+- **Suppressed-RBAC digest** — instead of silently dropping allowlisted findings, `RBACDrift` emits one `info` summary per cycle (`RBACDrift/cluster/suppressed-expected-system`) listing how many wildcard-verb / unbound-SA findings were suppressed and which, so the silenced set stays visible (one info line + a DriftReport, replacing N paging warnings).
+
+## [0.2.0-alpha.2] — 2026-06-19
+
+### Fixed
+- **RBAC-drift noise reduction.** The `RBACDrift` analyzer no longer pages "wildcard verb" / "unbound ServiceAccount" warnings for well-known third-party operator and system components that legitimately hold wildcard verbs. The allowlist (previously only `kube-system`/`system:`/`cluster-admin`) now also skips operator namespaces (calico-system, tigera-operator, minio-operator, kasten-io, olm, rook-ceph, cert-manager, longhorn-system, cnpg-system, external-secrets, vault, local-path-storage, cattle-system, openshift-operators) and role-name prefixes (k10-, kasten-, calico-, tigera-, minio-, olm., k3s-, local-path-, console-, rook-, cert-manager, velero, longhorn-, cnpg-, external-secrets, vault-, openshift-), plus the canonical `admin`/`edit`/`view`/`cluster-owner`/`local-clusterowner` roles by exact name. Genuine user-defined wildcard roles (and roles like `custom-admin`/`payments-admin` that merely end in `-admin`) are still flagged.
+
+## [0.2.0-alpha.1] — 2026-06-19
+
+### Fixed
+- Slack alert headers are now **conditional on actionability**: the alarming `*Srenix Alert — Human Action Required*` title is used only when a finding in the payload carries a signed Approve/Deny button. Purely advisory findings (e.g. RBAC-drift warnings: wildcard verbs, unbound ServiceAccounts) now render `*Srenix Advisory — Review (no action required)*` so on-call engineers aren't paged to "act" on items that have no action. One-click Silence links are unchanged and still attached to every posted finding.
 
 ## [0.1.0-alpha.1] — 2026-06-18
 
@@ -141,7 +167,7 @@ The website's "Try it now" / playground CTA now has a real, kind-verified, deplo
 
 - **Drift injector** (`drift-injector.yaml`): a CronJob (stock `alpine/k8s` image + inline bash, no custom build) that creates and rotates **four** synthetic scenarios every 15 min, each mapped 1:1 to a **shipped OSS analyzer/probe** (verified firing on kind): (1) Deployment with a bad imagePullSecret pulling a private Docker Hub repo → `ImagePullAuth` (`internal/diagnose/image_pull_auth.go`); (2) Job referencing a missing Secret key → `SecretKeyMissing` (`internal/diagnose/secret_key_missing.go`); (3) Ingress serving an **expired** TLS secret while a Ready cert-manager `Certificate` renews the same host into a **different** secret → `TLSSecretMismatch` (`internal/diagnose/tls_secret_mismatch.go`); (4) CrashLoopBackOff Deployment → `CrashLoopBackOff` probe (`internal/probe/crashloop.go`).
 - **Isolation** (`namespace.yaml`): dedicated `srenix-playground` namespace (PSA `baseline`) + **ResourceQuota** (30 pods / 1 CPU / 1Gi) + **LimitRange** + **default-deny NetworkPolicy** (only DNS / in-namespace / HTTPS-out re-opened) + **namespaced injector RBAC** (acts only in-namespace) + a viewer ClusterRole granting **only** `get/list/watch` on `driftreports`. Every workload carries `nodeAffinity` excluding GPU nodes (`nvidia.com/gpu.present DoesNotExist`).
-- **Viewer** (`viewer/`, ~180 lines Go): a self-contained **OSS** read-only page (not the Srenix Enterprise dashboard, so anyone can `kind`-run it) that lists the cluster-scoped `DriftReport` CRs and renders them with `html/template` (**XSS-safe** — tested). Deployment + Service + Ingress (`playground.srenix.ai`, Kong ingressClass + `cert-manager.io/cluster-issuer: letsencrypt-prod`, mirroring the cluster's website/grafana ingress).
+- **Viewer** (`viewer/`, ~180 lines Go): a self-contained **OSS** read-only page (not the Srenix Enterprise dashboard, so anyone can `kind`-run it) that lists the cluster-scoped `DriftReport` CRs and renders them with `html/template` (**XSS-safe** — tested). Deployment + Service + Ingress (`playground.asre.baisoln.com`, Kong ingressClass + `cert-manager.io/cluster-issuer: letsencrypt-prod`, mirroring the cluster's website/grafana ingress).
 - **Srenix watcher** (`srenix-values.yaml`): the OSS chart installed scoped to `srenix-playground`, **diagnose-only** (`watcher.remedy.enabled=false`), AI/approval/ticketing/cloud all off, single pod, GPU-excluded. The playground only DETECTS drift; it never mutates.
 - **Runbook** (`README.md`): kind quick-try (anyone can run locally), prod deploy, the **DNS step documented but NOT executed** (Cloudflare A record + `deploy/lib/dns.sh` `DNS_DOMAINS` entry per the dns-new-subdomains rule), and teardown. Honest scope note: `DriftReport` is cluster-scoped and `srenix watch` lists cluster-wide, so the reader ClusterRole is cluster-wide read-only (safe with remedy off; only `srenix-playground` ever contains injected drift).
 - **kind verification:** created a kind cluster, installed the chart + bundle, injected all four scenarios, and confirmed the watcher produced DriftReports for each (`ImagePullAuth`, `SecretKeyMissing`, `TLSSecretMismatch`, `CrashLoopBackOff` probe) and the viewer rendered them (29 active reports, `/healthz` 200). `helm lint` + `kubeconform` + `kubectl apply --dry-run=server` clean; viewer `go build`/`vet`/`test`/`gofmt` clean incl. an XSS test. Hosted deploy + DNS remain the operator's final manual step.
@@ -338,152 +364,4 @@ v1.25.0 walks the OwnerReferences chain and synthesizes:
 Built-in workload parents (apps/v1 ReplicaSet, batch/v1 Job, core/v1) are explicitly skipped — they mean "this Pod is owned by a Deployment", not "this Deployment is operator-managed". 2 new tests cover both the positive (operator CR owner → synthesized) and negative (apps ReplicaSet owner → still nil) cases.
 
 `detectOwner` no longer early-returns on nil annotations — operator-managed workloads typically have NO annotations at all, so the nil-anns path must still walk the OwnerReferences fallback.
-
-## [1.24.1] — 2026-06-10
-
-### Fixed — CRD schema for `spec.watcher.triggers` (v1.24.0 was unusable on schema-strict K8s)
-
-v1.24.0 added the Go types + operator reconciler for `spec.watcher.triggers.{prom,webhook}` but did NOT update the CRD's OpenAPIv3 schema. K8s 1.27+ structural-schema pruning stripped the field at the API server, so any `kubectl apply` of a CR with `triggers` set silently dropped the data. The operator then rendered the watcher Deployment with no trigger args.
-
-This patch adds the matching schema to both `bundle/manifests/srenix.ai_agenticsres.yaml` and `charts/agentic-sre/templates/crd-agenticsre.yaml`. Verified live: `kubectl explain agenticsres.spec.watcher.triggers` now resolves and the field persists on `kubectl get`.
-
-Caught during live activation of M5 on the dev cluster (kubectl apply succeeded with a warning, but the field was stripped silently — operator rendered no trigger args).
-
-## [1.24.0] — 2026-06-10
-
-Adversarial-review follow-up: operator-CR triggers + KEDA expansion.
-
-### Added — `spec.watcher.triggers.{prom,webhook}` typed CR fields
-
-The chart's v1.23.1 `watcher.triggers.*` values knobs activated M5/M6 for chart-managed installs, but operator-managed (ArgoCD/Flux/kubectl-apply) installs couldn't reach them from the CR — they had to thread Helm values around. This release adds the typed surface:
-
-- `WatcherTriggersSpec.Prom {URL, Interval, AlertNameFilter}` → renders `--prom-trigger-url/interval/alert-filter`
-- `WatcherTriggersSpec.Webhook {Listen, Sources, SecretName, ServiceEnabled, ServicePort}` → renders `--webhook-listen/source` + projects every `<src>=<env-var>` source's env-var from the named Secret + (optionally) a ClusterIP Service
-
-Operator's `BuildWatcherDeployment` reads from `cr.Spec.Watcher.Triggers` via two new helpers (`watcherTriggerArgs`, `watcherTriggerEnv`). Legacy CRs (no Triggers stanza) render byte-identical to v1.23.1.
-
-### Added — KEDA `ScaledObject` in `watchedGVRs` (M1 follow-up)
-
-The v1.6.0 M1 expansion added HPA + Ingress + ArgoCD + DaemonSet to the watcher's inform-loop set but missed KEDA's `keda.sh/v1alpha1/ScaledObject`. The memory note `keda-paused-scaledobject` documents the production failure mode: paused annotation set out-of-band → silent 502-after-oauth-login cascade. This release adds it:
-
-- `GVRScaledObject` constant in `internal/snapshot`
-- `watchedGVRs` includes it (auto-skip when KEDA isn't installed)
-- Chart `clusterrole-reader.yaml` + operator `rbac_builders.go` both grant `keda.sh/scaledobjects` get/list/watch (no-op when KEDA absent)
-
-1 new test asserts the GVR is present.
-
-### Pairs with Srenix Enterprise
-
-`v1.21.0+` adds observability log lines for Phase 3.B (auto-merge gate armed at startup) and Phase 3.C (`ai.target_history.applied` audit event when the prompt block fires).
-
-## [1.23.1] — 2026-06-10
-
-Adversarial-review fixes after v1.23.0 went out.
-
-### Fixed — webhook HTTP server actually starts now (M6 wiring gap)
-
-v1.23.0 shipped `internal/server/webhook.Handler` + tests but
-nothing in the watcher's `Run()` instantiated an HTTP server, so
-M6 was compiled-but-never-loaded in production. This release wires
-the receiver: `watcher.Config.WebhookListen` + `WebhookSourceSpec`
-fields, `--webhook-listen` + `--webhook-source` CLI flags, an
-`http.Server` mux serving `/webhook/` + `/healthz` with graceful
-shutdown on `ctx.Done()`, Helm `watcher.triggers.webhook.*` values
-knobs, and a new `watcher-webhook-service.yaml` Service template
-with `secretKeyRef` env-var projection per registered source.
-
-### Fixed — Prometheus trigger CLI flags actually exist (M5 wiring gap)
-
-v1.23.0 shipped `Config.PromTriggerURL` but `cmd/srenix/watch` never
-registered matching CLI flags, so M5 was unreachable from
-`helm install` or `kubectl apply`. This release adds
-`--prom-trigger-url`, `--prom-trigger-interval`, and
-`--prom-trigger-alert-filter` + Helm `watcher.triggers.prom.*`.
-
-### Fixed — `endpointslices` RBAC for KongRoutes (M2)
-
-KongRoutes prefers `discovery.k8s.io/v1.EndpointSlice` for
-backend-readiness, but neither chart nor operator RBAC granted it.
-Silently fell back to legacy `v1.Endpoints` (still works) so this
-wasn't fatal — but the slice fast-path was dead code. Now granted
-in `clusterrole-reader.yaml` and `internal/operator/rbac_builders.go`.
-
-## [1.23.0] — 2026-06-09
-
-Trigger-expansion roadmap M1-M7 bundled. Closes the
-`docs/design/2026-05-trigger-expansion-roadmap.md` plan that v1.6.0
-opened M1 against.
-
-### Added — M1 expanded `watchedGVRs`
-
-Adds `Ingress`, `HorizontalPodAutoscaler`, and `ArgoCD Application`
-to the watcher's inform-loop set.
-
-### Added — M2 `KongRoutes` probe
-
-For each Kong-managed Ingress, verifies the backend Service has ≥1
-ready Endpoint + KongPlugin / KongConsumer annotation references
-resolve. Silent on clusters without Kong-managed Ingresses. Opt out
-via `SRENIX_PROBE_KONG_ROUTES=off`.
-
-### Added — M3 `GPUNodes` probe + `LogPatternMatcher` analyzer
-
-- **GPUNodes** — critical on NotReady / zero-allocatable, warning
-  on cordoned, for each GPU-advertising Node. Opt out:
-  `SRENIX_PROBE_GPU_NODES=off`.
-- **LogPatternMatcher** — scans Events for ImagePullBackOff,
-  OOMKilled, probe-failed, volume-attach-failed, RBAC Forbidden.
-  Dedup'd per (involved-object, pattern). Opt out:
-  `SRENIX_ANALYZER_LOG_PATTERN_MATCHER=off`.
-
-### Added — M4 Endpoints probe Layer-7 mode
-
-`EndpointTarget.L7` populated from three Ingress annotations
-(`srenix.ai/probe-l7-{path,expect,status}`). When
-set, second GET asserts both status + body content. Closes the
-"Kong returns 200 but body is wrong" failure class.
-
-### Added — M5 Prometheus class-C trigger
-
-`internal/trigger/prom`. Polls Alertmanager `/api/v2/alerts` and
-pushes a debounced signal on new firing-alert fingerprints. Closes
-the slow-drift gap (disk fill, cert expiry creep, error-budget
-burn, GPU ECC accumulation). New `Config` fields:
-`PromTriggerURL`, `PromTriggerInterval` (clamped ≥5s),
-`PromTriggerAlertFilter`.
-
-### Added — M6 external webhook receiver (class E)
-
-`internal/server/webhook`. HMAC-SHA256-authenticated POST to
-`/webhook/<source>` triggers an immediate diagnose cycle. `Sign()`
-exported for external integrators. Closes "rotation → probe within
-seconds" loop.
-
-### Added — M7 `pkg/probe.GVRWatcher` foundation
-
-Optional interface for probes to declare consumed GVRs.
-`GVRsOf(probe)` reads them; nil = "run on every trigger" (back-
-compat). Applied to KongRoutes + GPUNodes as exemplars. Sets up
-phase 2 (per-probe dispatch) and phase 3 (controller-runtime
-migration) without changing today's semantics.
-
-### Tests
-
-35+ new tests across the milestones; full regression green.
-
-## [1.22.2] — 2026-06-09
-
-### Fixed — PVOrphan needs `persistentvolumes` in RBAC
-
-v1.22.1 added PV capture (`GVRPV` in CaptureGVRs) but the watcher's
-reader ClusterRole still only granted `persistentvolumeclaims`. The
-PV list call silently failed with RBAC denial, so PVOrphan kept
-emitting nothing on live clusters.
-
-Adds `persistentvolumes` to:
-- `charts/agentic-sre/templates/clusterrole-reader.yaml`
-- `internal/operator/rbac_builders.go` (used in operator-managed installs)
-
-Verified live: with the live ClusterRole patched and the watcher
-restarted, PVOrphan now fires on the dev cluster's 117 Released PVs.
 
