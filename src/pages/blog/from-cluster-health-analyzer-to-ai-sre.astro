@@ -28,13 +28,13 @@ const driftClasses = [
 ---
 
 <BaseLayout
-  title="CHA &mdash; From cluster health analyzer to AI SRE"
-  description="Why we re-framed CHA and the safety story under the new name. External GTM feedback, three new drift-class analyzers, and an opt-in LLM-classified fixer matcher in the paid tier. Historical post — predates the pre-alpha re-baseline."
+  title="Srenix &mdash; From cluster health analyzer to AI SRE"
+  description="Why we re-framed Srenix and the safety story under the new name. External GTM feedback, three new drift-class analyzers, and an opt-in LLM-classified fixer matcher in the paid tier. Historical post — predates the pre-alpha re-baseline."
 >
   <PageHero
     eyebrow="Blog &middot; Engineering"
     title="From cluster health analyzer to AI SRE."
-    subtitle="Why we re-framed CHA and the safety envelope under the new name. (Historical post — predates the v0.1.0-alpha.1 re-baseline.)"
+    subtitle="Why we re-framed Srenix and the safety envelope under the new name. (Historical post — predates the v0.1.0-alpha.1 re-baseline.)"
   />
 
   <section class="mx-auto max-w-3xl px-6 py-16">
@@ -59,7 +59,7 @@ const driftClasses = [
     <div class="prose prose-zinc dark:prose-invert max-w-none">
       <h2 id="feedback">The feedback</h2>
       <p>
-        Earlier this month an external GTM reviewer looked at the CHA pitch
+        Earlier this month an external GTM reviewer looked at the Srenix pitch
         and gave us three specific notes:
       </p>
       <ol>
@@ -90,8 +90,8 @@ const driftClasses = [
 
       <h2 id="reframe">The reframe (Workstream A &middot; C)</h2>
       <p>
-        The OSS engine kept its name &mdash; <code>cluster-health-autopilot</code>{' '}
-        and the <code>cha</code> binary. Those Helm releases are in production
+        The OSS engine kept its name &mdash; <code>agentic-sre</code>{' '}
+        and the <code>srenix</code> binary. Those Helm releases are in production
         on pilot clusters; renaming them would have been a backwards-incompatibility
         without an upside. What changed was the <em>marketing surface</em> and
         the <em>paid tier framing</em>:
@@ -107,10 +107,10 @@ const driftClasses = [
         <li>
           The "vs. the competition" table names Komodor, Robusta, Causely,
           NeuBird, Resolve AI, Ciroos, and Tracer/OpenSRE by name &mdash; and
-          calls out the structural difference: <em>they observe; CHA mutates</em>.
+          calls out the structural difference: <em>they observe; Srenix mutates</em>.
         </li>
         <li>
-          The paid tier is now "CHA-com AI SRE" rather than "CHA-com paid."
+          The paid tier is now "Srenix Enterprise AI SRE" rather than "Srenix Enterprise paid."
           The T0&ndash;T3 tier ladder (narration &rarr; fix proposal &rarr;
           multi-step plan &rarr; vault break-glass runbook) is above the fold
           on pricing.
@@ -154,7 +154,7 @@ const driftClasses = [
       <p>
         All three analyzers are default-on. Each has an opt-out Helm value
         (<code>analyzers.gitopsDrift.enabled</code>, etc.) plus an env-var gate
-        (<code>CHA_ANALYZER_GITOPS_DRIFT=off</code>) for clusters that don't
+        (<code>SRENIX_ANALYZER_GITOPS_DRIFT=off</code>) for clusters that don't
         run Argo / Flux or want to defer the RBAC noise until they've cleaned
         their wildcards. The Reader ClusterRole picks up the new CRD reads
         through the chart's RBAC template &mdash; no manual edits required.
@@ -162,7 +162,7 @@ const driftClasses = [
 
       <h2 id="llm-matcher">An LLM-classified fixer matcher (Workstream C)</h2>
       <p>
-        In CHA-com v1.7.0 (the paid binary), the keyword
+        In Srenix Enterprise v1.7.0 (the paid binary), the keyword
         <code>DefaultFixerMatcher</code> &mdash; a switch statement that
         keyword-matches diagnostic.Source to a fixer name &mdash; is joined by
         an opt-in <code>LLMFixerMatcher</code>. When you pass
@@ -218,7 +218,7 @@ const driftClasses = [
         <li>
           <strong>Dual-approval for T3</strong> &mdash; vault break-glass
           runbooks require two distinct approvers separated by at least 30
-          minutes. The runbook is <em>never</em> executed by CHA; the operator
+          minutes. The runbook is <em>never</em> executed by Srenix; the operator
           runs it manually after dual approval. Key names only, never values.
         </li>
         <li>
@@ -289,7 +289,7 @@ const driftClasses = [
       <p>
         The full sequencing lives on the{' '}
         <a href="/roadmap/">roadmap page</a>; v1.7.0 itself is documented in
-        the <a href="https://github.com/Bionic-AI-Solutions/cluster-health-autopilot/blob/main/CHANGELOG.md">CHANGELOG</a>{' '}
+        the <a href="https://github.com/Srenix/agentic-sre/blob/main/CHANGELOG.md">CHANGELOG</a>{' '}
         with PR-level granularity. The implementation plan that drove the
         repositioning is checked into the OSS repo as
         <code>docs/design/2026-05-ai-sre-positioning.md</code> &mdash; the
@@ -300,7 +300,7 @@ const driftClasses = [
       <hr />
       <p class="text-sm text-zinc-500 dark:text-zinc-400">
         Questions, pushback, or pilot interest:{' '}
-        <a href="mailto:hello@bionicaisolutions.com">hello@bionicaisolutions.com</a>.
+        <a href="mailto:hello@srenix.ai">hello@srenix.ai</a>.
       </p>
     </div>
 

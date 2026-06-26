@@ -4,36 +4,36 @@ import PageHero from '../../components/PageHero.astro';
 import { OSS_ANALYZERS } from '../../data/product-facts';
 
 // Disable env vars verified against catalog/catalog.go (RegisterOSS): every
-// default-on analyzer is gated on CHA_ANALYZER_<NAME> != "off", and the chart
+// default-on analyzer is gated on SRENIX_ANALYZER_<NAME> != "off", and the chart
 // renders the matching analyzers.<name>.enabled toggle (values.yaml).
 const diagnostic = [
-  { name: 'SecretKeyMissing', detects: 'Pod in CreateContainerConfigError — names the missing key, consuming Deployment, and owning ExternalSecret', severity: 'Critical', disable: 'CHA_ANALYZER_SECRET_KEY_MISSING=off' },
-  { name: 'FailingExternalSecrets', detects: 'ExternalSecret with Ready=False — surfaces the controller error message including the specific missing Vault property', severity: 'Warning', disable: 'CHA_ANALYZER_FAILING_EXTERNAL_SECRETS=off' },
-  { name: 'ProactiveSecretKeyCheck', detects: 'Workload env references to Secret keys that don\'t exist yet — fires before the pod crashes', severity: 'Warning', disable: 'CHA_ANALYZER_PROACTIVE_SECRET_KEY_CHECK=off' },
-  { name: 'UnprovisionedSecret', detects: 'Workload references a Secret with no ExternalSecret provisioning it', severity: 'Warning', disable: 'CHA_ANALYZER_UNPROVISIONED_SECRET=off' },
-  { name: 'ImagePullAuth', detects: 'Pod in ImagePullBackOff with kubelet auth-failure signals (401, denied, unauthorized)', severity: 'Critical', disable: 'CHA_ANALYZER_IMAGE_PULL_AUTH=off' },
-  { name: 'CertExpiry', detects: 'cert-manager Certificate not Ready, expiring within 14 days, or already expired', severity: 'Critical / Warning', disable: 'CHA_ANALYZER_CERT_EXPIRY=off' },
-  { name: 'TLSSecretMismatch', detects: 'Ingress points at an expired Secret while cert-manager renews into a different Secret (two-Secret naming drift)', severity: 'Warning', disable: 'CHA_ANALYZER_TLS_SECRET_MISMATCH=off' },
+  { name: 'SecretKeyMissing', detects: 'Pod in CreateContainerConfigError — names the missing key, consuming Deployment, and owning ExternalSecret', severity: 'Critical', disable: 'SRENIX_ANALYZER_SECRET_KEY_MISSING=off' },
+  { name: 'FailingExternalSecrets', detects: 'ExternalSecret with Ready=False — surfaces the controller error message including the specific missing Vault property', severity: 'Warning', disable: 'SRENIX_ANALYZER_FAILING_EXTERNAL_SECRETS=off' },
+  { name: 'ProactiveSecretKeyCheck', detects: 'Workload env references to Secret keys that don\'t exist yet — fires before the pod crashes', severity: 'Warning', disable: 'SRENIX_ANALYZER_PROACTIVE_SECRET_KEY_CHECK=off' },
+  { name: 'UnprovisionedSecret', detects: 'Workload references a Secret with no ExternalSecret provisioning it', severity: 'Warning', disable: 'SRENIX_ANALYZER_UNPROVISIONED_SECRET=off' },
+  { name: 'ImagePullAuth', detects: 'Pod in ImagePullBackOff with kubelet auth-failure signals (401, denied, unauthorized)', severity: 'Critical', disable: 'SRENIX_ANALYZER_IMAGE_PULL_AUTH=off' },
+  { name: 'CertExpiry', detects: 'cert-manager Certificate not Ready, expiring within 14 days, or already expired', severity: 'Critical / Warning', disable: 'SRENIX_ANALYZER_CERT_EXPIRY=off' },
+  { name: 'TLSSecretMismatch', detects: 'Ingress points at an expired Secret while cert-manager renews into a different Secret (two-Secret naming drift)', severity: 'Warning', disable: 'SRENIX_ANALYZER_TLS_SECRET_MISMATCH=off' },
   { name: 'VaultPathMissing', optIn: true, detects: 'Queries Vault directly to catch drift before ESO\'s next refresh. Apache-2.0; you provide the Vault client. Paid tier auto-wires from your Vault config.', severity: 'Warning', disable: '— (opt-in, not default-registered)' },
-  { name: 'DNSChainDrift', detects: 'Cloudflare DNS → cluster ingress LB → Ingress host → Service → ready Endpoints. Emits the highest broken layer per host. Also detects multiple Ingresses claiming the same host+path combination.', severity: 'Warning', disable: 'CHA_ANALYZER_DNS_CHAIN_DRIFT=off' },
-  { name: 'NetworkPolicyProposer', detects: 'User namespaces with no NetworkPolicy on CNIs that enforce NetworkPolicy — emits a ready-to-apply policy YAML per uncovered namespace. Silent on non-enforcing CNIs (e.g. k3s Flannel-only)', severity: 'Warning', disable: 'CHA_ANALYZER_NETPOL_PROPOSER=off' },
+  { name: 'DNSChainDrift', detects: 'Cloudflare DNS → cluster ingress LB → Ingress host → Service → ready Endpoints. Emits the highest broken layer per host. Also detects multiple Ingresses claiming the same host+path combination.', severity: 'Warning', disable: 'SRENIX_ANALYZER_DNS_CHAIN_DRIFT=off' },
+  { name: 'NetworkPolicyProposer', detects: 'User namespaces with no NetworkPolicy on CNIs that enforce NetworkPolicy — emits a ready-to-apply policy YAML per uncovered namespace. Silent on non-enforcing CNIs (e.g. k3s Flannel-only)', severity: 'Warning', disable: 'SRENIX_ANALYZER_NETPOL_PROPOSER=off' },
 ];
 
 const drift = [
-  { name: 'GitOpsDrift', detects: 'Resources that have drifted from their GitOps-managed desired state', disable: 'CHA_ANALYZER_GITOPS_DRIFT=off' },
-  { name: 'WorkloadStateDrift', detects: 'CNPG cluster phase and primary-switchover detection, StatefulSet pod-0 absence or not-ready', disable: 'CHA_ANALYZER_WORKLOAD_STATE_DRIFT=off' },
-  { name: 'RBACDrift', detects: 'ClusterRoleBinding/RoleBinding changes not reflected in expected state', disable: 'CHA_ANALYZER_RBAC_DRIFT=off' },
-  { name: 'ConfigDrift', detects: 'CRD storage version drift, stuck Deployment rollout (generation vs observedGeneration), and Helm checksum annotation divergence across pods', disable: 'CHA_ANALYZER_CONFIG_DRIFT=off' },
-  { name: 'CapacityDrift', detects: 'Resource request/limit ratios that have drifted from baseline', disable: 'CHA_ANALYZER_CAPACITY_DRIFT=off' },
-  { name: 'SecurityDrift', detects: 'Missing Pod Security Standards enforcement labels, mutable image tags (no digest pin), and NetworkPolicy coverage gaps per namespace. Mutable-tag severity is registry-dependent: Info for trusted upstream registries (quay.io, gcr.io, ghcr.io, registry.k8s.io, docker.io/library, etc.), Warning for untrusted/in-house registries (tunable via CHA_DIGEST_PIN_UNTRUSTED_SEVERITY)', disable: 'CHA_ANALYZER_SECURITY_DRIFT=off' },
+  { name: 'GitOpsDrift', detects: 'Resources that have drifted from their GitOps-managed desired state', disable: 'SRENIX_ANALYZER_GITOPS_DRIFT=off' },
+  { name: 'WorkloadStateDrift', detects: 'CNPG cluster phase and primary-switchover detection, StatefulSet pod-0 absence or not-ready', disable: 'SRENIX_ANALYZER_WORKLOAD_STATE_DRIFT=off' },
+  { name: 'RBACDrift', detects: 'ClusterRoleBinding/RoleBinding changes not reflected in expected state', disable: 'SRENIX_ANALYZER_RBAC_DRIFT=off' },
+  { name: 'ConfigDrift', detects: 'CRD storage version drift, stuck Deployment rollout (generation vs observedGeneration), and Helm checksum annotation divergence across pods', disable: 'SRENIX_ANALYZER_CONFIG_DRIFT=off' },
+  { name: 'CapacityDrift', detects: 'Resource request/limit ratios that have drifted from baseline', disable: 'SRENIX_ANALYZER_CAPACITY_DRIFT=off' },
+  { name: 'SecurityDrift', detects: 'Missing Pod Security Standards enforcement labels, mutable image tags (no digest pin), and NetworkPolicy coverage gaps per namespace. Mutable-tag severity is registry-dependent: Info for trusted upstream registries (quay.io, gcr.io, ghcr.io, registry.k8s.io, docker.io/library, etc.), Warning for untrusted/in-house registries (tunable via SRENIX_DIGEST_PIN_UNTRUSTED_SEVERITY)', disable: 'SRENIX_ANALYZER_SECURITY_DRIFT=off' },
 ];
 
 const workload = [
-  { name: 'LogPatternMatcher', detects: 'Recent Events matching high-signal failure patterns (ImagePullBackOff, OOMKilled, VolumeAttachFailed, ProbeFailed, RBAC Forbidden) — dedup\'d per (object, pattern)', disable: 'CHA_ANALYZER_LOG_PATTERN_MATCHER=off' },
-  { name: 'DisruptionDrift', detects: 'PDB: disruptionsAllowed=0 past 5 min; Indexed-Job failed indexes past 10 min; ResourceQuota at 100% past 1h', disable: 'CHA_ANALYZER_DISRUPTION_DRIFT=off' },
-  { name: 'OOMKillRecurrence', detects: 'Pod with ≥3 OOMKilled restarts in 24h — signals a persistent memory sizing issue', disable: 'CHA_ANALYZER_OOMKILL_RECURRENCE=off' },
-  { name: 'PVOrphan', detects: 'PersistentVolume Released >7 days — still billing on the underlying cloud disk', disable: 'CHA_ANALYZER_PV_ORPHAN=off' },
-  { name: 'CronJobStuck', detects: 'Warning: >24h since last success or suspended CronJob; Critical: never succeeded', disable: 'CHA_ANALYZER_CRONJOB_STUCK=off' },
+  { name: 'LogPatternMatcher', detects: 'Recent Events matching high-signal failure patterns (ImagePullBackOff, OOMKilled, VolumeAttachFailed, ProbeFailed, RBAC Forbidden) — dedup\'d per (object, pattern)', disable: 'SRENIX_ANALYZER_LOG_PATTERN_MATCHER=off' },
+  { name: 'DisruptionDrift', detects: 'PDB: disruptionsAllowed=0 past 5 min; Indexed-Job failed indexes past 10 min; ResourceQuota at 100% past 1h', disable: 'SRENIX_ANALYZER_DISRUPTION_DRIFT=off' },
+  { name: 'OOMKillRecurrence', detects: 'Pod with ≥3 OOMKilled restarts in 24h — signals a persistent memory sizing issue', disable: 'SRENIX_ANALYZER_OOMKILL_RECURRENCE=off' },
+  { name: 'PVOrphan', detects: 'PersistentVolume Released >7 days — still billing on the underlying cloud disk', disable: 'SRENIX_ANALYZER_PV_ORPHAN=off' },
+  { name: 'CronJobStuck', detects: 'Warning: >24h since last success or suspended CronJob; Critical: never succeeded', disable: 'SRENIX_ANALYZER_CRONJOB_STUCK=off' },
 ];
 
 const paid = [
@@ -56,7 +56,7 @@ if (ossRowCount !== OSS_ANALYZERS + 1) {
 ---
 
 <DocsLayout
-  title="CHA &mdash; Analyzers"
+  title="Srenix &mdash; Analyzers"
   description={`${OSS_ANALYZERS} OSS analyzers run after every probe cycle — diagnostic, drift-class, log/workload — plus opt-in VaultPathMissing. 4 additional analyzers in the paid tier.`}
   topic="Analyzers"
 >
@@ -74,7 +74,7 @@ if (ossRowCount !== OSS_ANALYZERS + 1) {
       </p>
       <div class="mt-4 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 dark:border-amber-900/50 dark:bg-amber-950/30">
         <p class="text-sm text-amber-800 dark:text-amber-300">
-          <strong>Disable any analyzer</strong> with <code class="font-mono">CHA_ANALYZER_NAME=off</code> or the per-analyzer Helm toggle (<code class="font-mono">analyzers.name.enabled: false</code>).
+          <strong>Disable any analyzer</strong> with <code class="font-mono">SRENIX_ANALYZER_NAME=off</code> or the per-analyzer Helm toggle (<code class="font-mono">analyzers.name.enabled: false</code>).
         </p>
       </div>
     </div>
@@ -165,7 +165,7 @@ if (ossRowCount !== OSS_ANALYZERS + 1) {
       <h2 class="text-xl font-semibold text-zinc-900 dark:text-zinc-50">Paid-tier analyzers ({paid.length})</h2>
       <div class="mt-1 h-0.5 w-8 rounded-full bg-accent-500"></div>
       <p class="mt-4 text-sm leading-relaxed text-zinc-600 dark:text-zinc-400">
-        The <code class="font-mono">cha-com</code> paid binary adds four additional analyzers via the same <code class="font-mono">pkg/registry</code> interface as OSS analyzers. They do not have per-analyzer env toggles; registration is wiring-driven — e.g. <code class="font-mono">VaultPathDriftPro</code> registers only when Vault credentials (<code class="font-mono">VAULT_ADDR</code> plus a token or K8s-auth role) are configured.
+        The <code class="font-mono">srenix-enterprise</code> paid binary adds four additional analyzers via the same <code class="font-mono">pkg/registry</code> interface as OSS analyzers. They do not have per-analyzer env toggles; registration is wiring-driven — e.g. <code class="font-mono">VaultPathDriftPro</code> registers only when Vault credentials (<code class="font-mono">VAULT_ADDR</code> plus a token or K8s-auth role) are configured.
       </p>
       <div class="mt-6 overflow-x-auto">
         <table class="w-full border-collapse text-sm">

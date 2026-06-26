@@ -24,7 +24,7 @@ FROM nginx:alpine AS runtime
 RUN rm -f /etc/nginx/conf.d/default.conf
 
 # Custom nginx config (SPA-friendly 404, gzip, cache headers, /healthz)
-COPY nginx.conf /etc/nginx/conf.d/cha-website.conf
+COPY nginx.conf /etc/nginx/conf.d/srenix-website.conf
 
 # Copy the static site
 COPY --from=build /app/dist /usr/share/nginx/html

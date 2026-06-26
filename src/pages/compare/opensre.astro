@@ -7,40 +7,40 @@ import { CLOUD_PROBES_TOTAL } from '../../data/product-facts';
 const rows = [
   {
     dimension: 'Posture',
-    cha: 'Autonomous K8s + cloud autopilot — detect → fix → re-verify',
+    srenix: 'Autonomous K8s + cloud autopilot — detect → fix → re-verify',
     competitor: 'Investigation co-pilot — architecturally read-only',
   },
   {
     dimension: 'Mutation surface',
-    cha: '5 policy-bounded fixers + AI-tier approval-gated proposals',
+    srenix: '5 policy-bounded fixers + AI-tier approval-gated proposals',
     competitor: 'Tracer: regex-blocks AWS mutations in code · swapnil: works on K8s but dormant',
   },
   {
     dimension: 'Closed-loop',
-    cha: 'Yes — re-verify after every fix',
+    srenix: 'Yes — re-verify after every fix',
     competitor: 'No — neither project ships it',
   },
   {
     dimension: 'Multi-cloud breadth',
-    cha: `${CLOUD_PROBES_TOTAL} probes across AWS / GCP / Azure`,
+    srenix: `${CLOUD_PROBES_TOTAL} probes across AWS / GCP / Azure`,
     competitor: 'Tracer: AWS read-only · swapnil: AWS credential validation only',
   },
   {
     dimension: 'Commercial support',
-    cha: 'CHA-com paid tier with SLA, named TAM, multi-cluster',
+    srenix: 'Srenix Enterprise paid tier with SLA, named TAM, multi-cluster',
     competitor: 'OSS-only — not commercializable',
   },
 ];
 ---
 
 <BaseLayout
-  title="CHA vs. OpenSRE (Tracer + swapnil)"
-  description="Tracer's OpenSRE is architecturally read-only — they regex-block AWS mutations. swapnil's OpenSRE is solo and dormant. CHA is the only OSS-licensed K8s+cloud autopilot that ships closed-loop."
+  title="Srenix vs. OpenSRE (Tracer + swapnil)"
+  description="Tracer's OpenSRE is architecturally read-only — they regex-block AWS mutations. swapnil's OpenSRE is solo and dormant. Srenix is the only OSS-licensed K8s+cloud autopilot that ships closed-loop."
 >
   <PageHero
     eyebrow="Compare &middot; OpenSRE"
-    title="CHA vs. OpenSRE (Tracer + swapnil)"
-    subtitle="Two OSS projects, neither ships closed-loop remediation. Tracer is a great investigation copilot but architecturally committed to read-only. swapnil's project is a solo author who went silent. CHA is the only OSS K8s+cloud autopilot with closed-loop as default."
+    title="Srenix vs. OpenSRE (Tracer + swapnil)"
+    subtitle="Two OSS projects, neither ships closed-loop remediation. Tracer is a great investigation copilot but architecturally committed to read-only. swapnil's project is a solo author who went silent. Srenix is the only OSS K8s+cloud autopilot with closed-loop as default."
   />
 
   <section class="mx-auto max-w-5xl px-6 py-20">

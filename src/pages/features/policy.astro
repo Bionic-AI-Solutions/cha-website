@@ -11,7 +11,7 @@ const actionKinds = [
   { kind: 'DeleteCertRequest', line: 'Delete a stuck cert-manager CertificateRequest so issuance retries.' },
   { kind: 'DeleteACMEOrder', line: 'Delete a stuck ACME Order so the challenge re-runs.' },
   { kind: 'ApplyManifest', line: 'Apply a full manifest — constrained by ValidateManifest before it can ever reach an approval link.' },
-  { kind: 'ProposePullRequest', line: 'No direct cluster mutation — the GitOps path: CHA opens a pull request against your repo and the merge is the approval.' },
+  { kind: 'ProposePullRequest', line: 'No direct cluster mutation — the GitOps path: Srenix opens a pull request against your repo and the merge is the approval.' },
 ];
 
 const layers = [
@@ -31,7 +31,7 @@ const layers = [
   {
     name: 'Namespace protection',
     summary:
-      'Protected namespaces are a compiled-in floor (kube-system, kube-public, kube-node-lease, rook-ceph, vault, external-secrets, cnpg-system, calico-system, tigera-operator) the agent refuses to touch. Operators extend the list append-only — CHA_PROTECTED_NAMESPACES_EXTRA, rendered from Helm protectedNamespaces.extra or the operator CR — so nothing can ever remove a compiled-in namespace. The fixer guard and the AI validator consume the same set, and the detect side escalates (not shields) findings in protected namespaces.',
+      'Protected namespaces are a compiled-in floor (kube-system, kube-public, kube-node-lease, rook-ceph, vault, external-secrets, cnpg-system, calico-system, tigera-operator) the agent refuses to touch. Operators extend the list append-only — SRENIX_PROTECTED_NAMESPACES_EXTRA, rendered from Helm protectedNamespaces.extra or the operator CR — so nothing can ever remove a compiled-in namespace. The fixer guard and the AI validator consume the same set, and the detect side escalates (not shields) findings in protected namespaces.',
     where: 'pkg/ai/protected.go — append-only extras over the validate.go floor',
   },
   {
@@ -49,7 +49,7 @@ const layers = [
   {
     name: 'Dual-approval for T3',
     summary:
-      "Vault break-glass runbooks (T3) require two distinct approvers separated by at least 30 minutes. The runbook itself is never executed by CHA — the operator runs it manually after dual approval. Key names only, never values; ${VALUE_*} placeholders in command templates.",
+      "Vault break-glass runbooks (T3) require two distinct approvers separated by at least 30 minutes. The runbook itself is never executed by Srenix — the operator runs it manually after dual approval. Key names only, never values; ${VALUE_*} placeholders in command templates.",
     where: 'ai/approval/runbook_store.go — RecordApproval',
   },
   {
@@ -68,20 +68,20 @@ const layers = [
 ---
 
 <BaseLayout
-  title="CHA &mdash; Action policy (the leash on the agent)"
+  title="Srenix &mdash; Action policy (the leash on the agent)"
   description="The agent has reasoning power; the policy has the leash. Operator-defined action_kinds, target-namespace allowlists, GitOps-managed skip, signed JWT click-to-fix URLs, dual-approval for T3, hash-chained audit. Every layer is in the Apache-2.0 source."
 >
   <PageHero
     eyebrow="Features &middot; Action policy"
     title="The agent reasons. The policy decides what it can touch."
-    subtitle="Every layer of CHA's safety envelope is operator-defined and in code you can read before you install. Eight layers; here's all of them."
+    subtitle="Every layer of Srenix's safety envelope is operator-defined and in code you can read before you install. Eight layers; here's all of them."
   />
 
   <section class="mx-auto max-w-5xl px-6 py-20">
     <div class="prose dark:prose-invert max-w-none">
       <p class="text-lg leading-relaxed text-zinc-700 dark:text-zinc-300">
         Komodor, Robusta, Causely, NeuBird &mdash; they observe and suggest.
-        CHA mutates. That changes the safety story. An agent that can actually
+        Srenix mutates. That changes the safety story. An agent that can actually
         change cluster state needs a policy that says <em>which</em> changes
         are allowed, <em>where</em>, and under <em>which approval</em>. Eight
         layers, all in code you can read before you install.
@@ -122,13 +122,13 @@ const layers = [
       </h2>
       <p class="mt-3 text-zinc-600 dark:text-zinc-400">
         An LLM-powered agent without policy is a liability &mdash; reasoning
-        capability without a brake. CHA's design says the LLM can propose
+        capability without a brake. Srenix's design says the LLM can propose
         anything, but only operator-allowlisted action_kinds against
         operator-allowlisted namespaces can ever be executed, and only
         after a signed-JWT operator click (dual-approval for break-glass).
       </p>
       <p class="mt-3 text-zinc-600 dark:text-zinc-400">
-        That makes CHA suitable for the kinds of deployments where pure-LLM
+        That makes Srenix suitable for the kinds of deployments where pure-LLM
         autonomy is a non-starter: regulated industries, sovereign clouds,
         air-gapped clusters, FedRAMP track. The agent gets to be smart; the
         policy decides what smart looks like in your environment.

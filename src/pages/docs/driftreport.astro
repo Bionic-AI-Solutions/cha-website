@@ -4,7 +4,7 @@ import PageHero from '../../components/PageHero.astro';
 import { loadDriftReportCrd } from '../../data/driftreport-crd';
 
 // GENERATED from the real CRD: every field below comes from the vendored
-// snapshot of charts/cluster-health-autopilot/templates/crd-driftreport.yaml
+// snapshot of charts/agentic-sre/templates/crd-driftreport.yaml
 // (see scripts/sync-crd.sh + src/data/driftreport-crd.ts). The page cannot
 // document a field that does not exist in the chart.
 const crd = loadDriftReportCrd();
@@ -17,14 +17,14 @@ const gvr = `${crd.plural}.${crd.group}`;
 ---
 
 <DocsLayout
-  title="CHA &mdash; DriftReport CRD"
-  description="DriftReport is the kubectl-queryable representation of CHA findings. Each cycle upserts one cluster-scoped DriftReport per active diagnostic."
+  title="Srenix &mdash; DriftReport CRD"
+  description="DriftReport is the kubectl-queryable representation of Srenix findings. Each cycle upserts one cluster-scoped DriftReport per active diagnostic."
   topic="DriftReport CRD"
 >
   <PageHero
     eyebrow="Docs"
     title="DriftReport CRD"
-    subtitle="Every active CHA finding is a cluster-scoped DriftReport custom resource. kubectl get driftreports is your cluster's real-time drift state."
+    subtitle="Every active Srenix finding is a cluster-scoped DriftReport custom resource. kubectl get driftreports is your cluster's real-time drift state."
   />
 
   <section class="mx-auto max-w-5xl space-y-16 px-6 py-16">
@@ -72,7 +72,7 @@ const gvr = `${crd.plural}.${crd.group}`;
       <h2 class="text-xl font-semibold text-zinc-900 dark:text-zinc-50">Status fields</h2>
       <div class="mt-1 h-0.5 w-8 rounded-full bg-accent-500"></div>
       <p class="mt-4 text-sm leading-relaxed text-zinc-600 dark:text-zinc-400">
-        Status is written by CHA only (a <code class="font-mono">status</code> subresource). There is no open/resolved state machine — an active finding has a DriftReport; a cleared finding's CR is deleted on the next reconcile. The exception is ticket bookkeeping: <code class="font-mono">status.ticket</code> records the external ticket CHA filed so subsequent cycles don't open duplicates.
+        Status is written by Srenix only (a <code class="font-mono">status</code> subresource). There is no open/resolved state machine — an active finding has a DriftReport; a cleared finding's CR is deleted on the next reconcile. The exception is ticket bookkeeping: <code class="font-mono">status.ticket</code> records the external ticket Srenix filed so subsequent cycles don't open duplicates.
       </p>
       <div class="mt-6 overflow-x-auto">
         <table class="w-full border-collapse text-sm">

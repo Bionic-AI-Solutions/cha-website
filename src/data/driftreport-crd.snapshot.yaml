@@ -1,5 +1,5 @@
 # DO NOT EDIT — vendored snapshot of the OSS DriftReport CRD.
-# source: charts/cluster-health-autopilot/templates/crd-driftreport.yaml (Bionic-AI-Solutions/cluster-health-autopilot)
+# source: charts/agentic-sre/templates/crd-driftreport.yaml (Srenix/agentic-sre)
 # chart-version: 0.1.0-alpha.1
 # oss-commit: 929f28e
 # synced: 2026-06-18
@@ -20,12 +20,12 @@
 apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
-  name: driftreports.cha.bionicaisolutions.com
+  name: driftreports.srenix.ai
   labels:
   annotations:
     "helm.sh/resource-policy": keep
 spec:
-  group: cha.bionicaisolutions.com
+  group: srenix.ai
   scope: Cluster
   names:
     kind: DriftReport
@@ -35,7 +35,7 @@ spec:
       - drift
       - drifts
     categories:
-      - cha
+      - srenix
       - cluster-health
   versions:
     - name: v1alpha1
@@ -165,15 +165,15 @@ spec:
                   minimum: 1
                 runID:
                   type: string
-                  description: ID of the most recent cha run that observed this drift.
+                  description: ID of the most recent srenix run that observed this drift.
                   maxLength: 64
                 ticket:
                   type: object
                   description: |
-                    Reference to the external issue-tracker ticket CHA filed for
+                    Reference to the external issue-tracker ticket Srenix filed for
                     this unfixable diagnostic. Populated by pkg/ticketing sinks
-                    (OpenProject in OSS; Jira / ServiceNow in CHA-com).
-                    Presence means a ticket already exists — CHA will not
+                    (OpenProject in OSS; Jira / ServiceNow in Srenix Enterprise).
+                    Presence means a ticket already exists — Srenix will not
                     open another one on subsequent cycles.
                   properties:
                     provider:
@@ -198,33 +198,33 @@ spec:
                       type: string
                       format: date-time
                       description: |
-                        Timestamp when CHA first filed this ticket.
+                        Timestamp when Srenix first filed this ticket.
                         Stable across subsequent cycles.
                     severity:
                       type: string
                       description: |
                         Severity stamped on the ticket at open / last comment.
-                        Lets CHA detect a severity transition (M2) and comment
+                        Lets Srenix detect a severity transition (M2) and comment
                         the change to the existing ticket.
                       maxLength: 32
                     resolved:
                       type: boolean
                       description: |
-                        True once CHA auto-closed this ticket because the
+                        True once Srenix auto-closed this ticket because the
                         finding cleared (M2 resolve-on-clear). Idempotency
-                        guard: CHA never re-resolves an already-resolved ticket.
+                        guard: Srenix never re-resolves an already-resolved ticket.
                         Cleared back to false if the finding recurs.
                     resolvedAt:
                       type: string
                       format: date-time
                       description: |
-                        Timestamp CHA resolved this ticket on clear (M2).
+                        Timestamp Srenix resolved this ticket on clear (M2).
                     lastCommentedAt:
                       type: string
                       format: date-time
                       description: |
                         Timestamp of the most recent recurrence / severity
-                        comment CHA posted. Drives the commentInterval debounce
+                        comment Srenix posted. Drives the commentInterval debounce
                         (M2) so a flapping finding can't spam the tracker.
       additionalPrinterColumns:
         - name: Severity

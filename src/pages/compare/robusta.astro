@@ -7,50 +7,50 @@ import { K8S_PROBES, OSS_ANALYZERS, CLOUD_PROBES_TOTAL } from '../../data/produc
 const rows = [
   {
     dimension: 'Where it runs',
-    cha: 'In your cluster — operator + CronJob + Deployment',
+    srenix: 'In your cluster — operator + CronJob + Deployment',
     competitor: 'In-cluster agent + Robusta SaaS for the AI investigation + dashboards',
   },
   {
     dimension: 'Closed-loop remediation',
-    cha: 'Yes — 5 policy-bounded fixers + AI-tier proposals on operator approval',
+    srenix: 'Yes — 5 policy-bounded fixers + AI-tier proposals on operator approval',
     competitor: 'Alert enrichment + AI investigation; operator runs the fix manually',
   },
   {
     dimension: 'Triggering surface',
-    cha: 'K8s probes + analyzers + AWS cloud probes; LLM Investigator on critical findings',
+    srenix: 'K8s probes + analyzers + AWS cloud probes; LLM Investigator on critical findings',
     competitor: 'Prometheus alerts; runs an investigation playbook per alert',
   },
   {
     dimension: 'LLM provider',
-    cha: 'Bring-your-own — any OpenAI-compatible endpoint',
+    srenix: 'Bring-your-own — any OpenAI-compatible endpoint',
     competitor: 'OpenAI (default) or self-hosted; investigation happens server-side',
   },
   {
     dimension: 'Pricing model',
-    cha: 'Flat per-cluster (Open Core free / AI SRE Team / Enterprise)',
+    srenix: 'Flat per-cluster (Open Core free / AI SRE Team / Enterprise)',
     competitor: 'Free OSS + paid SaaS for AI / dashboards / multi-cluster',
   },
   {
     dimension: 'Air-gap / sovereign',
-    cha: 'Yes — OSS engine and CHA-com both run entirely in-cluster',
+    srenix: 'Yes — OSS engine and Srenix Enterprise both run entirely in-cluster',
     competitor: 'OSS yes; SaaS-side AI investigations are hosted',
   },
   {
     dimension: 'Open source',
-    cha: 'Apache-2.0 engine; commercial AI SRE tier',
+    srenix: 'Apache-2.0 engine; commercial AI SRE tier',
     competitor: 'OSS engine; commercial SaaS',
   },
 ];
 ---
 
 <BaseLayout
-  title="CHA vs. Robusta"
-  description="Robusta enriches Prometheus alerts with AI investigation and ChatOps-style runbooks, but the operator still runs the fix. CHA proposes specific actions inside an operator-defined policy and executes them with one click."
+  title="Srenix vs. Robusta"
+  description="Robusta enriches Prometheus alerts with AI investigation and ChatOps-style runbooks, but the operator still runs the fix. Srenix proposes specific actions inside an operator-defined policy and executes them with one click."
 >
   <PageHero
     eyebrow="Compare &middot; Robusta"
-    title="CHA vs. Robusta"
-    subtitle="Robusta is an excellent alert-enrichment + investigation tool wrapped around Prometheus. CHA is an autonomous SRE agent that probes the cluster directly, proposes specific actions, and executes them inside the operator's policy. Both are valuable; they sit at different layers."
+    title="Srenix vs. Robusta"
+    subtitle="Robusta is an excellent alert-enrichment + investigation tool wrapped around Prometheus. Srenix is an autonomous SRE agent that probes the cluster directly, proposes specific actions, and executes them inside the operator's policy. Both are valuable; they sit at different layers."
   />
 
   <section class="mx-auto max-w-5xl px-6 py-20">
@@ -68,17 +68,17 @@ const rows = [
         kubectl, even when the cause is well-known.
       </p>
       <p class="mt-3 text-zinc-600 dark:text-zinc-400">
-        CHA's model inverts the loop. The CHA engine has its own direct probe
+        Srenix's model inverts the loop. The Srenix engine has its own direct probe
         surface ({K8S_PROBES} K8s probes + {CLOUD_PROBES_TOTAL} cloud probes across AWS/GCP/Azure + {OSS_ANALYZERS} analyzers) running on
         a schedule, so it sees drift without needing a Prometheus alert as a
-        trigger. The CHA-com paid tier adds an LLM Investigator agent that
+        trigger. The Srenix Enterprise paid tier adds an LLM Investigator agent that
         reasons over the probe output, proposes specific action_kinds bounded
         by the operator's policy, and (on a one-click approval) executes the
         fix inside the cluster. The audit trail is JWT-signed and hash-chained.
       </p>
       <p class="mt-3 text-zinc-600 dark:text-zinc-400">
         Pick Robusta when your operational layer is centred on Prometheus and
-        you want better Slack messages plus on-demand investigation. Pick CHA
+        you want better Slack messages plus on-demand investigation. Pick Srenix
         when you want the agent to actually close the loop &mdash; detect,
         propose, approve, execute, re-verify &mdash; without an SRE in the
         critical path for every fix.

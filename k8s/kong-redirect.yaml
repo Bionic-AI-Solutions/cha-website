@@ -1,0 +1,25 @@
+---
+# Hard-redirect srenix.io -> srenix.ai (308, path+query preserved) so the
+# canonical brand domain owns all traffic. Attached to the website Ingress;
+# the Lua guards on Host so srenix.ai requests fall through untouched.
+# pre-function (serverless) is enabled in this Kong (already used in the mcp ns).
+apiVersion: configuration.konghq.com/v1
+kind: KongPlugin
+metadata:
+  name: srenix-io-redirect
+  namespace: srenix-website
+  labels:
+    app.kubernetes.io/name: srenix-website
+    app.kubernetes.io/instance: srenix-website
+    app.kubernetes.io/component: web
+    app.kubernetes.io/part-of: srenix
+plugin: pre-function
+config:
+  access:
+    - |
+      local host = kong.request.get_host()
+      if host == "srenix.io" or host == "www.srenix.io" then
+        return kong.response.exit(308, "", {
+          ["Location"] = "https://srenix.ai" .. kong.request.get_path_with_query()
+        })
+      end

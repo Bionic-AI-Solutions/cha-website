@@ -2,7 +2,7 @@
 apiVersion: v1
 kind: Namespace
 metadata:
-  name: cha-website
+  name: srenix-website
   labels:
-    name: cha-website
-    app.kubernetes.io/part-of: cha
+    name: srenix-website
+    app.kubernetes.io/part-of: srenix

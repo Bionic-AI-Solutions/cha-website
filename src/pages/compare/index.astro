@@ -8,21 +8,21 @@ const competitors = [
     name: 'Komodor',
     one_liner: 'Hosted K8s observability + AI investigation; in-cluster agent + SaaS control plane.',
     lead:
-      'Polished hosted UI and cross-cluster observability, but the LLM and control plane live in their SaaS — cluster posture and events flow outbound. Operator still copies the suggested kubectl. CHA runs the agent + LLM inside your cluster and actually executes the fix.',
+      'Polished hosted UI and cross-cluster observability, but the LLM and control plane live in their SaaS — cluster posture and events flow outbound. Operator still copies the suggested kubectl. Srenix runs the agent + LLM inside your cluster and actually executes the fix.',
   },
   {
     href: '/compare/robusta/',
     name: 'Robusta',
     one_liner: 'Alert enrichment + AI investigation around Prometheus; OSS engine + paid SaaS.',
     lead:
-      'Robusta is alert-driven (Prometheus fires → playbook investigates → AI summarises into Slack). Remediation is still a human kubectl. CHA probes directly, proposes specific action_kinds inside operator policy, and executes them on one click.',
+      'Robusta is alert-driven (Prometheus fires → playbook investigates → AI summarises into Slack). Remediation is still a human kubectl. Srenix probes directly, proposes specific action_kinds inside operator policy, and executes them on one click.',
   },
   {
     href: '/compare/causely/',
     name: 'Causely',
     one_liner: 'Causal-AI root-cause across observability telemetry; SaaS-hosted graph inference.',
     lead:
-      'Causely is excellent at finding which upstream service caused a symptom. But that\'s step 2 of a 5-step loop (detect → root-cause → propose → approve → execute → re-verify). They cover one step; CHA covers all five.',
+      'Causely is excellent at finding which upstream service caused a symptom. But that\'s step 2 of a 5-step loop (detect → root-cause → propose → approve → execute → re-verify). They cover one step; Srenix covers all five.',
   },
   {
     href: '/compare/neubird/',
@@ -50,18 +50,18 @@ const competitors = [
     name: 'OpenSRE (Tracer + swapnil)',
     one_liner: 'Two OSS projects in the same category — neither ships closed-loop remediation.',
     lead:
-      'Tracer\'s 141 tools are architecturally read-only (regex-blocked in code). The swapnil project is dormant. CHA is the only OSS-licensed K8s+cloud autopilot that ships closed-loop.',
+      'Tracer\'s 141 tools are architecturally read-only (regex-blocked in code). The swapnil project is dormant. Srenix is the only OSS-licensed K8s+cloud autopilot that ships closed-loop.',
   },
 ];
 ---
 
 <BaseLayout
-  title="CHA &mdash; Compared with Komodor, Robusta, Causely, NeuBird, Resolve, Ciroos, OpenSRE"
+  title="Srenix &mdash; Compared with Komodor, Robusta, Causely, NeuBird, Resolve, Ciroos, OpenSRE"
   description="Side-by-side against Komodor, Robusta, Causely, NeuBird, Resolve AI, Ciroos, and OpenSRE. Every claim traces to a competitor's published material or our shipped code."
 >
   <PageHero
     eyebrow="Compare"
-    title="How CHA compares."
+    title="How Srenix compares."
     subtitle="Every claim on these pages traces to a competitor's published material or our shipped code. We quote them verbatim where it matters."
   />
 
@@ -74,7 +74,7 @@ const competitors = [
         >
           <div class="flex items-baseline justify-between">
             <h3 class="text-xl font-semibold text-zinc-900 dark:text-zinc-50">
-              CHA vs. {c.name}
+              Srenix vs. {c.name}
             </h3>
             <span class="text-sm font-medium text-accent-600 group-hover:text-accent-700 dark:text-accent-400 dark:group-hover:text-accent-300">
               Compare &rarr;

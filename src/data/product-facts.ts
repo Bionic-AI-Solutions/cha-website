@@ -3,26 +3,26 @@
 // Ground truth (count the registrations, don't trust prose).
 // Verified against the v1.26.0 tag (`git show v1.26.0:<path>`) on 2026-06-12:
 //   - K8S_PROBES / OSS_ANALYZERS:
-//       cluster-health-autopilot/catalog/catalog.go (RegisterOSS)
+//       agentic-sre/catalog/catalog.go (RegisterOSS)
 //       Probes    = 21 env-gated default-on RegisterProbe calls
-//                   (6 base + 15 later additions, each CHA_PROBE_*=off
+//                   (6 base + 15 later additions, each SRENIX_PROBE_*=off
 //                   togglable).
 //       Analyzers = 20 env-gated default-on RegisterAnalyzer calls.
 //                   (VaultPathMissing is intentionally NOT registered
 //                   there — it needs an operator-supplied Vault client —
 //                   so it is not counted.)
 //   - CLOUD_PROBES_*:
-//       cluster-health-autopilot/catalog/cloud.go (RegisterCloudOSS)
+//       agentic-sre/catalog/cloud.go (RegisterCloudOSS)
 //       9 env gates per provider, but the EKS/GKE/AKS gate registers
 //       TWO probes (control plane + node groups/pools) each:
 //       10 AWS + 10 GCP + 10 Azure = 30.
 //   - WATCHED_GVRS:
-//       cluster-health-autopilot/internal/watcher/watcher.go (watchedGVRs)
+//       agentic-sre/internal/watcher/watcher.go (watchedGVRs)
 //       20 entries: 15 base (Pod..Certificate) + Ingress, HPA,
 //       ArgoCD Application, KEDA ScaledObject + EndpointSlice
 //       (discovery.k8s.io/v1, added in PR #199 / v1.26.0).
 //   - Versions: latest release tags of the two repos
-//       (OSS: cluster-health-autopilot, paid: CHA-com).
+//       (OSS: agentic-sre, paid: Srenix Enterprise).
 //       PRE-ALPHA RE-BASELINE (2026-06-17): both products re-numbered to
 //       v0.1.0-alpha.1. The prior 1.x tags (OSS ≤ v1.26.3, paid ≤ v1.22.4)
 //       were mis-numbered pre-launch / pre-alpha iterations, now all marked
@@ -51,7 +51,7 @@ export const OSS_VERSION = 'v0.1.0-alpha.1';
 // release artifacts (the four _<os>_<arch>.tar.gz assets) will exist
 // shortly — assets on the v0.1.0-alpha.1 GitHub release.
 export const BINARY_RELEASE = 'v0.1.0-alpha.1';
-// Latest CHA-com git TAG. PRE-ALPHA re-baseline: prior 1.x tags
+// Latest Srenix Enterprise git TAG. PRE-ALPHA re-baseline: prior 1.x tags
 // (≤ v1.22.4) were pre-launch / pre-alpha iterations, now pre-release.
 // Consumed by the roadmap page (shippedOnly guard).
 export const PAID_VERSION = 'v0.2.0-alpha.1';

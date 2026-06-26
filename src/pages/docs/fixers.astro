@@ -37,7 +37,7 @@ const fixers = [
 ---
 
 <DocsLayout
-  title="CHA &mdash; Fixers"
+  title="Srenix &mdash; Fixers"
   description="5 policy-bounded auto-fixers. Remediation is off by default; once enabled, the four built-in fixers run automatically and TLSSecretMismatch is a separate opt-in. All are safety-gated, idempotent, and re-verified after every run."
   topic="Fixers"
 >
@@ -55,7 +55,7 @@ const fixers = [
       </p>
       <div class="mt-4 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 dark:border-amber-900/50 dark:bg-amber-950/30">
         <p class="text-sm text-amber-800 dark:text-amber-300">
-          <strong>Remediation is off by default.</strong> Enable it with <code class="font-mono">remediation.enabled: true</code> (remediate CronJob) or <code class="font-mono">watcher.remedy.enabled: true</code> (event-driven watcher). The four built-in fixers are always registered in the binary and run as soon as remediation is on — there are no per-fixer Helm toggles for them. <code class="font-mono">TLSSecretMismatch</code> is the one opt-in fixer: setting <code class="font-mono">fixers.tlsSecretMismatch.enabled=true</code> makes the chart set the <code class="font-mono">CHA_FIXER_TLS_SECRET_MISMATCH</code> env var (which gates its registration) and add the extra RBAC verbs it needs.
+          <strong>Remediation is off by default.</strong> Enable it with <code class="font-mono">remediation.enabled: true</code> (remediate CronJob) or <code class="font-mono">watcher.remedy.enabled: true</code> (event-driven watcher). The four built-in fixers are always registered in the binary and run as soon as remediation is on — there are no per-fixer Helm toggles for them. <code class="font-mono">TLSSecretMismatch</code> is the one opt-in fixer: setting <code class="font-mono">fixers.tlsSecretMismatch.enabled=true</code> makes the chart set the <code class="font-mono">SRENIX_FIXER_TLS_SECRET_MISMATCH</code> env var (which gates its registration) and add the extra RBAC verbs it needs.
         </p>
       </div>
     </div>
@@ -95,7 +95,7 @@ const fixers = [
         <li class="flex gap-2"><span class="text-accent-500">→</span><span><strong>GitOps guard</strong> — skips resources managed by ArgoCD, Flux, or Helm (detected via standard labels). A fixer won't fight a reconciler.</span></li>
         <li class="flex gap-2"><span class="text-accent-500">→</span><span><strong>Paused/suspended guard</strong> — skips Deployments with <code class="font-mono">spec.paused: true</code> and CronJobs with <code class="font-mono">spec.suspend: true</code>.</span></li>
         <li class="flex gap-2"><span class="text-accent-500">→</span><span><strong>cert-manager controller health guard</strong> — StuckCertificateRequests fixer checks that the cert-manager Deployment is healthy (readyReplicas &gt; 0) before deleting failed CertificateRequests.</span></li>
-        <li class="flex gap-2"><span class="text-accent-500">→</span><span><strong>Protected namespace list</strong> — fixers never mutate resources in kube-system, kube-public, kube-node-lease, rook-ceph, vault, external-secrets, or cnpg-system. This floor is compiled into the binary and can never shrink; operators can append additional namespaces via Helm <code class="font-mono">protectedNamespaces.extra</code> (rendered as <code class="font-mono">CHA_PROTECTED_NAMESPACES_EXTRA</code>) or the operator CR field <code class="font-mono">spec.protectedNamespacesExtra</code>. (Diagnose still reports findings in those namespaces — only the act-side is gated.)</span></li>
+        <li class="flex gap-2"><span class="text-accent-500">→</span><span><strong>Protected namespace list</strong> — fixers never mutate resources in kube-system, kube-public, kube-node-lease, rook-ceph, vault, external-secrets, or cnpg-system. This floor is compiled into the binary and can never shrink; operators can append additional namespaces via Helm <code class="font-mono">protectedNamespaces.extra</code> (rendered as <code class="font-mono">SRENIX_PROTECTED_NAMESPACES_EXTRA</code>) or the operator CR field <code class="font-mono">spec.protectedNamespacesExtra</code>. (Diagnose still reports findings in those namespaces — only the act-side is gated.)</span></li>
       </ul>
     </div>
 
@@ -103,7 +103,7 @@ const fixers = [
       <h2 class="text-xl font-semibold text-zinc-900 dark:text-zinc-50">Dry-run mode</h2>
       <div class="mt-1 h-0.5 w-8 rounded-full bg-accent-500"></div>
       <p class="mt-4 text-sm leading-relaxed text-zinc-600 dark:text-zinc-400">
-        Pass <code class="font-mono">--dry-run</code> (in Helm values: <code class="font-mono">remediation.dryRun: true</code> for the remediate CronJob, <code class="font-mono">watcher.remedy.dryRun: true</code> for the watcher) to log every fix CHA would apply without applying it. The fix log is identical to production mode minus the actual mutation. Use this in your eval cycle before enabling fixers.
+        Pass <code class="font-mono">--dry-run</code> (in Helm values: <code class="font-mono">remediation.dryRun: true</code> for the remediate CronJob, <code class="font-mono">watcher.remedy.dryRun: true</code> for the watcher) to log every fix Srenix would apply without applying it. The fix log is identical to production mode minus the actual mutation. Use this in your eval cycle before enabling fixers.
       </p>
     </div>
 
@@ -111,7 +111,7 @@ const fixers = [
       <h2 class="text-xl font-semibold text-zinc-900 dark:text-zinc-50">Re-verify loop</h2>
       <div class="mt-1 h-0.5 w-8 rounded-full bg-accent-500"></div>
       <p class="mt-4 text-sm leading-relaxed text-zinc-600 dark:text-zinc-400">
-        After every fix, CHA re-runs the analyzer for the fixed subject. If the finding persists, the action is recorded as <code class="font-mono">unresolved</code> in the DriftReport — not silently closed. The loop is: <code class="font-mono">diagnose → fix → re-diagnose → resolve</code>.
+        After every fix, Srenix re-runs the analyzer for the fixed subject. If the finding persists, the action is recorded as <code class="font-mono">unresolved</code> in the DriftReport — not silently closed. The loop is: <code class="font-mono">diagnose → fix → re-diagnose → resolve</code>.
       </p>
       <pre class="mt-4 overflow-x-auto rounded-lg bg-zinc-900 px-5 py-4 text-sm text-zinc-100 dark:bg-zinc-950"><code>{`DriftReport  StaleErrorPod    — fixer ran        OK
 DriftReport  StuckJob         — fixer ran        OK

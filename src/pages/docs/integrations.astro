@@ -4,7 +4,7 @@ import PageHero from '../../components/PageHero.astro';
 ---
 
 <DocsLayout
-  title="CHA &mdash; Integrations"
+  title="Srenix &mdash; Integrations"
   description="Slack 3-channel routing, Alertmanager, OpenProject, Jira, ServiceNow, Prometheus metrics, and webhook triggers."
   topic="Integrations"
 >
@@ -18,7 +18,7 @@ import PageHero from '../../components/PageHero.astro';
 
     <div>
       <p class="text-base leading-relaxed text-zinc-600 dark:text-zinc-400">
-        CHA routes findings to alert channels, ticketing systems, and external triggers. Each integration is optional and independently enabled. Slack and Alertmanager work with the OSS binary; Jira, ServiceNow, and Prometheus metrics require the paid <code class="font-mono">cha-com</code> binary.
+        Srenix routes findings to alert channels, ticketing systems, and external triggers. Each integration is optional and independently enabled. Slack and Alertmanager work with the OSS binary; Jira, ServiceNow, and Prometheus metrics require the paid <code class="font-mono">srenix-enterprise</code> binary.
       </p>
     </div>
 
@@ -27,25 +27,25 @@ import PageHero from '../../components/PageHero.astro';
       <h2 class="text-xl font-semibold text-zinc-900 dark:text-zinc-50">Slack</h2>
       <div class="mt-1 h-0.5 w-8 rounded-full bg-accent-500"></div>
       <p class="mt-4 text-sm leading-relaxed text-zinc-600 dark:text-zinc-400">
-        CHA routes to three Slack channels — <code class="font-mono">alerts</code> (CHA acted / auto-fixed), <code class="font-mono">critical</code> (human action required), and <code class="font-mono">healthinfo</code> (daily digest) — each backed by its own incoming-webhook Secret. Create the Secrets before installing (or provision via ESO):
+        Srenix routes to three Slack channels — <code class="font-mono">alerts</code> (Srenix acted / auto-fixed), <code class="font-mono">critical</code> (human action required), and <code class="font-mono">healthinfo</code> (daily digest) — each backed by its own incoming-webhook Secret. Create the Secrets before installing (or provision via ESO):
       </p>
-      <pre class="mt-4 overflow-x-auto rounded-lg bg-zinc-900 px-5 py-4 text-sm text-zinc-100 dark:bg-zinc-950"><code>{`kubectl create secret generic cha-slack-alerts \\
+      <pre class="mt-4 overflow-x-auto rounded-lg bg-zinc-900 px-5 py-4 text-sm text-zinc-100 dark:bg-zinc-950"><code>{`kubectl create secret generic srenix-slack-alerts \\
   --from-literal=WEBHOOK_URL=https://hooks.slack.com/... \\
-  -n cluster-health-autopilot
+  -n agentic-sre
 
-kubectl create secret generic cha-slack-critical \\
+kubectl create secret generic srenix-slack-critical \\
   --from-literal=WEBHOOK_URL=https://hooks.slack.com/... \\
-  -n cluster-health-autopilot
+  -n agentic-sre
 
-kubectl create secret generic cha-slack-healthinfo \\
+kubectl create secret generic srenix-slack-healthinfo \\
   --from-literal=WEBHOOK_URL=https://hooks.slack.com/... \\
-  -n cluster-health-autopilot`}</code></pre>
+  -n agentic-sre`}</code></pre>
       <p class="mt-4 text-sm leading-relaxed text-zinc-600 dark:text-zinc-400">
         Then enable each channel and point it at its Secret in Helm values:
       </p>
-      <pre class="mt-4 overflow-x-auto rounded-lg bg-zinc-900 px-5 py-4 text-sm text-zinc-100 dark:bg-zinc-950"><code>{`--set slack.alerts.enabled=true --set slack.alerts.secretName=cha-slack-alerts \\
---set slack.critical.enabled=true --set slack.critical.secretName=cha-slack-critical \\
---set slack.healthinfo.enabled=true --set slack.healthinfo.secretName=cha-slack-healthinfo`}</code></pre>
+      <pre class="mt-4 overflow-x-auto rounded-lg bg-zinc-900 px-5 py-4 text-sm text-zinc-100 dark:bg-zinc-950"><code>{`--set slack.alerts.enabled=true --set slack.alerts.secretName=srenix-slack-alerts \\
+--set slack.critical.enabled=true --set slack.critical.secretName=srenix-slack-critical \\
+--set slack.healthinfo.enabled=true --set slack.healthinfo.secretName=srenix-slack-healthinfo`}</code></pre>
       <p class="mt-4 text-sm leading-relaxed text-zinc-600 dark:text-zinc-400">
         Repeated alerts are deduplicated — the watcher re-posts still-active warnings at <code class="font-mono">watcher.slack.repeatInterval</code> (default <code class="font-mono">6h</code>, <code class="font-mono">0</code> = never) and still-active criticals at <code class="font-mono">watcher.slack.criticalRepeatInterval</code> (default <code class="font-mono">2h</code> so criticals stay loud; <code class="font-mono">0</code> = fall back to <code class="font-mono">repeatInterval</code>).
       </p>
@@ -56,7 +56,7 @@ kubectl create secret generic cha-slack-healthinfo \\
       <h2 class="text-xl font-semibold text-zinc-900 dark:text-zinc-50">Alertmanager</h2>
       <div class="mt-1 h-0.5 w-8 rounded-full bg-accent-500"></div>
       <p class="mt-4 text-sm leading-relaxed text-zinc-600 dark:text-zinc-400">
-        CHA can post findings as Alertmanager alerts and poll Alertmanager for firing alerts to trigger probe cycles (trigger class C).
+        Srenix can post findings as Alertmanager alerts and poll Alertmanager for firing alerts to trigger probe cycles (trigger class C).
       </p>
       <pre class="mt-4 overflow-x-auto rounded-lg bg-zinc-900 px-5 py-4 text-sm text-zinc-100 dark:bg-zinc-950"><code>{`# Enable Alertmanager sink
 --set alertmanager.enabled=true \\
@@ -66,7 +66,7 @@ kubectl create secret generic cha-slack-healthinfo \\
 --set watcher.triggers.prom.url=http://kube-prometheus-stack-alertmanager:9093 \\
 --set watcher.triggers.prom.interval=30s`}</code></pre>
       <p class="mt-4 text-sm leading-relaxed text-zinc-600 dark:text-zinc-400">
-        Each fired alert carries <code class="font-mono">cha_severity</code>, <code class="font-mono">cha_analyzer</code>, and <code class="font-mono">cha_subject</code> labels for routing in Alertmanager rules.
+        Each fired alert carries <code class="font-mono">srenix_severity</code>, <code class="font-mono">srenix_analyzer</code>, and <code class="font-mono">srenix_subject</code> labels for routing in Alertmanager rules.
       </p>
     </div>
 
@@ -81,7 +81,7 @@ kubectl create secret generic cha-slack-healthinfo \\
             <span class="rounded-full border border-emerald-200 bg-emerald-50 px-2 py-0.5 text-[10px] font-medium uppercase tracking-wider text-emerald-700 dark:border-emerald-900/40 dark:bg-emerald-950/40 dark:text-emerald-300">OSS</span>
           </div>
           <p class="mt-2 text-sm leading-relaxed text-zinc-600 dark:text-zinc-400">
-            MCP-based ticketing sink. CHA upserts one ticket per open DriftReport — re-detecting the same issue updates the existing ticket rather than creating a duplicate. Enable with <code class="font-mono">ticketing.enabled=true</code> (<code class="font-mono">ticketing.provider</code> defaults to <code class="font-mono">openproject</code>) and set <code class="font-mono">ticketing.mcpURL</code>, <code class="font-mono">ticketing.project</code>, and <code class="font-mono">ticketing.typeID</code>. When the MCP server sits behind Kong, supply the API key via <code class="font-mono">ticketing.auth.enabled=true</code> + an ESO-managed Secret.
+            MCP-based ticketing sink. Srenix upserts one ticket per open DriftReport — re-detecting the same issue updates the existing ticket rather than creating a duplicate. Enable with <code class="font-mono">ticketing.enabled=true</code> (<code class="font-mono">ticketing.provider</code> defaults to <code class="font-mono">openproject</code>) and set <code class="font-mono">ticketing.mcpURL</code>, <code class="font-mono">ticketing.project</code>, and <code class="font-mono">ticketing.typeID</code>. When the MCP server sits behind Kong, supply the API key via <code class="font-mono">ticketing.auth.enabled=true</code> + an ESO-managed Secret.
           </p>
         </div>
         <div class="rounded-2xl border border-zinc-200/80 bg-white p-5 shadow-sm dark:border-zinc-800/80 dark:bg-zinc-900/60">
@@ -101,10 +101,10 @@ kubectl create secret generic cha-slack-healthinfo \\
       <h2 class="text-xl font-semibold text-zinc-900 dark:text-zinc-50">Prometheus metrics</h2>
       <div class="mt-1 h-0.5 w-8 rounded-full bg-accent-500"></div>
       <p class="mt-4 text-sm leading-relaxed text-zinc-600 dark:text-zinc-400">
-        The paid <code class="font-mono">cha-com</code> aiwatch Deployment exposes <code class="font-mono">cha_*</code> metric families on <code class="font-mono">/metrics:9090</code>. Enable the listener with <code class="font-mono">ai.metrics.addr=":9090"</code>; the chart then renders the matching port and Service, plus a ServiceMonitor when <code class="font-mono">ai.metrics.serviceMonitor.enabled=true</code> and a PrometheusRule when <code class="font-mono">ai.metrics.prometheusRule.enabled=true</code>.
+        The paid <code class="font-mono">srenix-enterprise</code> aiwatch Deployment exposes <code class="font-mono">srenix_*</code> metric families on <code class="font-mono">/metrics:9090</code>. Enable the listener with <code class="font-mono">ai.metrics.addr=":9090"</code>; the chart then renders the matching port and Service, plus a ServiceMonitor when <code class="font-mono">ai.metrics.serviceMonitor.enabled=true</code> and a PrometheusRule when <code class="font-mono">ai.metrics.prometheusRule.enabled=true</code>.
       </p>
       <p class="mt-4 text-sm leading-relaxed text-zinc-600 dark:text-zinc-400">
-        The full metric set (from <code class="font-mono">cmd/cha-com/metrics.go</code>): <code class="font-mono">cha_cycle_total</code>, <code class="font-mono">cha_diagnostic_total</code>, <code class="font-mono">cha_outcome_total</code>, <code class="font-mono">cha_outcome_revert_total</code>, <code class="font-mono">cha_policy_active</code>, <code class="font-mono">cha_llm_proposer_total</code>, <code class="font-mono">cha_autonomy_decision_total</code>, and <code class="font-mono">cha_breaker_open</code>.
+        The full metric set (from <code class="font-mono">cmd/srenix-enterprise/metrics.go</code>): <code class="font-mono">srenix_cycle_total</code>, <code class="font-mono">srenix_diagnostic_total</code>, <code class="font-mono">srenix_outcome_total</code>, <code class="font-mono">srenix_outcome_revert_total</code>, <code class="font-mono">srenix_policy_active</code>, <code class="font-mono">srenix_llm_proposer_total</code>, <code class="font-mono">srenix_autonomy_decision_total</code>, and <code class="font-mono">srenix_breaker_open</code>.
       </p>
     </div>
 
@@ -127,12 +127,12 @@ kubectl create secret generic cha-slack-healthinfo \\
       <pre class="mt-4 overflow-x-auto rounded-lg bg-zinc-900 px-5 py-4 text-sm text-zinc-100 dark:bg-zinc-950"><code>{`# Example: trigger on a Vault seal event
 BODY='{}'
 SIG="sha256=$(printf '%s' "$BODY" | openssl dgst -sha256 -hmac "$HMAC_SECRET" -hex | awk '{print $NF}')"
-curl -X POST https://cha-watcher.cluster/webhook/vault \\
-  -H "X-CHA-Signature: $SIG" \\
+curl -X POST https://srenix-watcher.cluster/webhook/vault \\
+  -H "X-Srenix-Signature: $SIG" \\
   -H "Content-Type: application/json" \\
   -d "$BODY"`}</code></pre>
       <p class="mt-4 text-sm leading-relaxed text-zinc-600 dark:text-zinc-400">
-        Enable the receiver with <code class="font-mono">watcher.triggers.webhook.listen=":8090"</code> and register sources as <code class="font-mono">&lt;source&gt;=&lt;ENV_VAR&gt;</code> pairs via <code class="font-mono">watcher.triggers.webhook.sources</code> (e.g. <code class="font-mono">vault=CHA_WEBHOOK_VAULT_SECRET</code>). The HMAC secrets are provisioned via a single K8s Secret referenced by <code class="font-mono">watcher.triggers.webhook.secretName</code>; set <code class="font-mono">watcher.triggers.webhook.service.enabled=true</code> to render a ClusterIP Service for the endpoint.
+        Enable the receiver with <code class="font-mono">watcher.triggers.webhook.listen=":8090"</code> and register sources as <code class="font-mono">&lt;source&gt;=&lt;ENV_VAR&gt;</code> pairs via <code class="font-mono">watcher.triggers.webhook.sources</code> (e.g. <code class="font-mono">vault=SRENIX_WEBHOOK_VAULT_SECRET</code>). The HMAC secrets are provisioned via a single K8s Secret referenced by <code class="font-mono">watcher.triggers.webhook.secretName</code>; set <code class="font-mono">watcher.triggers.webhook.service.enabled=true</code> to render a ClusterIP Service for the endpoint.
       </p>
     </div>
 

@@ -10,19 +10,19 @@
 # adds analyzers/probes env coverage + watcher.extraEnv):
 #   ./scripts/sync-helm-values.sh && npm run build
 #
-# Override the OSS repo location with CHA_OSS_REPO if it is not the sibling
+# Override the OSS repo location with SRENIX_OSS_REPO if it is not the sibling
 # checkout.
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 SITE_ROOT="$(dirname "$SCRIPT_DIR")"
-OSS_REPO="${CHA_OSS_REPO:-$SITE_ROOT/../cluster-health-autopilot}"
-CHART_DIR="$OSS_REPO/charts/cluster-health-autopilot"
+OSS_REPO="${SRENIX_OSS_REPO:-$SITE_ROOT/../agentic-sre}"
+CHART_DIR="$OSS_REPO/charts/agentic-sre"
 SRC="$CHART_DIR/values.yaml"
 CHART_YAML="$CHART_DIR/Chart.yaml"
 DEST="$SITE_ROOT/src/data/helm-values.snapshot.yaml"
 
-[ -f "$SRC" ] || { echo "ERROR: $SRC not found (set CHA_OSS_REPO)" >&2; exit 1; }
+[ -f "$SRC" ] || { echo "ERROR: $SRC not found (set SRENIX_OSS_REPO)" >&2; exit 1; }
 [ -f "$CHART_YAML" ] || { echo "ERROR: $CHART_YAML not found" >&2; exit 1; }
 
 CHART_VERSION="$(awk '$1 == "version:" { print $2; exit }' "$CHART_YAML")"
@@ -30,7 +30,7 @@ SYNC_DATE="$(date -u +%Y-%m-%d)"
 
 {
   echo "# DO NOT EDIT — vendored snapshot of the OSS chart's default values."
-  echo "# source: charts/cluster-health-autopilot/values.yaml (Bionic-AI-Solutions/cluster-health-autopilot)"
+  echo "# source: charts/agentic-sre/values.yaml (Srenix/agentic-sre)"
   echo "# chart-version: $CHART_VERSION"
   echo "# synced: $SYNC_DATE"
   echo "# re-sync: ./scripts/sync-helm-values.sh && npm run build"

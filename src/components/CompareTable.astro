@@ -1,9 +1,9 @@
 ---
 interface Row {
   dimension: string;
-  cha: string;
+  srenix: string;
   competitor: string;
-  win?: 'cha' | 'competitor' | 'tie';
+  win?: 'srenix' | 'competitor' | 'tie';
 }
 interface Props {
   competitorName: string;
@@ -21,7 +21,7 @@ const { competitorName, rows } = Astro.props;
             Dimension
           </th>
           <th class="px-4 py-3 text-left font-semibold text-accent-700 dark:text-accent-300">
-            CHA
+            Srenix
           </th>
           <th class="px-4 py-3 text-left font-semibold text-zinc-900 dark:text-zinc-50">
             {competitorName}
@@ -40,7 +40,7 @@ const { competitorName, rows } = Astro.props;
               {r.dimension}
             </td>
             <td class="px-4 py-3 align-top text-zinc-700 dark:text-zinc-300">
-              {r.cha}
+              {r.srenix}
             </td>
             <td class="px-4 py-3 align-top text-zinc-600 dark:text-zinc-400">
               {r.competitor}

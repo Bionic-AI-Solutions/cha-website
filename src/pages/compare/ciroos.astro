@@ -6,39 +6,39 @@ import CompareTable from '../../components/CompareTable.astro';
 const rows = [
   {
     dimension: 'Where it runs',
-    cha: 'In your cluster — operator + CronJob + Deployment',
+    srenix: 'In your cluster — operator + CronJob + Deployment',
     competitor: 'Ciroos SaaS, "zero-copy" queries to customer observability',
   },
   {
     dimension: 'Safety brake on autonomy',
-    cha: 'Operator-policy-bounded fixers + dry-run + signed-JWT approval URLs',
+    srenix: 'Operator-policy-bounded fixers + dry-run + signed-JWT approval URLs',
     competitor: '"Automate / Augment / Autopilot" slider; no documented brake',
   },
   {
     dimension: 'Open source',
-    cha: 'Apache-2.0 — full OSS feature set',
+    srenix: 'Apache-2.0 — full OSS feature set',
     competitor: 'Proprietary, private GitHub Enterprise',
   },
   {
     dimension: 'Pricing transparency',
-    cha: 'Published list prices for OSS / Team / Enterprise',
+    srenix: 'Published list prices for OSS / Team / Enterprise',
     competitor: 'Contact sales only',
   },
   {
     dimension: 'Named customer logos',
-    cha: 'None public yet (honest; neither does Ciroos at 12mo)',
+    srenix: 'None public yet (honest; neither does Ciroos at 12mo)',
     competitor: 'None — only "design partner" / "energy customer" references',
   },
 ];
 ---
 
 <BaseLayout
-  title="CHA vs. Ciroos"
+  title="Srenix vs. Ciroos"
   description="Ciroos has a strong multi-agent + KG architecture but is closed-source SaaS-only with no named customer logos at 12 months in. Our safety envelope is in code you can read."
 >
   <PageHero
     eyebrow="Compare &middot; Ciroos"
-    title="CHA vs. Ciroos"
+    title="Srenix vs. Ciroos"
     subtitle="Ciroos has a strong multi-agent + KG architecture but is closed-source SaaS-only. Their 'Autopilot' slider doesn't document a safety brake. Our safety envelope is in code you can read before you install."
   />
 
@@ -55,7 +55,7 @@ const rows = [
         whether to give a tool write access to production, that's the wrong answer.
       </p>
       <p class="mt-3 text-zinc-600 dark:text-zinc-400">
-        CHA's safety envelope is named, scoped, and Apache-2.0. Whitelisted fixers
+        Srenix's safety envelope is named, scoped, and Apache-2.0. Whitelisted fixers
         have explicit GVR scopes. Protected namespaces are allowlisted out. Dry-run
         mode logs every fix without applying. AI-tier proposals require a signed-JWT
         click. Audit it before you install.

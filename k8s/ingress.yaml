@@ -2,33 +2,52 @@
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: cha-website
-  namespace: cha-website
+  name: srenix-website
+  namespace: srenix-website
   labels:
-    app.kubernetes.io/name: cha-website
-    app.kubernetes.io/instance: cha-website
+    app.kubernetes.io/name: srenix-website
+    app.kubernetes.io/instance: srenix-website
     app.kubernetes.io/component: web
-    app.kubernetes.io/part-of: cha
+    app.kubernetes.io/part-of: srenix
   annotations:
     cert-manager.io/cluster-issuer: letsencrypt-prod
+    konghq.com/plugins: srenix-io-redirect
     konghq.com/preserve-host: "true"
     konghq.com/protocols: https
     konghq.com/strip-path: "false"
     konghq.com/https-redirect-status-code: "308"
 spec:
   ingressClassName: kong
+  # srenix.ai is the canonical host (matches astro.config `site` + every
+  # <link rel="canonical">). srenix.io serves the same content; the canonical
+  # tags keep SEO authority on srenix.ai. To hard-redirect .io -> .ai at the
+  # edge instead, attach a Kong `redirect`/`pre-function` plugin to the
+  # srenix.io rule — left as serve-both here so neither host 404s.
   rules:
-    - host: asre.baisoln.com
+    - host: srenix.ai
       http:
         paths:
           - path: /
             pathType: Prefix
             backend:
               service:
-                name: cha-website
+                name: srenix-website
+                port:
+                  number: 80
+    - host: srenix.io
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: srenix-website
                 port:
                   number: 80
   tls:
     - hosts:
-        - asre.baisoln.com
-      secretName: asre-baisoln-com-tls
+        - srenix.ai
+      secretName: srenix-ai-tls
+    - hosts:
+        - srenix.io
+      secretName: srenix-io-tls

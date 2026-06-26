@@ -20,12 +20,12 @@ const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" v
   <rect width="1200" height="630" fill="url(#grid)"/>
   <rect width="1200" height="630" fill="url(#glow)"/>
   <rect x="84" y="96" width="64" height="64" rx="12" fill="#2563eb"/>
-  <text x="116" y="141" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="36" font-weight="700" fill="#ffffff">C</text>
-  <text x="168" y="140" font-family="Arial, Helvetica, sans-serif" font-size="34" font-weight="600" fill="#a1a1aa">CHA</text>
-  <text x="84" y="300" font-family="Arial, Helvetica, sans-serif" font-size="76" font-weight="700" fill="#fafafa">Cluster Health Autopilot</text>
+  <text x="116" y="141" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="36" font-weight="700" fill="#ffffff">S</text>
+  <text x="168" y="140" font-family="Arial, Helvetica, sans-serif" font-size="34" font-weight="600" fill="#a1a1aa">Srenix</text>
+  <text x="84" y="300" font-family="Arial, Helvetica, sans-serif" font-size="76" font-weight="700" fill="#fafafa">Agentic SRE</text>
   <text x="84" y="384" font-family="Arial, Helvetica, sans-serif" font-size="44" font-weight="500" fill="#60a5fa">The AI SRE for Kubernetes</text>
   <text x="84" y="476" font-family="Arial, Helvetica, sans-serif" font-size="28" fill="#a1a1aa">Detect. Remediate. Verify. &#8212; policy-bounded, audit-anchored, bring-your-own-LLM</text>
-  <text x="84" y="552" font-family="Courier New, monospace" font-size="26" fill="#71717a">$ helm install cha cha/cluster-health-autopilot</text>
+  <text x="84" y="552" font-family="Courier New, monospace" font-size="26" fill="#71717a">$ helm install srenix srenix/agentic-sre</text>
   <rect x="0" y="622" width="1200" height="8" fill="#2563eb"/>
 </svg>`;
 

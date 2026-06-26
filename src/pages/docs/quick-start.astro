@@ -6,12 +6,12 @@ import { BINARY_RELEASE } from '../../data/product-facts';
 // Pinned download base: `releases/latest` resolves to a chart-releaser
 // release with NO binary assets, so we always pin to the newest tag that
 // carries goreleaser binaries (see BINARY_RELEASE in product-facts.ts).
-const DL = `https://github.com/Bionic-AI-Solutions/cluster-health-autopilot/releases/download/${BINARY_RELEASE}`;
+const DL = `https://github.com/Srenix/agentic-sre/releases/download/${BINARY_RELEASE}`;
 ---
 
 <DocsLayout
-  title="CHA &mdash; Quick Start"
-  description="Install and run Cluster Health Autopilot in under 30 seconds using the zero-trust offline mode, or deploy in-cluster via Helm."
+  title="Srenix &mdash; Quick Start"
+  description="Install and run Agentic SRE in under 30 seconds using the zero-trust offline mode, or deploy in-cluster via Helm."
   topic="Quick Start"
 >
   <PageHero
@@ -24,7 +24,7 @@ const DL = `https://github.com/Bionic-AI-Solutions/cluster-health-autopilot/rele
 
     <div>
       <p class="text-base leading-relaxed text-zinc-600 dark:text-zinc-400">
-        CHA runs as a single binary with zero external dependencies. The fastest path is the zero-trust offline mode — no cluster access required, no Helm, no RBAC. When you're ready to watch your cluster continuously, install in-cluster with Helm in three commands.
+        Srenix runs as a single binary with zero external dependencies. The fastest path is the zero-trust offline mode — no cluster access required, no Helm, no RBAC. When you're ready to watch your cluster continuously, install in-cluster with Helm in three commands.
       </p>
     </div>
 
@@ -59,7 +59,7 @@ const DL = `https://github.com/Bionic-AI-Solutions/cluster-health-autopilot/rele
       </div>
       <div class="mt-4 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 dark:border-amber-900/50 dark:bg-amber-950/30">
         <p class="text-sm text-amber-800 dark:text-amber-300">
-          <strong>Zero-trust offline mode requires none of the above</strong> — just the <code class="font-mono">cha</code> binary and a <code class="font-mono">kubectl get -o json</code> snapshot.
+          <strong>Zero-trust offline mode requires none of the above</strong> — just the <code class="font-mono">srenix</code> binary and a <code class="font-mono">kubectl get -o json</code> snapshot.
         </p>
       </div>
     </div>
@@ -72,19 +72,19 @@ const DL = `https://github.com/Bionic-AI-Solutions/cluster-health-autopilot/rele
         Pre-built binaries (release <code class="font-mono">{BINARY_RELEASE}</code>) for <code class="font-mono">linux/amd64</code>, <code class="font-mono">linux/arm64</code>, <code class="font-mono">darwin/amd64</code>, <code class="font-mono">darwin/arm64</code>.
       </p>
       <pre class="mt-4 overflow-x-auto rounded-lg bg-zinc-900 px-5 py-4 text-sm text-zinc-100 dark:bg-zinc-950"><code>{`# Linux amd64
-curl -sSL ${DL}/cluster-health-autopilot_linux_amd64.tar.gz \\
-  | tar xz && sudo mv cha /usr/local/bin/
+curl -sSL ${DL}/agentic-sre_linux_amd64.tar.gz \\
+  | tar xz && sudo mv srenix /usr/local/bin/
 
 # macOS arm64 (Apple Silicon)
-curl -sSL ${DL}/cluster-health-autopilot_darwin_arm64.tar.gz \\
-  | tar xz && sudo mv cha /usr/local/bin/
+curl -sSL ${DL}/agentic-sre_darwin_arm64.tar.gz \\
+  | tar xz && sudo mv srenix /usr/local/bin/
 
 # Other platforms: swap the suffix — linux_arm64 / darwin_amd64
 
 # Verify
-cha version`}</code></pre>
+srenix version`}</code></pre>
       <p class="mt-4 text-sm leading-relaxed text-zinc-600 dark:text-zinc-400">
-        Newer versions may be available on the <a href={`https://github.com/Bionic-AI-Solutions/cluster-health-autopilot/releases`} class="text-accent-600 hover:text-accent-700 dark:text-accent-400 dark:hover:text-accent-300">releases page</a> — pick a <code class="font-mono">vX.Y.Z</code> release that lists <code class="font-mono">.tar.gz</code> binary assets (chart-only releases don't carry binaries).
+        Newer versions may be available on the <a href={`https://github.com/Srenix/agentic-sre/releases`} class="text-accent-600 hover:text-accent-700 dark:text-accent-400 dark:hover:text-accent-300">releases page</a> — pick a <code class="font-mono">vX.Y.Z</code> release that lists <code class="font-mono">.tar.gz</code> binary assets (chart-only releases don't carry binaries).
       </p>
     </div>
 
@@ -93,25 +93,25 @@ cha version`}</code></pre>
       <h2 class="text-xl font-semibold text-zinc-900 dark:text-zinc-50">2. Zero-trust offline mode (no install needed)</h2>
       <div class="mt-1 h-0.5 w-8 rounded-full bg-accent-500"></div>
       <p class="mt-4 text-sm leading-relaxed text-zinc-600 dark:text-zinc-400">
-        Run diagnostics against a captured snapshot — no cluster RBAC, no write permissions, no Helm chart. Useful for evaluating CHA before any install.
+        Run diagnostics against a captured snapshot — no cluster RBAC, no write permissions, no Helm chart. Useful for evaluating Srenix before any install.
       </p>
       <pre class="mt-4 overflow-x-auto rounded-lg bg-zinc-900 px-5 py-4 text-sm text-zinc-100 dark:bg-zinc-950"><code>{`# Clone the repo to get sample fixtures
-git clone https://github.com/Bionic-AI-Solutions/cluster-health-autopilot.git
-cd cluster-health-autopilot
+git clone https://github.com/Srenix/agentic-sre.git
+cd agentic-sre
 
 # Run against the bundled sample cluster
-cha diagnose --snapshot examples/sample-cluster`}</code></pre>
+srenix diagnose --snapshot examples/sample-cluster`}</code></pre>
       <p class="mt-4 text-sm leading-relaxed text-zinc-600 dark:text-zinc-400">
         Against a live cluster:
       </p>
       <pre class="mt-4 overflow-x-auto rounded-lg bg-zinc-900 px-5 py-4 text-sm text-zinc-100 dark:bg-zinc-950"><code>{`# Capture a snapshot (read-only — never modifies cluster state)
-cha snapshot capture --out ./my-cluster
+srenix snapshot capture --out ./my-cluster
 
 # Diagnose offline
-cha diagnose --snapshot ./my-cluster
+srenix diagnose --snapshot ./my-cluster
 
 # Or diagnose live directly
-cha diagnose --live`}</code></pre>
+srenix diagnose --live`}</code></pre>
     </div>
 
     <!-- In-cluster Helm install -->
@@ -123,10 +123,10 @@ cha diagnose --live`}</code></pre>
         The current chart is a SemVer pre-release (<code class="font-mono">0.1.0-alpha.1</code>), so pass <code class="font-mono">--devel</code>
         (or pin <code class="font-mono">--version 0.1.0-alpha.1</code>) — Helm hides pre-releases otherwise.
       </p>
-      <pre class="mt-4 overflow-x-auto rounded-lg bg-zinc-900 px-5 py-4 text-sm text-zinc-100 dark:bg-zinc-950"><code>{`helm repo add cha https://bionic-ai-solutions.github.io/cluster-health-autopilot
+      <pre class="mt-4 overflow-x-auto rounded-lg bg-zinc-900 px-5 py-4 text-sm text-zinc-100 dark:bg-zinc-950"><code>{`helm repo add srenix https://srenix.github.io/agentic-sre
 helm repo update
-helm install cha cha/cluster-health-autopilot --devel \\
-  --namespace cluster-health-autopilot --create-namespace \\
+helm install srenix srenix/agentic-sre --devel \\
+  --namespace agentic-sre --create-namespace \\
   --set watcher.enabled=true
 # pinned alternative: --version 0.1.0-alpha.1 (instead of --devel)`}</code></pre>
     </div>
@@ -139,7 +139,7 @@ helm install cha cha/cluster-health-autopilot --devel \\
 # NAME                       SEVERITY  SOURCE                    SUBJECT                                  LAST SEEN
 # drift-4f9d2b8c3e1a7f05     warning   StuckCertificateRequests  CertificateRequest/kube-system/api-tls   12s
 
-kubectl get pods -n cluster-health-autopilot`}</code></pre>
+kubectl get pods -n agentic-sre`}</code></pre>
       <p class="mt-4 text-sm leading-relaxed text-zinc-600 dark:text-zinc-400">
         See the <a href="/docs/driftreport/" class="text-accent-600 hover:text-accent-700 dark:text-accent-400 dark:hover:text-accent-300">DriftReport CRD docs</a> for the full schema and kubectl query patterns.
       </p>

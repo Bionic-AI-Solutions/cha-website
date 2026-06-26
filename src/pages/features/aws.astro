@@ -6,8 +6,8 @@ import { CLOUD_PROBES_AWS } from '../../data/product-facts';
 ---
 
 <BaseLayout
-  title="CHA &mdash; AWS probes"
-  description={`${CLOUD_PROBES_AWS} AWS probes covering RDS, EBS, EKS, IAM, ALB, ACM, KMS, S3, VPC. IRSA-first auth — no long-lived keys in CHA.`}
+  title="Srenix &mdash; AWS probes"
+  description={`${CLOUD_PROBES_AWS} AWS probes covering RDS, EBS, EKS, IAM, ALB, ACM, KMS, S3, VPC. IRSA-first auth — no long-lived keys in Srenix.`}
 >
   <PageHero
     eyebrow="Features &middot; AWS"
@@ -15,7 +15,7 @@ import { CLOUD_PROBES_AWS } from '../../data/product-facts';
     subtitle="RDS, EBS, EKS, IAM, ALB, ACM, KMS, S3, VPC — probed with the workload-identity your cluster already uses."
   />
   <StubBody
-    claim="CHA's AWS probes use IRSA (IAM Roles for Service Accounts) — the same workload-identity auth your EKS cluster already uses for application workloads. No long-lived AWS credentials in CHA. Same IAM, same audit trail. Read-only by design in M1; cloud-mutation envelope is M4 with separate approval gates."
+    claim="Srenix's AWS probes use IRSA (IAM Roles for Service Accounts) — the same workload-identity auth your EKS cluster already uses for application workloads. No long-lived AWS credentials in Srenix. Same IAM, same audit trail. Read-only by design in M1; cloud-mutation envelope is M4 with separate approval gates."
     backHref="/features/"
     backLabel="← All features"
   />

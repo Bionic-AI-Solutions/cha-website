@@ -9,14 +9,14 @@ interface Props {
 }
 
 const {
-  title = 'CHA &mdash; Cluster Health Autopilot',
-  description = 'Detect, fix, and re-verify drift across Kubernetes, AWS, GCP, Azure, and the edge. The autonomous health autopilot for K8s and the clouds underneath it.',
+  title = 'Srenix &mdash; Agentic SRE',
+  description = 'Detect, fix, and re-verify drift across Kubernetes, AWS, GCP, Azure, and the edge. Srenix is the autonomous Agentic SRE for K8s and the clouds underneath it.',
 } = Astro.props;
 
-const canonical = new URL(Astro.url.pathname, Astro.site ?? 'https://asre.baisoln.com').toString();
-const ogImage = new URL('/og-default.png', Astro.site ?? 'https://asre.baisoln.com').toString();
+const canonical = new URL(Astro.url.pathname, Astro.site ?? 'https://srenix.ai').toString();
+const ogImage = new URL('/og-default.png', Astro.site ?? 'https://srenix.ai').toString();
 
-// Page titles arrive with HTML entities (e.g. "CHA &mdash; Pricing") for the
+// Page titles arrive with HTML entities (e.g. "Srenix &mdash; Pricing") for the
 // <title> tag. Meta `content` attributes are plain text, so decode the few
 // entities we actually use — `set:html` on a void <meta> element sets
 // innerHTML (a no-op) and ships an EMPTY attribute. Never use set:html here.

@@ -23,7 +23,7 @@ const probes = [
     since: 'v0.1.0-alpha.1',
     severity: 'Critical / Warning',
     detail:
-      'Counts pods by the READY column, not phase=Running (so CCE/ImagePull failures don\'t silently green). The list of "critical" workloads is configurable via the CHA_CRITICAL_SERVICES env var and the cha.bionicaisolutions.com/probe-critical: "true" annotation — no fork needed for non-Bionic clusters.',
+      'Counts pods by the READY column, not phase=Running (so CCE/ImagePull failures don\'t silently green). The list of "critical" workloads is configurable via the SRENIX_CRITICAL_SERVICES env var and the srenix.ai/probe-critical: "true" annotation — no fork needed for non-Srenix clusters.',
   },
   {
     name: 'Cluster Nodes',
@@ -44,7 +44,7 @@ const probes = [
     since: 'v0.1.0-alpha.1',
     severity: 'Critical / Warning',
     detail:
-      'Every Ingress host auto-discovered and probed externally. Per-Ingress opt-out via cha.bionicaisolutions.com/probe-disable: "true". Layer-1 flake suppression (2-of-2 streak) included.',
+      'Every Ingress host auto-discovered and probed externally. Per-Ingress opt-out via srenix.ai/probe-disable: "true". Layer-1 flake suppression (2-of-2 streak) included.',
   },
   {
     name: 'Node pressure',
@@ -92,7 +92,7 @@ const probes = [
 ---
 
 <BaseLayout
-  title="CHA &mdash; K8s probes"
+  title="Srenix &mdash; K8s probes"
   description={`${K8S_PROBES} native K8s probes covering Ceph, Postgres, Nodes, PVCs, Endpoints, NodePressure, DaemonSets, PendingPods, CrashLoopBackOff, ETCD, FailedMounts, configurable critical workloads, Kong, KongRoutes, GPUNodes, HPA, ArgoCD, Velero, Traefik routes, and k3s storage/datastore.`}
 >
   <PageHero
@@ -123,12 +123,12 @@ const probes = [
         Each probe can be disabled independently with an env var, no fork needed:
       </p>
       <ul class="mt-3 grid gap-1 text-sm font-mono text-slate-400 md:grid-cols-2">
-        <li>CHA_PROBE_NODE_PRESSURE=off</li>
-        <li>CHA_PROBE_DAEMONSETS=off</li>
-        <li>CHA_PROBE_PENDING_PODS=off</li>
-        <li>CHA_PROBE_CRASHLOOP=off</li>
-        <li>CHA_PROBE_ETCD=off</li>
-        <li>CHA_PROBE_FAILED_MOUNTS=off</li>
+        <li>SRENIX_PROBE_NODE_PRESSURE=off</li>
+        <li>SRENIX_PROBE_DAEMONSETS=off</li>
+        <li>SRENIX_PROBE_PENDING_PODS=off</li>
+        <li>SRENIX_PROBE_CRASHLOOP=off</li>
+        <li>SRENIX_PROBE_ETCD=off</li>
+        <li>SRENIX_PROBE_FAILED_MOUNTS=off</li>
       </ul>
     </div>
 

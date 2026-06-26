@@ -43,7 +43,7 @@ const features = [
     href: '/features/k3s-edge/',
     title: 'k3s',
     summary:
-      'CHA runs on any conformant K8s 1.27+ including k3s and RKE2. The same Helm chart, the same probes, the same fixers.',
+      'Srenix runs on any conformant K8s 1.27+ including k3s and RKE2. The same Helm chart, the same probes, the same fixers.',
     status: 'shipped',
   },
   {
@@ -71,7 +71,7 @@ const features = [
     href: '/features/rag-learning/',
     title: 'RAG learning loop + deep-RCA',
     summary:
-      'RAG memory is live: CHA reads prior resolutions before proposing and records every approve/deny/ticket-close outcome. Short-circuit default ON (skips the LLM when a high-confidence cleared prior exists). Paid opt-in: deep-RCA grounded in live web research via Firecrawl — a generic technical query is synthesized by the LLM (no namespace, hostname, or secret leaves the cluster) and the RCA is forwarded into every AI tier (T0 → T3). Pre-alpha v0.2.0-alpha.1.',
+      'RAG memory is live: Srenix reads prior resolutions before proposing and records every approve/deny/ticket-close outcome. Short-circuit default ON (skips the LLM when a high-confidence cleared prior exists). Paid opt-in: deep-RCA grounded in live web research via Firecrawl — a generic technical query is synthesized by the LLM (no namespace, hostname, or secret leaves the cluster) and the RCA is forwarded into every AI tier (T0 → T3). Pre-alpha v0.2.0-alpha.1.',
     status: 'shipped (paid)',
   },
 ];
@@ -89,7 +89,7 @@ const statusStyles: Record<string, string> = {
 ---
 
 <BaseLayout
-  title="CHA &mdash; Features"
+  title="Srenix &mdash; Features"
   description={`Capability deep-dives — ${K8S_PROBES} K8s probes, ${CLOUD_PROBES_AWS} AWS + ${CLOUD_PROBES_GCP} GCP + ${CLOUD_PROBES_AZURE} Azure cloud probes, 4 default + 1 opt-in fixer with GitOps safety gates, 4 AI tiers, and the safety envelope holding it all together.`}
 >
   <PageHero

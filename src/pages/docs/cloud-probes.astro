@@ -9,46 +9,46 @@ import {
 } from '../../data/product-facts';
 
 // Disable env vars verified against catalog/cloud.go (RegisterCloudOSS):
-// every cloud probe is gated on CHA_CLOUD_PROBE_<PROVIDER>_<NAME> != "off",
+// every cloud probe is gated on SRENIX_CLOUD_PROBE_<PROVIDER>_<NAME> != "off",
 // rendered from the chart's cloud.<provider>.probes.<name> toggles. One key
 // gates both EKS/GKE/AKS probes (control-plane + node groups: one asset).
 const aws = [
-  { name: 'RDS', checks: 'Instance/cluster status, storage %, multi-AZ, backup retention drift', disable: 'CHA_CLOUD_PROBE_AWS_RDS=off' },
-  { name: 'EBSVolumes', checks: 'Orphan/unattached volumes, snapshot age', disable: 'CHA_CLOUD_PROBE_AWS_EBS=off' },
-  { name: 'EKSControlPlane', checks: 'Version skew vs node groups, addon staleness', disable: 'CHA_CLOUD_PROBE_AWS_EKS=off' },
-  { name: 'EKSNodeGroups', checks: 'Capacity, scaling activity, version drift', disable: 'CHA_CLOUD_PROBE_AWS_EKS=off' },
-  { name: 'IAMRoles', checks: 'Trust policy drift on cluster service-account roles', disable: 'CHA_CLOUD_PROBE_AWS_IAM=off' },
-  { name: 'ALBTargetHealth', checks: 'Unhealthy targets in Load Balancer Controller-managed target groups', disable: 'CHA_CLOUD_PROBE_AWS_ALB=off' },
-  { name: 'ACMCertExpiry', checks: 'Certs expiring within 14 days', disable: 'CHA_CLOUD_PROBE_AWS_ACM=off' },
-  { name: 'KMSKeys', checks: 'Pending-deletion KMS keys still referenced by cluster resources', disable: 'CHA_CLOUD_PROBE_AWS_KMS=off' },
-  { name: 'S3BucketPublicAccess', checks: 'Public-ACL drift on buckets referenced by cluster IAM', disable: 'CHA_CLOUD_PROBE_AWS_S3=off' },
-  { name: 'VPCSubnets', checks: 'Exhausted IP space affecting pod CIDR allocation', disable: 'CHA_CLOUD_PROBE_AWS_VPC=off' },
+  { name: 'RDS', checks: 'Instance/cluster status, storage %, multi-AZ, backup retention drift', disable: 'SRENIX_CLOUD_PROBE_AWS_RDS=off' },
+  { name: 'EBSVolumes', checks: 'Orphan/unattached volumes, snapshot age', disable: 'SRENIX_CLOUD_PROBE_AWS_EBS=off' },
+  { name: 'EKSControlPlane', checks: 'Version skew vs node groups, addon staleness', disable: 'SRENIX_CLOUD_PROBE_AWS_EKS=off' },
+  { name: 'EKSNodeGroups', checks: 'Capacity, scaling activity, version drift', disable: 'SRENIX_CLOUD_PROBE_AWS_EKS=off' },
+  { name: 'IAMRoles', checks: 'Trust policy drift on cluster service-account roles', disable: 'SRENIX_CLOUD_PROBE_AWS_IAM=off' },
+  { name: 'ALBTargetHealth', checks: 'Unhealthy targets in Load Balancer Controller-managed target groups', disable: 'SRENIX_CLOUD_PROBE_AWS_ALB=off' },
+  { name: 'ACMCertExpiry', checks: 'Certs expiring within 14 days', disable: 'SRENIX_CLOUD_PROBE_AWS_ACM=off' },
+  { name: 'KMSKeys', checks: 'Pending-deletion KMS keys still referenced by cluster resources', disable: 'SRENIX_CLOUD_PROBE_AWS_KMS=off' },
+  { name: 'S3BucketPublicAccess', checks: 'Public-ACL drift on buckets referenced by cluster IAM', disable: 'SRENIX_CLOUD_PROBE_AWS_S3=off' },
+  { name: 'VPCSubnets', checks: 'Exhausted IP space affecting pod CIDR allocation', disable: 'SRENIX_CLOUD_PROBE_AWS_VPC=off' },
 ];
 
 const gcp = [
-  { name: 'CloudSQL', checks: 'Instance status; live disk-utilization % via the Cloud Monitoring API (skips the storage check when no recent datapoint, never reports 0%)', disable: 'CHA_CLOUD_PROBE_GCP_CLOUDSQL=off' },
-  { name: 'PersistentDisks', checks: 'Disk health and attachment status', disable: 'CHA_CLOUD_PROBE_GCP_DISKS=off' },
-  { name: 'GKEControlPlane', checks: 'Cluster status, control-plane version', disable: 'CHA_CLOUD_PROBE_GCP_GKE=off' },
-  { name: 'GKENodePools', checks: 'Node pool status, version drift vs control plane', disable: 'CHA_CLOUD_PROBE_GCP_GKE=off' },
-  { name: 'IAMServiceAccounts', checks: 'Workload Identity binding drift', disable: 'CHA_CLOUD_PROBE_GCP_IAM=off' },
-  { name: 'Subnets', checks: 'Capacity-only: warns when a primary CIDR is smaller than /26 (threshold configurable via cloud.gcp.subnetsSmallPrefixThreshold + CHA_CLOUD_PROBE_GCP_SUBNETS_SMALL_PREFIX). GCP’s Compute API exposes no cheap used-IP count, so per-IP utilization is honestly not measured — review Network Analyzer for the real allocation ratio', disable: 'CHA_CLOUD_PROBE_GCP_SUBNETS=off' },
-  { name: 'LoadBalancerBackends', checks: 'Backend health', disable: 'CHA_CLOUD_PROBE_GCP_LB=off' },
-  { name: 'ManagedCertificates', checks: 'Managed-cert provisioning status and expiry', disable: 'CHA_CLOUD_PROBE_GCP_CERTS=off' },
-  { name: 'GCSPublicAccess', checks: 'Public-access drift on buckets referenced by the cluster', disable: 'CHA_CLOUD_PROBE_GCP_GCS=off' },
-  { name: 'KMSKeys', checks: 'Key state/policy drift on keys referenced by cluster resources', disable: 'CHA_CLOUD_PROBE_GCP_KMS=off' },
+  { name: 'CloudSQL', checks: 'Instance status; live disk-utilization % via the Cloud Monitoring API (skips the storage check when no recent datapoint, never reports 0%)', disable: 'SRENIX_CLOUD_PROBE_GCP_CLOUDSQL=off' },
+  { name: 'PersistentDisks', checks: 'Disk health and attachment status', disable: 'SRENIX_CLOUD_PROBE_GCP_DISKS=off' },
+  { name: 'GKEControlPlane', checks: 'Cluster status, control-plane version', disable: 'SRENIX_CLOUD_PROBE_GCP_GKE=off' },
+  { name: 'GKENodePools', checks: 'Node pool status, version drift vs control plane', disable: 'SRENIX_CLOUD_PROBE_GCP_GKE=off' },
+  { name: 'IAMServiceAccounts', checks: 'Workload Identity binding drift', disable: 'SRENIX_CLOUD_PROBE_GCP_IAM=off' },
+  { name: 'Subnets', checks: 'Capacity-only: warns when a primary CIDR is smaller than /26 (threshold configurable via cloud.gcp.subnetsSmallPrefixThreshold + SRENIX_CLOUD_PROBE_GCP_SUBNETS_SMALL_PREFIX). GCP’s Compute API exposes no cheap used-IP count, so per-IP utilization is honestly not measured — review Network Analyzer for the real allocation ratio', disable: 'SRENIX_CLOUD_PROBE_GCP_SUBNETS=off' },
+  { name: 'LoadBalancerBackends', checks: 'Backend health', disable: 'SRENIX_CLOUD_PROBE_GCP_LB=off' },
+  { name: 'ManagedCertificates', checks: 'Managed-cert provisioning status and expiry', disable: 'SRENIX_CLOUD_PROBE_GCP_CERTS=off' },
+  { name: 'GCSPublicAccess', checks: 'Public-access drift on buckets referenced by the cluster', disable: 'SRENIX_CLOUD_PROBE_GCP_GCS=off' },
+  { name: 'KMSKeys', checks: 'Key state/policy drift on keys referenced by cluster resources', disable: 'SRENIX_CLOUD_PROBE_GCP_KMS=off' },
 ];
 
 const azure = [
-  { name: 'SQLDatabases', checks: 'Instance status, storage_percent (live Azure Monitor)', disable: 'CHA_CLOUD_PROBE_AZURE_SQL=off' },
-  { name: 'Disks', checks: 'Disk health and attachment', disable: 'CHA_CLOUD_PROBE_AZURE_DISKS=off' },
-  { name: 'AKSControlPlane', checks: 'Cluster status, control-plane version', disable: 'CHA_CLOUD_PROBE_AZURE_AKS=off' },
-  { name: 'AKSNodePools', checks: 'Node pool status, version drift', disable: 'CHA_CLOUD_PROBE_AZURE_AKS=off' },
-  { name: 'ManagedIdentities', checks: 'AAD Workload Identity binding drift', disable: 'CHA_CLOUD_PROBE_AZURE_IDENTITIES=off' },
-  { name: 'Subnets', checks: 'Live used-IP measurement: counts every subnet-attached resource (NIC IP configs, AppGW IP configs, IP-config profiles, private endpoints) so available = total − used', disable: 'CHA_CLOUD_PROBE_AZURE_SUBNETS=off' },
-  { name: 'AppGatewayBackends', checks: 'Live BackendHealth LRO', disable: 'CHA_CLOUD_PROBE_AZURE_APPGW=off' },
-  { name: 'Certificates', checks: 'Cert expiry', disable: 'CHA_CLOUD_PROBE_AZURE_CERTS=off' },
-  { name: 'StoragePublicAccess', checks: 'Public-access policy drift', disable: 'CHA_CLOUD_PROBE_AZURE_STORAGE=off' },
-  { name: 'KeyVaults', checks: 'Key/secret expiry', disable: 'CHA_CLOUD_PROBE_AZURE_KEYVAULTS=off' },
+  { name: 'SQLDatabases', checks: 'Instance status, storage_percent (live Azure Monitor)', disable: 'SRENIX_CLOUD_PROBE_AZURE_SQL=off' },
+  { name: 'Disks', checks: 'Disk health and attachment', disable: 'SRENIX_CLOUD_PROBE_AZURE_DISKS=off' },
+  { name: 'AKSControlPlane', checks: 'Cluster status, control-plane version', disable: 'SRENIX_CLOUD_PROBE_AZURE_AKS=off' },
+  { name: 'AKSNodePools', checks: 'Node pool status, version drift', disable: 'SRENIX_CLOUD_PROBE_AZURE_AKS=off' },
+  { name: 'ManagedIdentities', checks: 'AAD Workload Identity binding drift', disable: 'SRENIX_CLOUD_PROBE_AZURE_IDENTITIES=off' },
+  { name: 'Subnets', checks: 'Live used-IP measurement: counts every subnet-attached resource (NIC IP configs, AppGW IP configs, IP-config profiles, private endpoints) so available = total − used', disable: 'SRENIX_CLOUD_PROBE_AZURE_SUBNETS=off' },
+  { name: 'AppGatewayBackends', checks: 'Live BackendHealth LRO', disable: 'SRENIX_CLOUD_PROBE_AZURE_APPGW=off' },
+  { name: 'Certificates', checks: 'Cert expiry', disable: 'SRENIX_CLOUD_PROBE_AZURE_CERTS=off' },
+  { name: 'StoragePublicAccess', checks: 'Public-access policy drift', disable: 'SRENIX_CLOUD_PROBE_AZURE_STORAGE=off' },
+  { name: 'KeyVaults', checks: 'Key/secret expiry', disable: 'SRENIX_CLOUD_PROBE_AZURE_KEYVAULTS=off' },
 ];
 
 // Build-time drift assertions: each provider table must match the canonical counts.
@@ -82,7 +82,7 @@ const sections = [
 ---
 
 <DocsLayout
-  title="CHA &mdash; Cloud Probes"
+  title="Srenix &mdash; Cloud Probes"
   description={`${CLOUD_PROBES_TOTAL} cloud probes across AWS, GCP, and Azure. Workload-identity auth only. Enable per-provider in Helm values.`}
   topic="Cloud Probes"
 >
@@ -96,7 +96,7 @@ const sections = [
 
     <div>
       <p class="text-base leading-relaxed text-zinc-600 dark:text-zinc-400">
-        Cloud probes run alongside the K8s probes on every cycle. They use the same workload-identity credentials your cluster already has — IRSA on EKS, GCP Workload Identity on GKE, AAD Workload Identity on AKS. No cloud credentials are stored in CHA.
+        Cloud probes run alongside the K8s probes on every cycle. They use the same workload-identity credentials your cluster already has — IRSA on EKS, GCP Workload Identity on GKE, AAD Workload Identity on AKS. No cloud credentials are stored in Srenix.
       </p>
 
       <div class="mt-6 overflow-x-auto">
@@ -124,7 +124,7 @@ const sections = [
 
       <div class="mt-4 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 dark:border-amber-900/50 dark:bg-amber-950/30">
         <p class="text-sm text-amber-800 dark:text-amber-300">
-          Cloud probes are <strong>off by default</strong>. Enable with <code class="font-mono">--set cloud.enabled=true --set cloud.aws.enabled=true</code> (or equivalent for GCP/Azure) — <code class="font-mono">cloud.enabled</code> is the master switch; each provider is toggled independently underneath it. Within an enabled provider, <strong>every probe is individually disablable</strong>: set <code class="font-mono">cloud.&lt;provider&gt;.probes.&lt;name&gt;: false</code> (rendered as <code class="font-mono">CHA_CLOUD_PROBE_&lt;PROVIDER&gt;_&lt;NAME&gt;=off</code>; one key gates both EKS/GKE/AKS control-plane + node-group probes). The K8s-only value is unchanged if you never enable cloud probes.
+          Cloud probes are <strong>off by default</strong>. Enable with <code class="font-mono">--set cloud.enabled=true --set cloud.aws.enabled=true</code> (or equivalent for GCP/Azure) — <code class="font-mono">cloud.enabled</code> is the master switch; each provider is toggled independently underneath it. Within an enabled provider, <strong>every probe is individually disablable</strong>: set <code class="font-mono">cloud.&lt;provider&gt;.probes.&lt;name&gt;: false</code> (rendered as <code class="font-mono">SRENIX_CLOUD_PROBE_&lt;PROVIDER&gt;_&lt;NAME&gt;=off</code>; one key gates both EKS/GKE/AKS control-plane + node-group probes). The K8s-only value is unchanged if you never enable cloud probes.
         </p>
       </div>
     </div>

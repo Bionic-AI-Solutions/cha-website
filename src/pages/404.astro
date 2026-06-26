@@ -3,8 +3,8 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 ---
 
 <BaseLayout
-  title="CHA &mdash; 404 / DriftReport: page not found"
-  description="The page you're looking for isn't in this cluster. CHA detected the drift; we don't have a fixer for missing URLs yet."
+  title="Srenix &mdash; 404 / DriftReport: page not found"
+  description="The page you're looking for isn't in this cluster. Srenix detected the drift; we don't have a fixer for missing URLs yet."
 >
   <section class="relative overflow-hidden">
     <div class="absolute inset-0 bg-grid opacity-50 [mask-image:radial-gradient(ellipse_at_center,black_30%,transparent_75%)]"></div>
@@ -23,7 +23,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       <pre class="mt-8 inline-block rounded-lg border border-zinc-200/80 bg-zinc-950 px-5 py-3 text-left font-mono text-xs leading-relaxed text-zinc-100 dark:border-zinc-800/80"><code>$ kubectl get page <span class="text-amber-400">$REQUESTED_URL</span>
 Error from server (NotFound): page <span class="text-amber-400">$REQUESTED_URL</span> not found
 
-# CHA would have opened a DriftReport, but
+# Srenix would have opened a DriftReport, but
 # there is no DriftReport CRD for marketing URLs.
 # Yet.</code></pre>
 

@@ -2,13 +2,13 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: cha-website
-  namespace: cha-website
+  name: srenix-website
+  namespace: srenix-website
   labels:
-    app.kubernetes.io/name: cha-website
-    app.kubernetes.io/instance: cha-website
+    app.kubernetes.io/name: srenix-website
+    app.kubernetes.io/instance: srenix-website
     app.kubernetes.io/component: web
-    app.kubernetes.io/part-of: cha
+    app.kubernetes.io/part-of: srenix
 spec:
   replicas: 1
   revisionHistoryLimit: 3
@@ -19,15 +19,15 @@ spec:
       maxUnavailable: 0
   selector:
     matchLabels:
-      app.kubernetes.io/name: cha-website
-      app.kubernetes.io/instance: cha-website
+      app.kubernetes.io/name: srenix-website
+      app.kubernetes.io/instance: srenix-website
   template:
     metadata:
       labels:
-        app.kubernetes.io/name: cha-website
-        app.kubernetes.io/instance: cha-website
+        app.kubernetes.io/name: srenix-website
+        app.kubernetes.io/instance: srenix-website
         app.kubernetes.io/component: web
-        app.kubernetes.io/part-of: cha
+        app.kubernetes.io/part-of: srenix
     spec:
       automountServiceAccountToken: false
       securityContext:
@@ -35,8 +35,8 @@ spec:
         seccompProfile:
           type: RuntimeDefault
       containers:
-        - name: cha-website
-          image: docker4zerocool/cha-website:v0.3.4
+        - name: srenix-website
+          image: docker4zerocool/srenix-website:v0.4.0
           imagePullPolicy: IfNotPresent
           ports:
             - name: http

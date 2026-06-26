@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://asre.baisoln.com/sitemap-index.xml
+Sitemap: https://srenix.ai/sitemap-index.xml

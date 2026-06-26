@@ -1,5 +1,5 @@
-<!-- DO NOT EDIT — vendored snapshot of CHANGELOG.md (Bionic-AI-Solutions/CHA-com, private) -->
-<!-- source: CHANGELOG.md (Bionic-AI-Solutions/CHA-com, private) -->
+<!-- DO NOT EDIT — vendored snapshot of CHANGELOG.md (Srenix/agentic-sre-enterprise, private) -->
+<!-- source: CHANGELOG.md (Srenix/agentic-sre-enterprise, private) -->
 <!-- synced: 2026-06-19 -->
 <!-- re-sync: ./scripts/sync-changelogs.sh && npm run build -->
 <!-- truncated to newest 12 release sections; the public roadmap renders these only -->
@@ -12,8 +12,8 @@
   analysis using live public web research (read-only cluster tools + web
   research via an LLM-synthesized, client-redacted query). Flags:
   `--firecrawl-endpoint`, `--firecrawl-enabled`, `--firecrawl-api-key-env`,
-  `--investigator-web-timeout`. API key read from K8s Secret `cha-firecrawl-key`.
-- Deep-RCA artifact persisted to `cha_investigations` Qdrant collection;
+  `--investigator-web-timeout`. API key read from K8s Secret `srenix-firecrawl-key`.
+- Deep-RCA artifact persisted to `srenix_investigations` Qdrant collection;
   cross-cycle retrieval injects prior root-cause context into the T1 proposer.
 - Root-cause forwarded into every AI tier (T0–T3) via a `<root_cause>` prompt
   block so all tiers reason from the same root cause; T1 also receives T0
@@ -39,7 +39,7 @@ under honest numbering.
 For continuity, the content shipped at v1.22.4 (the tree this re-baseline
 points at):
 
-### Added — one-click Silence (SC: the CHA-com half)
+### Added — one-click Silence (SC: the Srenix Enterprise half)
 
 The AI digest's "🚫 AI declined" / "⏳ Awaiting your approval" items now
 carry two signed one-click Silence links — **🔕 Silence 24h** (subject-scoped,
@@ -50,7 +50,7 @@ carried on `proposalRecord`. A new approval-server endpoint
 **`GET /silence?token=<JWS>`** verifies the signed token, enforces one-time
 use via the replay store (`silence:` JTI namespace), rate-budgets the click,
 then materializes a real OSS **`Silence` CR**
-(`cha.bionicaisolutions.com/v1alpha1`) via a dynamic client on the `silences`
+(`srenix.ai/v1alpha1`) via a dynamic client on the `silences`
 GVR. Fail-closed throughout; audited as `ai.approval.silenced`. The 90d
 class-silence link supersedes the legacy 7d `ActionSilenceClassURL`.
 
@@ -62,7 +62,7 @@ class-silence link supersedes the legacy 7d `ActionSilenceClassURL`.
 
 ## [1.22.4] — 2026-06-17
 
-### Added — one-click Silence (SC: the CHA-com half)
+### Added — one-click Silence (SC: the Srenix Enterprise half)
 
 The AI digest's "🚫 AI declined" items (and "⏳ Awaiting your approval"
 items) were linkless — an operator who decided a decline was *by design*
@@ -84,7 +84,7 @@ signed token (`pkgai.VerifySilenceToken`, reusing the verifier's public
 key), enforces one-time use via the shared replay store (under a
 `silence:` JTI namespace; replay → 409), rate-budgets the click (class
 `silence`, mirrors `/approve`), then materializes the verified claims
-into a real OSS **`Silence` CR** (`cha.bionicaisolutions.com/v1alpha1`)
+into a real OSS **`Silence` CR** (`srenix.ai/v1alpha1`)
 in the approval-server's own namespace. The CR is created via a dynamic
 client on the `silences` GVR (no controller-runtime dependency added);
 the SA gained `silences` create/get/list in OSS v1.26.3. CR name is a
@@ -126,7 +126,7 @@ unaffected by this change.
 
 ### Changed — OSS dependency → v1.26.2
 
-Bumped `github.com/Bionic-AI-Solutions/cluster-health-autopilot` to
+Bumped `github.com/Srenix/agentic-sre` to
 `v1.26.2`, which adds `(*AIProposedAction).ValidateForExecution()`.
 
 ## [1.22.2] — 2026-06-12
@@ -157,7 +157,7 @@ buildable release of the 1.22 line and carries identical Go code.
 ### Added — Dockerfile COPY-allowlist gate
 
 `scripts/dockerfile-copy-check.sh` (wired into CI) compares the
-Dockerfile's COPY allowlist against `go list -deps ./cmd/cha-com` and
+Dockerfile's COPY allowlist against `go list -deps ./cmd/srenix-enterprise` and
 fails when the binary imports an in-module top-level directory the image
 build would not receive — the v1.22.0 failure class, now load-bearing.
 
@@ -231,7 +231,7 @@ contract had only described as intended:
   event to an `io.Writer` (default `os.Stdout`), for sidecar log
   collectors (Vector / fluent-bit / the cluster stdout scraper).
 - **`LokiSink`** (`ai/audit/loki.go`) — POSTs to the Loki push API
-  (`/loki/api/v1/push`) with stream labels `{job="cha-ai", tier, event_type}`
+  (`/loki/api/v1/push`) with stream labels `{job="srenix-ai", tier, event_type}`
   and the redacted event JSON as the ns-timestamped log line.
 - **`OTLPSink`** (`ai/audit/otlp.go`) — OTLP/HTTP logs export (hand-built
   JSON, no heavy OTel SDK) to `<endpoint>/v1/logs`: `resourceLogs[]` →
@@ -244,7 +244,7 @@ contract had only described as intended:
   flushes. The CLI wraps the network sinks in it so a slow/hung gateway
   can never stall the watcher cycle.
 
-All network sinks share the CHA-com HTTP conventions: an injected
+All network sinks share the Srenix Enterprise HTTP conventions: an injected
 `*http.Client` (nil → default), a 15s timeout, soft-fail (a sink error
 degrades audit, never the action — the chained JSONL remains the only
 hard fan-out dependency via `MultiSink`), and secret-like `Details`
@@ -258,14 +258,14 @@ Kubernetes Events `MultiSink`.
 
 ### Added — CycloneDX SBOM + cosign keyless image signing + attestation (P6.2)
 
-Mirrors the OSS P6.2 supply-chain work so paired releases ship identical provenance, fulfilling the website's "SBOM (paid)" and "Cosign-signed container images with attestation" claims for the paid tier. `.goreleaser.yaml` gains `sboms:` (syft → one **CycloneDX JSON** SBOM per `cha-com` binary archive), `signs:` (cosign **keyless** `sign-blob` over `checksums.txt` → `checksums.txt.sigstore.json`), and `docker_signs:` (cosign **keyless** `sign` over every `docker4zerocool/cha-com` + `ghcr.io/bionic-ai-solutions/cha-com` image + manifest, logged to Rekor). Keyless via the workflow's GitHub OIDC token (`id-token: write`, previously "reserved for future" — wired now) → short-lived Fulcio cert; no key on disk. The release workflow installs syft + cosign (`anchore/sbom-action`, `sigstore/cosign-installer`); it already ran goreleaser with `--timeout 2h`. The CHA-com repo + Releases are private, but the image registries are **public**, so customers verify image signatures without repo access. New `docs/RELEASE_VERIFICATION.md` gives the `cosign verify` / `verify-blob` + SBOM-inspection commands. Verified locally: `goreleaser check` passes and `goreleaser release --snapshot` produces four valid CycloneDX SBOMs; signing pipes only execute in CI under a real OIDC token.
+Mirrors the OSS P6.2 supply-chain work so paired releases ship identical provenance, fulfilling the website's "SBOM (paid)" and "Cosign-signed container images with attestation" claims for the paid tier. `.goreleaser.yaml` gains `sboms:` (syft → one **CycloneDX JSON** SBOM per `srenix-enterprise` binary archive), `signs:` (cosign **keyless** `sign-blob` over `checksums.txt` → `checksums.txt.sigstore.json`), and `docker_signs:` (cosign **keyless** `sign` over every `docker4zerocool/srenix-enterprise` + `ghcr.io/srenix/srenix-enterprise` image + manifest, logged to Rekor). Keyless via the workflow's GitHub OIDC token (`id-token: write`, previously "reserved for future" — wired now) → short-lived Fulcio cert; no key on disk. The release workflow installs syft + cosign (`anchore/sbom-action`, `sigstore/cosign-installer`); it already ran goreleaser with `--timeout 2h`. The Srenix Enterprise repo + Releases are private, but the image registries are **public**, so customers verify image signatures without repo access. New `docs/RELEASE_VERIFICATION.md` gives the `cosign verify` / `verify-blob` + SBOM-inspection commands. Verified locally: `goreleaser check` passes and `goreleaser release --snapshot` produces four valid CycloneDX SBOMs; signing pipes only execute in CI under a real OIDC token.
 
 ### Added — Jira Cloud REST ticketing sink (paid Enterprise tier) (P6.3)
 
 Implemented the Jira ticketing sink the website advertises ("Jira … in the
 paid Enterprise tier"), fulfilling **M3** of the ticketing design
 (`pkg/ticketing/docs/design/2026-05-ticketing-mcp-integration.md` in OSS).
-Today only OpenProject (OSS) existed; CHA-com now adds Jira.
+Today only OpenProject (OSS) existed; Srenix Enterprise now adds Jira.
 
 - **`ticketing/jira/`** — implements the OSS `pkg/ticketing.Sink`
   interface (`Upsert` / `Resolve` / `Comment` / `Provider() = "jira"`)
@@ -274,14 +274,14 @@ Today only OpenProject (OSS) existed; CHA-com now adds Jira.
   `*http.Client` (20s default timeout) and a `nopClient` for dry-run,
   mirroring the OpenProject sink's structure.
 - **Auth:** HTTP Basic (email + API token). The token is sourced ONLY
-  from an env var (`CHA_JIRA_TOKEN`, the Helm chart wires it from a
+  from an env var (`SRENIX_JIRA_TOKEN`, the Helm chart wires it from a
   secret-ref) — never a flag literal or manifest value — and only ever
   flows into the `Authorization` header. A unit test asserts the token
   never appears in any log line the sink emits.
-- **Idempotency:** `Upsert` searches Jira (JQL `labels = cha-<fingerprint>`)
+- **Idempotency:** `Upsert` searches Jira (JQL `labels = srenix-<fingerprint>`)
   before creating; an existing issue's ref is returned with no duplicate
-  POST. The `cha-<fingerprint>` label (OSS `ticketing.Fingerprint`) is
-  attached to every issue so the dedup is durable across CHA restarts.
+  POST. The `srenix-<fingerprint>` label (OSS `ticketing.Fingerprint`) is
+  attached to every issue so the dedup is durable across Srenix restarts.
 - **Field mapping:** Ticket → `{project.key, issuetype (Task), summary,
   description (ADF), labels incl. fingerprint, priority}`. Severity →
   Jira priority NAME via operator-overridable map (critical→Highest,
@@ -289,19 +289,19 @@ Today only OpenProject (OSS) existed; CHA-com now adds Jira.
 - **`Resolve`:** `GET /transitions`, picks the Done/Resolved transition,
   `POST /transitions`, then comments the reason. No matching transition
   (already terminal) is a clean no-op.
-- **Provider selection** wired into `cha-com watch` via
-  `cmd/cha-com/ticketing_wiring.go`: `--ticketing-provider=jira` (env
+- **Provider selection** wired into `srenix-enterprise watch` via
+  `cmd/srenix-enterprise/ticketing_wiring.go`: `--ticketing-provider=jira` (env
   `TICKETING_PROVIDER`) constructs the sink; empty = ticketing off.
   Because the OSS `internal/report.RouteTickets` path is internal and
-  not importable, CHA-com owns a small `ticketingRouter` that files an
+  not importable, Srenix Enterprise owns a small `ticketingRouter` that files an
   issue for each first-appearance unfixable diagnostic and transitions
   it to Done when the subject clears (in-memory ref bookkeeping keyed by
   fingerprint, matching the watcher's own `seen`-map lifecycle).
 - **Chart note:** the required values live in the OSS chart under
   `ticketing.provider=jira` + `ticketing.jira.{url,project,email}` and a
-  `ticketing.jira.tokenSecretRef` → env `CHA_JIRA_TOKEN`. CHA-com reads
-  those envs (`CHA_JIRA_URL` / `CHA_JIRA_PROJECT` / `CHA_JIRA_EMAIL` /
-  `CHA_JIRA_TOKEN`) the chart sets; no secret value is ever hardcoded.
+  `ticketing.jira.tokenSecretRef` → env `SRENIX_JIRA_TOKEN`. Srenix Enterprise reads
+  those envs (`SRENIX_JIRA_URL` / `SRENIX_JIRA_PROJECT` / `SRENIX_JIRA_EMAIL` /
+  `SRENIX_JIRA_TOKEN`) the chart sets; no secret value is ever hardcoded.
 
 Verified: `go build ./... && go vet ./... && go test ./... -count=1`
 green; `go test ./ticketing/... -race` green; gofmt clean on new files.
@@ -320,17 +320,17 @@ P6.3 Jira sink structure.
   Transport is REST direct (no ServiceNow MCP server in-cluster);
   `client.go` injects an `*http.Client` (20s default timeout) and a
   `nopClient` for dry-run.
-- **Auth:** HTTP Basic (`CHA_SERVICENOW_USER` + `CHA_SERVICENOW_PASSWORD`)
-  by default, OR an OAuth bearer (`CHA_SERVICENOW_BEARER`) when set
+- **Auth:** HTTP Basic (`SRENIX_SERVICENOW_USER` + `SRENIX_SERVICENOW_PASSWORD`)
+  by default, OR an OAuth bearer (`SRENIX_SERVICENOW_BEARER`) when set
   (bearer wins). The password / bearer are sourced ONLY from env vars
   (the Helm chart wires them from secret-refs) — never a flag literal or
   manifest value — and only ever flow into the `Authorization` header. A
   unit test asserts the password (raw + base64) never appears in any log
   line the sink emits.
 - **Idempotency:** `Upsert` queries the incident table by the stable
-  `correlation_id=cha-<fingerprint>` (OSS `ticketing.Fingerprint`) before
+  `correlation_id=srenix-<fingerprint>` (OSS `ticketing.Fingerprint`) before
   writing; a match is PATCHed in place (no duplicate POST), else a new
-  incident is POSTed. Durable across CHA restarts.
+  incident is POSTed. Durable across Srenix restarts.
 - **Field mapping:** Ticket → `{short_description=Title, description=Body,
   urgency+impact from severity via operator-overridable code maps,
   correlation_id=fingerprint}`. `TicketRef.Key` is the incident number
@@ -341,7 +341,7 @@ P6.3 Jira sink structure.
   `close_notes=reason` (+ `close_code`). **`Comment`:** PATCHes
   `work_notes` (journal append).
 - **Multi-sink routing (M6):** new `--ticketing-route`
-  (`"kube-system=servicenow,default=jira"`, env `CHA_TICKETING_ROUTE`)
+  (`"kube-system=servicenow,default=jira"`, env `SRENIX_TICKETING_ROUTE`)
   routes each finding to a provider by the namespace parsed from its
   Subject (`Kind/ns/name`); any namespace not listed falls back to
   `--ticketing-provider`. The router builds each named provider's sink
@@ -349,14 +349,14 @@ P6.3 Jira sink structure.
   provider fails at startup**, not per-finding. `Resolve` goes back
   through the same provider that filed the ticket (recorded on the stored
   `TicketRef.Provider`).
-- **Provider selection** wired into `cha-com watch` via
-  `cmd/cha-com/ticketing_wiring.go`: `--ticketing-provider=servicenow`
+- **Provider selection** wired into `srenix-enterprise watch` via
+  `cmd/srenix-enterprise/ticketing_wiring.go`: `--ticketing-provider=servicenow`
   constructs the sink; the switch now supports `jira` + `servicenow`.
 - **Secrets:** no credential is ever a flag literal or hardcoded; all
   flow through env vars the chart populates from secret-refs.
 
 Verified: `go build ./... && go vet ./... && go test ./... -count=1`
-green; `go test ./ticketing/... ./cmd/cha-com/... -race -count=1` green;
+green; `go test ./ticketing/... ./cmd/srenix-enterprise/... -race -count=1` green;
 gofmt clean on new files.
 
 ### Added — read-only hosted dashboard MVP (paid tier) (P6.6)
@@ -375,7 +375,7 @@ approval-server endpoints for any action — it never mutates the cluster.
     severity (live cluster), remediation clear-rate, and pending-approval
     count (from the audit log).
   - `GET /findings` — table of current DriftReports
-    (`driftreports.cha.bionicaisolutions.com`) read **live** from the
+    (`driftreports.srenix.ai`) read **live** from the
     cluster via an injected `FindingsReader` (satisfied by the OSS
     `snapshot.LiveSource`; tests inject a fake). Columns: severity / source /
     subject / message / observation-count / age. Sorted critical→warning→info.
@@ -394,7 +394,7 @@ approval-server endpoints for any action — it never mutates the cluster.
     subject, action, tier, approver, and verdict
     (cleared / applied / failed / skipped / denied).
   - `GET /healthz`, `GET /readyz`.
-- **`cha-com dashboard`** — new subcommand (mirrors `approval-server`'s
+- **`srenix-enterprise dashboard`** — new subcommand (mirrors `approval-server`'s
   construction). A **separate subcommand** rather than a flag on
   `approval-server` was chosen as the simpler, cleaner option: the
   dashboard is read-only with a distinct RBAC posture (driftreport READ,
@@ -415,7 +415,7 @@ approval-server endpoints for any action — it never mutates the cluster.
   NetworkPolicy class as the approval-server (OSS P2.6b).
 
 **Deferred (follow-ups, not in this MVP):**
-- OSS chart/operator RBAC for a dedicated `cha-dashboard-sa` (cluster-wide
+- OSS chart/operator RBAC for a dedicated `srenix-dashboard-sa` (cluster-wide
   GET/LIST on `driftreports`, optionally `resolutionrecords`) and a
   NetworkPolicy covering the new dashboard Service — documented in the
   subcommand doc; to be wired in the OSS repo.
@@ -449,7 +449,7 @@ feeding the existing `catalog.MultiClusterDrift` analyzer with live peers
     **cannot mutate a member cluster** (enforced at the type level).
   - `Poller` — refreshes the peer set on an interval, exposes the current
     `[]catalog.Peer` to the watch loop; concurrency-safe `Peers()`/`Refresh()`.
-- **`cha-com watch`** — new `--federation-members <dir>` flag (+
+- **`srenix-enterprise watch`** — new `--federation-members <dir>` flag (+
   `--federation-interval`). Each file in the directory is one member's
   kubeconfig (filename = member name); K8s Secret-mount machinery (`..data`,
   dotfiles, subdirs) is skipped. **OFF by default** — unset = local-only
@@ -509,7 +509,7 @@ class.
   rejecting without consuming the token).
 - **Wiring** — `approval.ServerConfig.RateBudget` (new optional field;
   nil = unlimited, preserving every existing call site) is satisfied by
-  `*ai.RateLimiter`; `cmd/cha-com/approval_server_cmd.go` wires a
+  `*ai.RateLimiter`; `cmd/srenix-enterprise/approval_server_cmd.go` wires a
   default-configured limiter. In-memory: each replica budgets
   independently (same posture as the limiter's documented P7 Redis
   hardening note).
@@ -551,7 +551,7 @@ now exists and is wired in.
   errors → `ErrInvalidResponse` (fatal, message preserved). Honors
   context cancellation + the Options.Timeout deadline, and caches
   identically under the existing `CachingClient` wrapper.
-- **Provider selection** (`cmd/cha-com/ai_wiring.go`) — auto-detected
+- **Provider selection** (`cmd/srenix-enterprise/ai_wiring.go`) — auto-detected
   by endpoint host: `--ai-endpoint` pointing at `api.anthropic.com`
   (or any `*.anthropic.com` host) builds the native client; everything
   else keeps the OpenAI-compatible client (OpenAI-shaped proxies
@@ -646,7 +646,7 @@ write credentials.**
   clients live under the OSS module's `internal/` tree and are not
   importable here) reconciles one DriftReport per active finding with
   subject `Probe/<component>/<cloud-subject>` and deletes it on clear;
-  cha-com reads exactly that active set through its existing read-only
+  srenix-enterprise reads exactly that active set through its existing read-only
   snapshot source (30s TTL cache, one LIST per window). Higher-level
   workload kinds (Deployment/StatefulSet) are not chased to their pods
   in the MVP — same deterministic bar.
@@ -656,7 +656,7 @@ write credentials.**
   when nothing links), soft-fail retrieval (a correlation failure never
   blocks enrichment/proposal), byte-budget capped (max 5 links,
   critical-first, 200-rune detail truncation). There is no separate
-  cha-com Investigator prompt — T0/T1 are the complete surface.
+  srenix-enterprise Investigator prompt — T0/T1 are the complete surface.
 - **On automatically, kill-switch available** — `--ai-cloud-context`
   (default **true**) on `watch` + `diagnose`. Zero-config: clusters
   without cloud findings produce zero links and byte-identical prompts;
@@ -692,7 +692,7 @@ Neither mode opens a PR (there's no GitOps repo to target). The difference is pu
 
 ### Changed — bump OSS pin v1.23.1 → v1.25.1 (P2.5)
 
-Bumped the pinned `github.com/Bionic-AI-Solutions/cluster-health-autopilot`
+Bumped the pinned `github.com/Srenix/agentic-sre`
 dependency from the stale `v1.23.1` to the latest released tag `v1.25.1`.
 
 The only `pkg/` source change across this range is `pkg/feeder/workload.go`:
@@ -702,7 +702,7 @@ no Helm/ArgoCD release annotations) now synthesize `owner_chart` /
 `owner_release` features. Previously `detectOwner` returned `nil` early when a
 workload had no annotations.
 
-Why it matters: CHA-com's `DigestPinProposer` (`ai/proposer/digest_pin.go`)
+Why it matters: Srenix Enterprise's `DigestPinProposer` (`ai/proposer/digest_pin.go`)
 reads `wl.Features["owner_chart"]` to locate the chart's sub-path in the
 GitOps deploy repo. Pinned to v1.23.1, operator-managed workloads got an empty
 `owner_chart`, fell back to the pod/controller name, missed the expected chart
@@ -721,7 +721,7 @@ hash-chain swap entry above.)
 
 ### Changed — bump OSS pin v1.25.1 → v1.26.0 (release pairing)
 
-Bumps the pinned `github.com/Bionic-AI-Solutions/cluster-health-autopilot`
+Bumps the pinned `github.com/Srenix/agentic-sre`
 dependency to `v1.26.0`, the OSS release this binary pairs with. The OSS
 API change across v1.25.1→v1.26.0 is additive — notably the new
 `pkg/audit` hash-chain primitive (ported from this repo; see the
@@ -750,7 +750,7 @@ Compatibility: the OSS port review proved cross-verifiability (same
 canonical bytes), re-confirmed empirically here — a chain written by the
 pre-swap primitive verifies OK under the new binary, and a new-binary
 append extends that same file into one continuous chain that verifies
-intact. The checkpoint actor changes `cha-com/audit` → `cha/audit` on
+intact. The checkpoint actor changes `srenix-enterprise/audit` → `srenix/audit` on
 NEW entries only; old chains still verify because the actor is hashed
 DATA, not a verifier assumption. All paid-sink behavior tests were kept,
 adapted to the OSS import with semantics unchanged.
@@ -806,7 +806,7 @@ refuses out-of-order steps.
 
 Closed a safety-envelope gap: the website promises the digest-pin
 auto-merge gate requires "Ed25519 attestation **verified**", but the
-Phase 3.B gate (`cmd/cha-com/auto_merge_gate.go`) only checked that a
+Phase 3.B gate (`cmd/srenix-enterprise/auto_merge_gate.go`) only checked that a
 signer was CONFIGURED — nothing re-verified the signature before the
 merge. A PR body tampered with (or replaced wholesale by a stolen-PAT
 attacker) between `CreatePullRequest` and the merge would still
@@ -818,12 +818,12 @@ verification, fail-closed at every step.
   runs AFTER a positive gate verdict and BEFORE
   `Forge.MergePullRequest`. It re-fetches the PR body **from the forge**
   (what GitHub serves now, not the local copy we sent), extracts the
-  `cha-cosign-attestation:v1` block, verifies the Ed25519 signature over
+  `srenix-cosign-attestation:v1` block, verifies the Ed25519 signature over
   the canonical payload, and **binds the payload fields to the exact
   change being merged**: `action_id`, `repo` (owner/name of the target),
   `ref`, `file_path`, `before_digest`, `after_digest`. Field binding
   matters — a valid signature only proves our key signed *something*; a
-  validly-signed attestation replayed from a different CHA PR is
+  validly-signed attestation replayed from a different Srenix PR is
   rejected on mismatch.
 - **Fail closed.** Missing attestation block, malformed block, body
   fetch error, signature mismatch, field mismatch, no signer, or a PR
@@ -832,8 +832,8 @@ verification, fail-closed at every step.
   `auto-merge skipped: attestation verification failed (…)`, and an
   `ai.automerge.skipped` audit event (reason
   `attestation_verify_failed`, repo, pr_number, error) is emitted via
-  the proposer's audit channel. No `cha_*` metric fits (the
-  `cha_autonomy_decision_total` family is the autonomy engine's closed
+  the proposer's audit channel. No `srenix_*` metric fits (the
+  `srenix_autonomy_decision_total` family is the autonomy engine's closed
   enum, not the PR path); the audit event is the per-fire record.
 - **Public key derivation** — no new flag. The verification key is the
   public half of the existing `--digest-pin-attestation-key` private
@@ -916,12 +916,12 @@ replay store since v1.0.0; the class paths now match.
 
 ### Added — Observability log lines for Phase 3.B + 3.C
 
-- `digest-pin: auto-merge gate armed (min_success_rate=0.95, attestation=on, policies=on, breaker=shared)` logs once at startup when the Phase 3.B auto-merge gate is constructed. Operators can `kubectl logs deploy/bionic-aiwatch | grep auto-merge` to prove the gate is armed without reading source. Per-fire decisions still flow through the proposer's Rationale + the audit event chain (no per-call log noise).
+- `digest-pin: auto-merge gate armed (min_success_rate=0.95, attestation=on, policies=on, breaker=shared)` logs once at startup when the Phase 3.B auto-merge gate is constructed. Operators can `kubectl logs deploy/srenix-aiwatch | grep auto-merge` to prove the gate is armed without reading source. Per-fire decisions still flow through the proposer's Rationale + the audit event chain (no per-call log noise).
 - `ai.target_history.applied` audit event fires when the Phase 3.C `<target_history>` block prepends to an enricher prompt (silent in the first-encounter case). Closes the "wired but no observability" gap surfaced in the v1.20.1 adversarial review.
 
 ### Note — `--ai-audit-log` should NOT be `-` in production
 
-The CHA-com binary supports `--ai-audit-log=-` (stdout) for development. In production, set it to a persistent file path (e.g. `--ai-audit-log=/var/log/cha-com/audit.jsonl`) so `cha-com audit-bundle` has audit events to bundle. The audit-bundle subcommand otherwise correctly reports a zero-byte audit.jsonl with the manifest note "audit-log flag empty".
+The Srenix Enterprise binary supports `--ai-audit-log=-` (stdout) for development. In production, set it to a persistent file path (e.g. `--ai-audit-log=/var/log/srenix-enterprise/audit.jsonl`) so `srenix-enterprise audit-bundle` has audit events to bundle. The audit-bundle subcommand otherwise correctly reports a zero-byte audit.jsonl with the manifest note "audit-log flag empty".
 
 ## [1.20.1] — 2026-06-10
 
@@ -939,8 +939,8 @@ the shared `--cluster-name` registered by ck.register).
 
 2 new regression tests assert `auditBundleCmd()` constructs
 without panic and that the expected flags are registered exactly
-once. Verified locally: `go run ./cmd/cha-com --help` succeeds;
-`go run ./cmd/cha-com audit-bundle --help` shows all expected flags.
+once. Verified locally: `go run ./cmd/srenix-enterprise --help` succeeds;
+`go run ./cmd/srenix-enterprise audit-bundle --help` shows all expected flags.
 
 Rollout-safe: v1.20.0 was rolled back to v1.19.0 on the affected
 cluster before this hotfix tagged.
@@ -1024,9 +1024,9 @@ tests from v1.17.0 still cover `ShouldAutoMerge` end-to-end.
 
 ### Pairs with OSS
 
-`v1.23.0+` (trigger-expansion M1-M7 bundle). No new CHA-com / OSS
+`v1.23.0+` (trigger-expansion M1-M7 bundle). No new Srenix Enterprise / OSS
 interaction surfaces — this is the production wiring for an
-existing CHA-com feature.
+existing Srenix Enterprise feature.
 
 ## [1.18.0] — 2026-06-09
 
@@ -1053,7 +1053,7 @@ via a new `RecentByTarget` adapter. nil retriever = no block in prompt
 resource, expected to cut investigator wall-clock + token cost by
 ~90% while sharpening the conclusion.
 
-### Added — `cha-com audit-bundle` subcommand (Phase 3.F)
+### Added — `srenix-enterprise audit-bundle` subcommand (Phase 3.F)
 
 SOC2-friendly evidence pack exporter. Reads the audit JSONL written
 by `--ai-audit-log` + the RAG outcome memory, produces a tar.gz:
@@ -1081,7 +1081,7 @@ outcome timeline (counterpart to `RecentOutcomesByTarget/Class`).
   + aggregate counts + cap behavior + RecordedAt rendering +
   enricher-side wiring (block lands in user message; nil retriever
   = legacy behavior)
-- 10 new tests in cmd/cha-com/ covering happy-path bundle layout,
+- 10 new tests in cmd/srenix-enterprise/ covering happy-path bundle layout,
   manifest checksums, missing/empty audit log soft-fail, memory error
   hard-fail, line-counting edges, SHA256 vector, gzip-magic-bytes
   smoke

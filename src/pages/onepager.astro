@@ -9,8 +9,8 @@ import {
 ---
 
 <BaseLayout
-  title="CHA &mdash; AI SRE one-pager"
-  description="One-page rationale + architecture for CHA — the in-cluster, policy-bounded, audit-anchored autonomous SRE for Kubernetes. Bring-your-own-LLM. Open core. Slack-able."
+  title="Srenix &mdash; AI SRE one-pager"
+  description="One-page rationale + architecture for Srenix — the in-cluster, policy-bounded, audit-anchored autonomous SRE for Kubernetes. Bring-your-own-LLM. Open core. Slack-able."
 >
   <style is:global>
     @media print {
@@ -44,7 +44,7 @@ import {
 
     <header class="border-b-2 border-zinc-900 pb-4 dark:border-zinc-100">
       <p class="text-xs font-semibold uppercase tracking-widest text-accent-600 dark:text-accent-400">
-        CHA &middot; Cluster Health Autopilot
+        Srenix &middot; Agentic SRE
       </p>
       <h1 class="mt-1 text-3xl font-bold tracking-tight">
         Autonomous SRE for Kubernetes.
@@ -69,7 +69,7 @@ import {
             <dd class="mt-0.5">
               Every cycle: detect &rarr; propose fix &rarr; (operator click) &rarr;
               apply &rarr; re-diagnose. Komodor, Robusta, Causely, NeuBird,
-              Resolve, Ciroos: they observe and summarise. CHA mutates.
+              Resolve, Ciroos: they observe and summarise. Srenix mutates.
             </dd>
           </div>
           <div>
@@ -102,7 +102,7 @@ import {
               OSS engine is Apache-2.0: {K8S_PROBES} K8s probes,
               {CLOUD_PROBES_TOTAL} cloud probes (AWS/GCP/Azure), {OSS_ANALYZERS} analyzers,
               5 policy-bounded fixers, controller-runtime operator.
-              CHA-com paid tier adds the LLM Investigator + T0&ndash;T3 AI SRE
+              Srenix Enterprise paid tier adds the LLM Investigator + T0&ndash;T3 AI SRE
               ladder.
             </dd>
           </div>
@@ -160,7 +160,7 @@ import {
           <li><strong class="text-zinc-900 dark:text-zinc-100">T0 Narration</strong> &mdash; LLM-enriched diagnostic text in Slack &middot; sub-second latency on in-cluster Qwen 3.6 35B</li>
           <li><strong class="text-zinc-900 dark:text-zinc-100">T1 Fix proposer</strong> &mdash; agent picks action_kind from whitelist; JWT click-to-fix URL</li>
           <li><strong class="text-zinc-900 dark:text-zinc-100">T2 Planner</strong> &mdash; multi-step plan, each step still a JWT click; plan signed as a unit; prerequisite ordering enforced at execution</li>
-          <li><strong class="text-zinc-900 dark:text-zinc-100">T3 Vault break-glass</strong> &mdash; runbook text + dual-approval timeline; CHA never executes, operator runs manually</li>
+          <li><strong class="text-zinc-900 dark:text-zinc-100">T3 Vault break-glass</strong> &mdash; runbook text + dual-approval timeline; Srenix never executes, operator runs manually</li>
         </ul>
       </div>
 
@@ -170,16 +170,16 @@ import {
       <div class="flex flex-wrap items-baseline justify-between gap-3">
         <div>
           <p class="font-mono">
-            $ helm repo add cha https://bionic-ai-solutions.github.io/cluster-health-autopilot/
+            $ helm repo add srenix https://srenix.github.io/agentic-sre/
           </p>
-          <p class="font-mono">$ helm install cha cha/cluster-health-autopilot --devel</p>
+          <p class="font-mono">$ helm install srenix srenix/agentic-sre --devel</p>
         </div>
         <div class="text-right">
           <p class="font-semibold text-zinc-900 dark:text-zinc-100">
-            https://asre.baisoln.com
+            https://srenix.ai
           </p>
-          <p>github.com/Bionic-AI-Solutions/cluster-health-autopilot</p>
-          <p>hello@bionicaisolutions.com</p>
+          <p>github.com/Srenix/agentic-sre</p>
+          <p>hello@srenix.ai</p>
         </div>
       </div>
       <p class="mt-2 text-[10px] text-zinc-500 dark:text-zinc-500">
